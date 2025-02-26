@@ -20,23 +20,37 @@ app.post('/send-email', async (req, res) => {
 
   try {
     const emailHtml = `
-      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1>Reservation Confirmation</h1>
-        <p>Dear ${name},</p>
-        <p>Your reservation is confirmed for:</p>
-        <ul>
-          <li><strong>Date:</strong> ${date}</li>
-          <li><strong>Time:</strong> ${time}</li>
-          <li><strong>Guests:</strong> ${guests}</li>
-          ${occasion ? `<li><strong>Occasion:</strong> ${occasion}</li>` : ''}
-          ${
-            special_requests
-              ? `<li><strong>Special Requests:</strong> ${special_requests}</li>`
-              : ''
-          }
-        </ul>
+    <div style="background-color: #f8f3e9; padding: 30px; font-family: 'Georgia', serif; color: #5c4033; max-width: 600px; margin: auto; border-radius: 10px;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="https://ristorantealgobbodirialto.com/assets/logo.png" alt="Al Gobbo di Rialto" style="max-width: 180px;">
       </div>
-    `;
+      <h1 style="text-align: center; font-size: 26px; color: #8B4513;">Conferma Prenotazione</h1>
+      <p style="text-align: center; font-size: 18px;">Gentile <strong>${name}</strong>,</p>
+      <p style="text-align: center; font-size: 16px;">
+        Siamo lieti di confermare la tua prenotazione presso <strong>Ristorante Al Gobbo di Rialto</strong>.
+      </p>
+      <div style="background: #e8dac9; padding: 15px; border-radius: 8px; margin-top: 20px;">
+        <p><strong>📅 Data:</strong> ${date}</p>
+        <p><strong>🕰️ Ora:</strong> ${time}</p>
+        <p><strong>👥 Numero di ospiti:</strong> ${guests}</p>
+        ${occasion ? `<p><strong>🎉 Occasione:</strong> ${occasion}</p>` : ''}
+        ${special_requests ? `<p><strong>📜 Richieste speciali:</strong> ${special_requests}</p>` : ''}
+      </div>
+      <p style="font-size: 14px; text-align: center; margin-top: 20px;">
+        ⏳ Ti ricordiamo che il tavolo verrà mantenuto per un massimo di <strong>15 minuti</strong> dopo l'orario di prenotazione.
+      </p>
+      <p style="font-size: 14px; text-align: center; margin-top: 30px;">
+        📍 <strong>Ristorante Al Gobbo di Rialto</strong><br>
+        📍 San Polo, 649, Ruga Rialto, 655, 30125 Venezia VE, Italia<br>
+        📞 <a href="tel:+390415204603" style="color: #8B4513; text-decoration: none;">+39 041 520 4603</a><br>
+        🌐 <a href="https://ristorantealgobbodirialto.com" style="color: #8B4513; text-decoration: none;">ristorantealgobbodirialto.com</a>
+      </p>
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #E6D5B8; font-size: 12px; text-align: center; color: #666;">
+        <p>Questa è un'email automatica, si prega di non rispondere.</p>
+      </div>
+    </div>
+  `;
+  
 
     console.log('📤 Inviando email a:', email);
 
