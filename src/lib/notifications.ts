@@ -7,7 +7,7 @@ export async function sendReservationConfirmation(
   );
 
   try {
-    const response = await fetch('http://localhost:3001/send-email', {
+    const response = await fetch('https://sb1-sncywbv4.onrender.com/send-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
