@@ -92,7 +92,7 @@ export function ReservePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!privacyConsent) {
       toast.error('Please accept the privacy policy to continue');
       return;
@@ -152,13 +152,13 @@ export function ReservePage() {
     <PageTransition>
       <div className="min-h-screen bg-venetian-sandstone/20 pt-24">
         {/* Hero Section */}
-        <motion.section 
+        <motion.section
           className="relative h-[40vh] overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: `url(${img2939})`
@@ -167,13 +167,13 @@ export function ReservePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-venetian-brown/70 to-venetian-brown/90" />
           <div className="relative h-full flex items-center justify-center text-center px-4">
             <div className="max-w-3xl">
-              <motion.h1 
+              <motion.h1
                 className="text-5xl sm:text-6xl font-serif text-white mb-4"
                 {...fadeIn}
               >
                 Make a Reservation
               </motion.h1>
-              <motion.p 
+              <motion.p
                 className="text-xl text-venetian-sandstone"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -300,13 +300,12 @@ export function ReservePage() {
                             type="button"
                             disabled={!slot.available}
                             onClick={() => setFormData(prev => ({ ...prev, time: slot.time }))}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              formData.time === slot.time
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${formData.time === slot.time
                                 ? 'bg-venetian-gold text-venetian-brown'
                                 : slot.available
-                                ? 'bg-white/80 text-venetian-brown hover:bg-venetian-gold/10'
-                                : 'bg-venetian-brown/5 text-venetian-brown/40 cursor-not-allowed'
-                            }`}
+                                  ? 'bg-white/80 text-venetian-brown hover:bg-venetian-gold/10'
+                                  : 'bg-venetian-brown/5 text-venetian-brown/40 cursor-not-allowed'
+                              }`}
                             whileHover={slot.available ? { scale: 1.02 } : {}}
                             whileTap={slot.available ? { scale: 0.98 } : {}}
                           >
@@ -314,6 +313,35 @@ export function ReservePage() {
                           </motion.button>
                         ))}
                       </div>
+                    )}
+                    {/* New Year's Eve Warning */}
+                    {formData.date === '2025-12-31' && formData.time && formData.time >= '19:00' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg my-6"
+                      >
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0">
+                            <AlertCircle className="h-5 w-5 text-amber-500" />
+                          </div>
+                          <div className="ml-3">
+                            <h3 className="text-sm font-medium text-amber-800">
+                              Special Event Notice / Avviso Evento Speciale
+                            </h3>
+                            <div className="mt-2 text-sm text-amber-700 space-y-2">
+                              <p>
+                                <strong>English:</strong> For reservations on December 31, 2025 from 7:00 PM onwards,
+                                a minimum spend of <strong>€80 per person</strong> is required.
+                              </p>
+                              <p>
+                                <strong>Italiano:</strong> Per le prenotazioni del 31 Dicembre 2025 dalle ore 19:00 in poi,
+                                è richiesta una spesa minima di <strong>80€ a persona</strong>.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
                     )}
                   </div>
                 )}
@@ -380,7 +408,7 @@ export function ReservePage() {
                       className="mt-1"
                     />
                     <label htmlFor="marketingConsent" className="text-sm text-venetian-brown/70">
-                      I would like to receive marketing communications about special offers, events, and news. 
+                      I would like to receive marketing communications about special offers, events, and news.
                       You can unsubscribe at any time.
                     </label>
                   </div>
@@ -391,7 +419,7 @@ export function ReservePage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Button 
+                  <Button
                     type="submit"
                     className="w-full bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
                     disabled={isLoading || closedDates.includes(formData.date)}
