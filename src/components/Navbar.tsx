@@ -26,11 +26,12 @@ export function Navbar() {
   const navItems = [
     { name: t('nav.menu'), path: '/menu' },
     { name: t('nav.about'), path: '/about' },
-    { name: t('nav.contact'), path: '/contact' }
+    { name: t('nav.contact'), path: '/contact' },
+    { name: 'My Reservations', path: '/my-reservations' }
   ];
 
   return (
-    <motion.div 
+    <motion.div
       className="fixed top-0 left-0 right-0 z-50"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -38,17 +39,16 @@ export function Navbar() {
     >
       <div className="px-3 sm:px-6 lg:px-8 pt-4">
         <nav className="relative mx-auto max-w-7xl">
-          <motion.div 
-            className={`relative backdrop-blur-sm rounded-2xl shadow-sm overflow-hidden transition-all duration-500 ${
-              isScrolled 
-                ? 'bg-venetian-brown/80 dark:bg-venetian-brown w-12 h-12 mx-auto flex items-center justify-center' 
+          <motion.div
+            className={`relative backdrop-blur-sm rounded-2xl shadow-sm overflow-hidden transition-all duration-500 ${isScrolled
+                ? 'bg-venetian-brown/80 dark:bg-venetian-brown w-12 h-12 mx-auto flex items-center justify-center'
                 : 'bg-gradient-to-b from-venetian-brown/80 to-venetian-brown/70 dark:from-venetian-brown dark:to-venetian-brown/90 w-full'
-            }`}
+              }`}
             animate={{
               borderRadius: isScrolled ? '9999px' : '1rem',
             }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            whileHover={{ 
+            whileHover={{
               scale: isScrolled ? 1.05 : 1,
               transition: { duration: 0.3, ease: "easeOut" }
             }}
@@ -65,7 +65,7 @@ export function Navbar() {
             ) : (
               <div className="px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
-                  <motion.div 
+                  <motion.div
                     className="flex-shrink-0 flex items-center space-x-3"
                   >
                     <Link to="/">
@@ -81,14 +81,14 @@ export function Navbar() {
                       <p className="text-[10px] text-venetian-sandstone/80 font-medium tracking-wider">VENEZIA • EST. 1955</p>
                     </div>
                   </motion.div>
-                  
+
                   <div className="hidden md:flex items-center">
                     <div className="flex space-x-6 mx-6">
                       {navItems.map((item) => (
                         <motion.div
                           key={item.name}
                           whileHover={{ y: -2 }}
-                          transition={{ 
+                          transition={{
                             type: "spring",
                             stiffness: 300,
                             damping: 10
@@ -96,18 +96,16 @@ export function Navbar() {
                         >
                           <Link
                             to={item.path}
-                            className={`relative text-sm text-venetian-sandstone hover:text-white font-medium tracking-wide transition-colors duration-300 ${
-                              location.pathname === item.path ? 'text-white' : ''
-                            }`}
+                            className={`relative text-sm text-venetian-sandstone hover:text-white font-medium tracking-wide transition-colors duration-300 ${location.pathname === item.path ? 'text-white' : ''
+                              }`}
                           >
                             {item.name}
-                            <motion.span 
-                              className={`absolute inset-x-0 bottom-0 h-0.5 bg-venetian-gold ${
-                                location.pathname === item.path ? 'scale-x-100' : 'scale-x-0'
-                              }`}
+                            <motion.span
+                              className={`absolute inset-x-0 bottom-0 h-0.5 bg-venetian-gold ${location.pathname === item.path ? 'scale-x-100' : 'scale-x-0'
+                                }`}
                               initial={false}
-                              animate={{ 
-                                scaleX: location.pathname === item.path ? 1 : 0 
+                              animate={{
+                                scaleX: location.pathname === item.path ? 1 : 0
                               }}
                               transition={{ duration: 0.4, ease: "easeInOut" }}
                             />
@@ -128,7 +126,7 @@ export function Navbar() {
                       className="ml-6"
                     >
                       <Link to="/reserve">
-                        <Button 
+                        <Button
                           size="sm"
                           className="bg-venetian-gold/90 text-venetian-brown hover:bg-venetian-gold transition-colors duration-300 shadow-sm rounded-lg"
                         >
@@ -138,7 +136,7 @@ export function Navbar() {
                     </motion.div>
                   </div>
 
-                  <motion.div 
+                  <motion.div
                     className="md:hidden"
                     whileTap={{ scale: 0.9 }}
                     transition={{ duration: 0.2 }}
@@ -173,7 +171,7 @@ export function Navbar() {
                   key={item.name}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.1,
                     duration: 0.4,
                     ease: "easeOut"
@@ -181,11 +179,10 @@ export function Navbar() {
                 >
                   <Link
                     to={item.path}
-                    className={`block py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300 ${
-                      location.pathname === item.path
+                    className={`block py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300 ${location.pathname === item.path
                         ? 'bg-white/10 text-white'
                         : 'text-venetian-sandstone hover:text-white hover:bg-white/5'
-                    }`}
+                      }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.name}
@@ -195,7 +192,7 @@ export function Navbar() {
               <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ 
+                transition={{
                   delay: navItems.length * 0.1,
                   duration: 0.4,
                   ease: "easeOut"
@@ -225,7 +222,7 @@ export function Navbar() {
                   key={item.name}
                   initial={{ x: 10, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.1,
                     duration: 0.4,
                     ease: "easeOut"
@@ -233,9 +230,8 @@ export function Navbar() {
                 >
                   <Link
                     to={item.path}
-                    className={`block px-4 py-2 text-sm font-medium text-venetian-sandstone hover:text-white hover:bg-white/5 transition-colors duration-300 ${
-                      location.pathname === item.path ? 'text-white bg-white/10' : ''
-                    }`}
+                    className={`block px-4 py-2 text-sm font-medium text-venetian-sandstone hover:text-white hover:bg-white/5 transition-colors duration-300 ${location.pathname === item.path ? 'text-white bg-white/10' : ''
+                      }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.name}
@@ -245,7 +241,7 @@ export function Navbar() {
               <motion.div
                 initial={{ x: 10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ 
+                transition={{
                   delay: navItems.length * 0.1,
                   duration: 0.4,
                   ease: "easeOut"

@@ -10,6 +10,7 @@ import { AdminPage } from './pages/AdminPage';
 import { LoginPage } from './pages/LoginPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { MessagesPage } from './pages/MessagesPage';
+import { MyReservationsPage } from './pages/MyReservationsPage';
 import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './components/AuthProvider';
 import { LanguageProvider } from './components/LanguageProvider';
@@ -46,6 +47,7 @@ function AppRoutes() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/reserve" element={<ReservePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/my-reservations" element={<MyReservationsPage />} />
         <Route path="/admin" element={<LoginPage />} />
         <Route
           path="/admin/dashboard"
