@@ -241,7 +241,7 @@ export function ContactPage() {
                   {
                     icon: Clock,
                     title: 'Opening Hours',
-                    content: 'Open Daily: 11:00 - 23:00\nClosed on Thursday'
+                    content: 'Open Daily: 11:00 - 23:00\nClosed on Tuesday'
                   },
                   {
                     icon: Phone,

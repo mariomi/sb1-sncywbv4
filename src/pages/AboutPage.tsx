@@ -32,13 +32,13 @@ export function AboutPage() {
     <PageTransition>
       <div className="min-h-screen bg-venetian-sandstone/20 pt-24">
         {/* Hero Section */}
-        <motion.section 
+        <motion.section
           className="relative h-[60vh] overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: 'url("https://venicelover.com/images/things_to_do_in_venice_italy.jpg")'
@@ -47,13 +47,13 @@ export function AboutPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-venetian-brown/70 to-venetian-brown/90" />
           <div className="relative h-full flex items-center justify-center text-center px-4">
             <div className="max-w-3xl">
-              <motion.h1 
+              <motion.h1
                 className="text-5xl sm:text-6xl md:text-7xl font-serif text-white mb-6"
                 {...fadeIn}
               >
                 Our Story
               </motion.h1>
-              <motion.p 
+              <motion.p
                 className="text-xl text-venetian-sandstone"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -66,7 +66,7 @@ export function AboutPage() {
         </motion.section>
 
         {/* Stats Section */}
-        <motion.section 
+        <motion.section
           className="relative -mt-16 z-10 px-4 sm:px-6 lg:px-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -80,7 +80,7 @@ export function AboutPage() {
                   className="bg-white/95 rounded-2xl p-6 text-center shadow-lg"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.1,
                     duration: 0.4,
                     ease: "easeOut"
@@ -97,7 +97,7 @@ export function AboutPage() {
         </motion.section>
 
         {/* History Section */}
-        <motion.section 
+        <motion.section
           className="py-20 px-4 sm:px-6 lg:px-8"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -115,14 +115,14 @@ export function AboutPage() {
                 <h2 className="text-4xl font-serif text-venetian-brown mb-6">Our Heritage</h2>
                 <div className="space-y-4 text-lg text-venetian-brown/80">
                   <p>
-                    Founded in 1955 by the Rossi family, Al Gobbo di Rialto has been a cornerstone 
-                    of Venetian culinary excellence for over six decades. Our restaurant takes its 
-                    name from the iconic Gobbo di Rialto statue, a historic landmark that has 
+                    Founded in 1955 by the Rossi family, Al Gobbo di Rialto has been a cornerstone
+                    of Venetian culinary excellence for over six decades. Our restaurant takes its
+                    name from the iconic Gobbo di Rialto statue, a historic landmark that has
                     witnessed centuries of Venice's rich history.
                   </p>
                   <p>
-                    What began as a modest osteria has evolved into one of Venice's most 
-                    celebrated dining destinations, maintaining our commitment to traditional 
+                    What began as a modest osteria has evolved into one of Venice's most
+                    celebrated dining destinations, maintaining our commitment to traditional
                     Venetian cuisine and warm hospitality.
                   </p>
                 </div>
@@ -135,7 +135,7 @@ export function AboutPage() {
                 className="group"
               >
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl transform transition-transform duration-500 group-hover:scale-[1.02]">
-                  <img 
+                  <img
                     src="https://lh3.googleusercontent.com/p/AF1QipNtmONU-ttdk2MO0fstFTJz3s6fXvtRvtDwr9xk=s1360-w1360-h1020"
                     alt="Historic Venice"
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -148,7 +148,7 @@ export function AboutPage() {
         </motion.section>
 
         {/* Philosophy Section */}
-        <motion.section 
+        <motion.section
           className="py-20 bg-venetian-brown/5 px-4 sm:px-6 lg:px-8"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -164,7 +164,7 @@ export function AboutPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <img 
+                <img
                   src="https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
                   alt="Our Philosophy"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -181,14 +181,14 @@ export function AboutPage() {
                 <h2 className="text-4xl font-serif text-venetian-brown mb-6">Our Philosophy</h2>
                 <div className="space-y-4 text-lg text-venetian-brown/80">
                   <p>
-                    At Al Gobbo di Rialto, we believe in preserving the authenticity of Venetian 
-                    cuisine while embracing innovation. Our philosophy is rooted in three core principles: 
-                    respect for traditional recipes, commitment to local ingredients, and dedication to 
+                    At Al Gobbo di Rialto, we believe in preserving the authenticity of Venetian
+                    cuisine while embracing innovation. Our philosophy is rooted in three core principles:
+                    respect for traditional recipes, commitment to local ingredients, and dedication to
                     exceptional service.
                   </p>
                   <p>
-                    Every dish we serve tells a story of Venice's rich culinary heritage, enhanced by 
-                    our chef's contemporary interpretations and presented with the elegance our guests 
+                    Every dish we serve tells a story of Venice's rich culinary heritage, enhanced by
+                    our chef's contemporary interpretations and presented with the elegance our guests
                     have come to expect.
                   </p>
                 </div>
@@ -198,7 +198,7 @@ export function AboutPage() {
         </motion.section>
 
         {/* Contact Information */}
-        <motion.section 
+        <motion.section
           className="py-20 px-4 sm:px-6 lg:px-8"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -218,7 +218,7 @@ export function AboutPage() {
                   {
                     icon: Clock,
                     title: 'Hours',
-                    content: 'Open Daily: 11:00 - 23:00\nClosed on Thursday'
+                    content: 'Open Daily: 11:00 - 23:00\nClosed on Tuesday'
                   },
                   {
                     icon: Phone,
