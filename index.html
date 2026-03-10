@@ -1,11 +1,146 @@
 <!doctype html>
-<html lang="en">
+<html lang="it">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ristorante al Gobbo di Rialto</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Veneziana:wght@400&display=swap" rel="stylesheet">
+
+    <!-- Primary Meta Tags -->
+    <title>Ristorante Al Gobbo di Rialto | Cucina Veneziana dal 1955 – Venezia</title>
+    <meta name="title" content="Ristorante Al Gobbo di Rialto | Cucina Veneziana dal 1955 – Venezia" />
+    <meta name="description" content="Ristorante storico a Venezia dal 1955. Cucina veneziana autentica: pesce fresco della laguna, risotti, paste fatte in casa e pizze artigianali. Prenota il tuo tavolo online – San Polo 649." />
+    <meta name="keywords" content="ristorante venezia, cucina veneziana, pesce fresco venezia, ristorante rialto, al gobbo di rialto, pizzeria venezia, risotto di mare venezia, prenotazione ristorante venezia, osteria venezia, san polo venezia, ristorante tipico venezia" />
+    <meta name="author" content="Ristorante Al Gobbo di Rialto" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.ristorantealgobbodirialto.it/" />
+
+    <!-- Hreflang for multilingual SEO -->
+    <link rel="alternate" hreflang="it" href="https://www.ristorantealgobbodirialto.it/" />
+    <link rel="alternate" hreflang="en" href="https://www.ristorantealgobbodirialto.it/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://www.ristorantealgobbodirialto.it/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="restaurant" />
+    <meta property="og:url" content="https://www.ristorantealgobbodirialto.it/" />
+    <meta property="og:title" content="Ristorante Al Gobbo di Rialto | Cucina Veneziana dal 1955" />
+    <meta property="og:description" content="Autentica cucina veneziana nel cuore di Venezia. Pesce fresco della laguna, risotti, pizze artigianali. Prenota il tuo tavolo a San Polo 649." />
+    <meta property="og:image" content="https://www.ristorantealgobbodirialto.it/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:locale:alternate" content="en_GB" />
+    <meta property="og:site_name" content="Ristorante Al Gobbo di Rialto" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://www.ristorantealgobbodirialto.it/" />
+    <meta name="twitter:title" content="Ristorante Al Gobbo di Rialto | Cucina Veneziana dal 1955" />
+    <meta name="twitter:description" content="Autentica cucina veneziana nel cuore di Venezia. Pesce fresco, risotti della laguna, pizze artigianali." />
+    <meta name="twitter:image" content="https://www.ristorantealgobbodirialto.it/og-image.jpg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Theme color for browser UI -->
+    <meta name="theme-color" content="#5C4033" />
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+
+    <!-- JSON-LD: Restaurant structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "@id": "https://www.ristorantealgobbodirialto.it/#restaurant",
+      "name": "Ristorante Al Gobbo di Rialto",
+      "alternateName": "Al Gobbo di Rialto",
+      "url": "https://www.ristorantealgobbodirialto.it",
+      "telephone": "+390415204603",
+      "email": "info@ristorantealgobbodirialto.it",
+      "foundingDate": "1955",
+      "description": "Ristorante veneziano storico dal 1955 nel cuore di San Polo. Cucina veneziana autentica con pesce fresco della laguna, risotti, paste fatte in casa e pizze artigianali.",
+      "image": [
+        "https://www.ristorantealgobbodirialto.it/og-image.jpg"
+      ],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Sestiere San Polo 649",
+        "addressLocality": "Venezia",
+        "addressRegion": "VE",
+        "postalCode": "30125",
+        "addressCountry": "IT"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 45.4380,
+        "longitude": 12.3350
+      },
+      "hasMap": "https://maps.google.com/?q=Sestiere+San+Polo+649,+Venezia",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "opens": "11:00",
+          "closes": "23:00"
+        }
+      ],
+      "servesCuisine": ["Veneziana", "Italiana", "Pesce", "Pizza", "Seafood"],
+      "priceRange": "€€",
+      "paymentAccepted": "Cash, Credit Card",
+      "currenciesAccepted": "EUR",
+      "hasMenu": "https://www.ristorantealgobbodirialto.it/menu",
+      "reservations": "https://www.ristorantealgobbodirialto.it/reserve",
+      "acceptsReservations": true,
+      "sameAs": [
+        "https://www.facebook.com/ristorantealgobbodirialto",
+        "https://www.tripadvisor.it/Restaurant_Review-g187870-d20083361-Reviews-Ristorante_Pizzeria_Al_Gobbo_di_Rialto-Venice_Veneto.html"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "reviewCount": "250",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD: LocalBusiness (duplicated breadcrumb for local search) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.ristorantealgobbodirialto.it/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Menu",
+          "item": "https://www.ristorantealgobbodirialto.it/menu"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Prenota",
+          "item": "https://www.ristorantealgobbodirialto.it/reserve"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Chi Siamo",
+          "item": "https://www.ristorantealgobbodirialto.it/about"
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

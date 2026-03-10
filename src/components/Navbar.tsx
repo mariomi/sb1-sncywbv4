@@ -27,7 +27,7 @@ export function Navbar() {
     { name: t('nav.menu'), path: '/menu' },
     { name: t('nav.about'), path: '/about' },
     { name: t('nav.contact'), path: '/contact' },
-    { name: 'My Reservations', path: '/my-reservations' }
+    { name: t('nav.myReservations'), path: '/my-reservations' }
   ];
 
   return (
