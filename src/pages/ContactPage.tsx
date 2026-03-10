@@ -5,6 +5,7 @@ import { Button } from '../components/Button';
 import { PageTransition } from '../components/PageTransition';
 import toast from 'react-hot-toast';
 import img2947 from '../Img/G1/IMG_2947.JPEG';
+import { createContactMessage } from '../lib/api';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -35,8 +36,13 @@ export function ContactPage() {
     setIsSubmitting(true);
     
     try {
-      // Add your form submission logic here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      await createContactMessage({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      });
       toast.success('Message sent successfully!');
       setFormData({
         firstName: '',
