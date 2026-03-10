@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, MapPin, Phone, Mail, ChefHat, Users, Utensils, Fish, Star, Award } from 'lucide-react';
+import { Clock, MapPin, Phone, Mail, ChefHat, Star, Fish } from 'lucide-react';
 import { PageTransition } from '../components/PageTransition';
 import { Link } from 'react-router-dom';
 import img2960 from '../Img/G1/IMG_2960.JPEG';
-import img2978 from '../Img/G1/IMG_2978.JPEG';
 import img2962 from '../Img/G1/IMG_2962.JPEG';
 import img2985 from '../Img/food/IMG_2985.JPEG';
 
@@ -16,30 +15,30 @@ const fadeIn = {
 
 const stats = [
   { icon: ChefHat, value: '1955', label: 'Anno di fondazione' },
-  { icon: Users, value: '3ª', label: 'Generazione di famiglia' },
+  { icon: Star, value: "2025", label: "Travellers' Choice TripAdvisor" },
   { icon: Fish, value: 'Ogni mattina', label: 'Pesce dal Mercato di Rialto' },
 ];
 
 const timeline = [
   {
+    year: '1541',
+    title: 'Il Gobbo di Rialto',
+    text: 'La statua del Gobbo viene collocata in Campo San Giacomo di Rialto, diventando il simbolo più riconoscibile del cuore mercantile di Venezia. Per secoli il Gobbo veglia sul mercato, sui canali e sulla vita quotidiana della città — testimone silenzioso di ogni voce, ogni contrattazione, ogni storia.'
+  },
+  {
     year: '1955',
     title: 'Le Origini',
-    text: 'La famiglia Rossi apre una piccola osteria a San Polo 649, a pochi passi dal Ponte di Rialto. Il nome omaggia il Gobbo di Rialto, la storica statua che da secoli testimonia la vita del mercato veneziano.'
+    text: 'Il ristorante apre i battenti a San Polo 649, a pochi passi dal Ponte di Rialto e dall\'antico Ramo della Dogana da Terra. Il nome omaggia il Gobbo di Rialto: come lui, questo locale nasce per restare — radicato nel quartiere, fedele alla cucina della laguna.'
   },
   {
-    year: '1980',
-    title: 'La Seconda Generazione',
-    text: 'Il figlio prende le redini della cucina e amplia il menu pur mantenendo intatte le ricette originali. Arrivano le prime guide turistiche internazionali a consigliarlo come "autentica cucina veneziana".'
-  },
-  {
-    year: '2000',
-    title: 'Riconoscimenti',
-    text: 'TripAdvisor, Gambero Rosso e le principali guide gastronomiche confermano Al Gobbo tra i migliori ristoranti di pesce a Venezia. I tavoli si prenotano con settimane di anticipo.'
+    year: '2022',
+    title: 'Un Riconoscimento Istituzionale',
+    text: 'Il Conservatorio di Musica "Benedetto Marcello" di Venezia sceglie Al Gobbo di Rialto per ospitare la cena ufficiale del Premio Malanotte, confermando il locale come punto di riferimento della ristorazione veneziana per eventi istituzionali e gruppi.'
   },
   {
     year: 'Oggi',
-    title: 'La Terza Generazione',
-    text: "La terza generazione porta innovazione nella presentazione mantenendo l'anima autentica. Stessa laguna, stesse ricette, stessa passione — servite a te, questa sera."
+    title: 'Tradizione e Rinnovamento',
+    text: "Dopo una recente ristrutturazione, Al Gobbo si presenta con un volto nuovo senza mai perdere l'anima. Cucina veneta autentica, pizza, pesce fresco della laguna ogni mattina dal mercato di Rialto — a duecento metri dalla porta. Travellers' Choice TripAdvisor 2025."
   }
 ];
 
@@ -88,7 +87,7 @@ export function AboutPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                Tre generazioni di cucina veneziana autentica nel cuore di Venezia
+                Settant'anni di cucina veneziana autentica nel cuore di Venezia
               </motion.p>
             </div>
           </div>
@@ -144,14 +143,16 @@ export function AboutPage() {
                 <div className="w-12 h-0.5 bg-venetian-gold mb-7" />
                 <div className="space-y-5 text-lg text-venetian-brown/75 dark:text-venetian-sandstone/70 leading-relaxed">
                   <p>
-                    Fondato nel 1955 dalla famiglia Rossi, Al Gobbo di Rialto prende il nome
-                    dall'iconico Gobbo di Rialto — la statua che da secoli osserva silenziosa
-                    il cuore mercantile di Venezia. Come lei, anche noi siamo rimasti.
+                    Aperto nel 1955 a San Polo 649, Al Gobbo di Rialto prende il nome
+                    dall'iconico Gobbo — la statua collocata in Campo San Giacomo di Rialto
+                    nel 1541, simbolo per secoli del cuore mercantile di Venezia. Come lei,
+                    anche noi siamo rimasti.
                   </p>
                   <p>
-                    Quella che era una modesta osteria si è trasformata in una delle tavole
-                    più amate di Venezia, senza mai tradire la sua anima: cucina veneziana
-                    onesta, ingredienti freschi della laguna, ospitalità autentica.
+                    Quello che era un semplice locale di quartiere si è affermato come una
+                    delle tavole più apprezzate di Venezia, senza mai tradire la sua anima:
+                    cucina veneziana onesta, ingredienti freschi della laguna, ospitalità
+                    autentica.
                   </p>
                 </div>
               </motion.div>
