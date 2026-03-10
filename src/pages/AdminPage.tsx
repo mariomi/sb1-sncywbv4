@@ -24,6 +24,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { Button } from '../components/Button';
+import { Link } from 'react-router-dom';
 import { format, parseISO, isToday, isTomorrow, addDays, subDays } from 'date-fns';
 import { useAuth } from '../components/AuthProvider';
 import { cn } from '../lib/utils';
@@ -274,6 +275,14 @@ export function AdminPage() {
             </h2>
           </div>
           <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
+            <Link to="/messages">
+              <Button
+                className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Messaggi
+              </Button>
+            </Link>
             <Button
               onClick={() => setShowClosedDatesModal(true)}
               className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
@@ -283,7 +292,7 @@ export function AdminPage() {
             </Button>
             <Button
               onClick={() => setShowTimeSlotsModal(true)}
-              className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+              className="bg-venetian-brown text-white hover:bg-venetian-gold dark:text-venetian-brown"
             >
               <Settings className="w-4 h-4 mr-2" />
               Manage Time Slots
