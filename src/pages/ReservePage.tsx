@@ -23,6 +23,36 @@ type TimeSlot = {
   remainingCapacity: number;
 };
 
+// Common country phone prefixes
+const PHONE_PREFIXES = [
+  { code: '+39', flag: '🇮🇹', label: 'Italia (+39)' },
+  { code: '+44', flag: '🇬🇧', label: 'UK (+44)' },
+  { code: '+33', flag: '🇫🇷', label: 'France (+33)' },
+  { code: '+49', flag: '🇩🇪', label: 'Deutschland (+49)' },
+  { code: '+34', flag: '🇪🇸', label: 'España (+34)' },
+  { code: '+1',  flag: '🇺🇸', label: 'USA/CA (+1)' },
+  { code: '+31', flag: '🇳🇱', label: 'Nederland (+31)' },
+  { code: '+41', flag: '🇨🇭', label: 'Schweiz (+41)' },
+  { code: '+43', flag: '🇦🇹', label: 'Österreich (+43)' },
+  { code: '+32', flag: '🇧🇪', label: 'Belgique (+32)' },
+  { code: '+351', flag: '🇵🇹', label: 'Portugal (+351)' },
+  { code: '+46', flag: '🇸🇪', label: 'Sverige (+46)' },
+  { code: '+47', flag: '🇳🇴', label: 'Norge (+47)' },
+  { code: '+45', flag: '🇩🇰', label: 'Danmark (+45)' },
+  { code: '+358', flag: '🇫🇮', label: 'Suomi (+358)' },
+  { code: '+48', flag: '🇵🇱', label: 'Polska (+48)' },
+  { code: '+420', flag: '🇨🇿', label: 'Česko (+420)' },
+  { code: '+36', flag: '🇭🇺', label: 'Magyarország (+36)' },
+  { code: '+40', flag: '🇷🇴', label: 'România (+40)' },
+  { code: '+30', flag: '🇬🇷', label: 'Ελλάδα (+30)' },
+  { code: '+55', flag: '🇧🇷', label: 'Brasil (+55)' },
+  { code: '+81', flag: '🇯🇵', label: '日本 (+81)' },
+  { code: '+86', flag: '🇨🇳', label: '中国 (+86)' },
+  { code: '+91', flag: '🇮🇳', label: 'India (+91)' },
+  { code: '+61', flag: '🇦🇺', label: 'Australia (+61)' },
+  { code: 'other', flag: '🌍', label: 'Altro / Other...' },
+];
+
 export function ReservePage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<ReservationFormData>({
@@ -36,6 +66,9 @@ export function ReservePage() {
     special_requests: '',
     marketing_consent: false
   });
+  const [phonePrefix, setPhonePrefix] = useState('+39');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [customPrefix, setCustomPrefix] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -43,6 +76,12 @@ export function ReservePage() {
   const [closedDates, setClosedDates] = useState<string[]>([]);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
+
+  // Keep formData.phone in sync whenever prefix or number changes
+  useEffect(() => {
+    const prefix = phonePrefix === 'other' ? customPrefix : phonePrefix;
+    setFormData(prev => ({ ...prev, phone: prefix && phoneNumber ? `${prefix} ${phoneNumber}` : '' }));
+  }, [phonePrefix, phoneNumber, customPrefix]);
 
   const today = new Date().toISOString().split('T')[0];
   const maxDate = new Date();
@@ -230,13 +269,52 @@ export function ReservePage() {
                     <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
                       Phone Number
                     </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
-                      required
-                    />
+                    {/* Prefix selector + number input */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex rounded-lg border border-venetian-brown/20 focus-within:border-venetian-gold focus-within:ring-1 focus-within:ring-venetian-gold overflow-hidden bg-white/50">
+                        <select
+                          value={phonePrefix}
+                          onChange={(e) => {
+                            setPhonePrefix(e.target.value);
+                            if (e.target.value !== 'other') setCustomPrefix('');
+                          }}
+                          className="shrink-0 bg-venetian-brown/5 border-r border-venetian-brown/20 text-venetian-brown/80 text-sm font-medium px-2 py-2 focus:outline-none cursor-pointer"
+                          aria-label="Country code"
+                        >
+                          {PHONE_PREFIXES.map((p) => (
+                            <option key={p.code} value={p.code}>
+                              {p.flag} {p.code !== 'other' ? p.code : 'Altro…'}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9\s\-]/g, ''))}
+                          placeholder="041 520 4603"
+                          className="flex-1 px-4 py-2 bg-transparent focus:outline-none min-w-0"
+                          required
+                        />
+                      </div>
+                      {/* Custom prefix input shown only when "other" is selected */}
+                      {phonePrefix === 'other' && (
+                        <input
+                          type="text"
+                          value={customPrefix}
+                          onChange={(e) => setCustomPrefix(e.target.value.replace(/[^0-9+]/g, ''))}
+                          placeholder="+00 Inserisci prefisso"
+                          className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-sm"
+                          maxLength={7}
+                          required={phonePrefix === 'other'}
+                        />
+                      )}
+                      {/* Show full number preview */}
+                      {phoneNumber && (
+                        <p className="text-xs text-venetian-brown/50 pl-1">
+                          Numero completo: {phonePrefix === 'other' ? customPrefix : phonePrefix} {phoneNumber}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-venetian-brown/80 mb-2">

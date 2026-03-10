@@ -111,7 +111,10 @@ export function ContactPage() {
                     <input
                       type="text"
                       id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
                       className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                      required
                     />
                   </div>
                   <div>
@@ -121,7 +124,10 @@ export function ContactPage() {
                     <input
                       type="text"
                       id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
                       className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                      required
                     />
                   </div>
                 </div>
@@ -132,7 +138,10 @@ export function ContactPage() {
                   <input
                     type="email"
                     id="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                    required
                   />
                 </div>
                 <div>
@@ -141,6 +150,8 @@ export function ContactPage() {
                   </label>
                   <select
                     id="subject"
+                    value={formData.subject}
+                    onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
                     className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
                   >
                     <option value="reservation">Make a Reservation</option>
@@ -156,7 +167,10 @@ export function ContactPage() {
                   <textarea
                     id="message"
                     rows={4}
+                    value={formData.message}
+                    onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                     className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                    required
                   ></textarea>
                 </div>
 
