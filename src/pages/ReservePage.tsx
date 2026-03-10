@@ -230,13 +230,22 @@ export function ReservePage() {
                     <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
                       Phone Number
                     </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
-                      required
-                    />
+                    <div className="flex rounded-lg border border-venetian-brown/20 focus-within:border-venetian-gold focus-within:ring-1 focus-within:ring-venetian-gold overflow-hidden bg-white/50">
+                      <span className="flex items-center px-3 bg-venetian-brown/5 border-r border-venetian-brown/20 text-venetian-brown/70 text-sm font-medium select-none whitespace-nowrap">
+                        🇮🇹 +39
+                      </span>
+                      <input
+                        type="tel"
+                        value={formData.phone.replace(/^\+39\s?/, '')}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/[^0-9\s\-]/g, '');
+                          setFormData(prev => ({ ...prev, phone: `+39 ${digits}` }));
+                        }}
+                        placeholder="041 520 4603"
+                        className="flex-1 px-4 py-2 bg-transparent focus:outline-none"
+                        required
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
