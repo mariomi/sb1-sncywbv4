@@ -396,3 +396,22 @@ export type RecurringClosure = {
   active: boolean;
   created_at: string;
 };
+
+export async function createContactMessage(data: {
+  first_name: string;
+  last_name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  try {
+    const { error } = await supabase
+      .from('contact_messages')
+      .insert({ ...data, status: 'unread' });
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error saving contact message:', error);
+    throw error;
+  }
+}
