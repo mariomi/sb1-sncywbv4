@@ -62,15 +62,15 @@ export function ContactPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-venetian-sandstone/20 pt-24">
+      <div className="min-h-screen bg-venetian-sandstone/20 pt-20 sm:pt-24">
         {/* Hero Section */}
-        <motion.section 
-          className="relative h-[40vh] overflow-hidden"
+        <motion.section
+          className="relative h-[28vh] sm:h-[40vh] overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: `url(${img2947})`
@@ -79,14 +79,14 @@ export function ContactPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-venetian-brown/70 to-venetian-brown/90" />
           <div className="relative h-full flex items-center justify-center text-center px-4">
             <div className="max-w-3xl">
-              <motion.h1 
-                className="text-5xl sm:text-6xl font-serif text-white mb-4"
+              <motion.h1
+                className="text-3xl sm:text-5xl lg:text-6xl font-serif text-white mb-2 sm:mb-4"
                 {...fadeIn}
               >
                 Contact Us
               </motion.h1>
-              <motion.p 
-                className="text-xl text-venetian-sandstone"
+              <motion.p
+                className="text-base sm:text-xl text-venetian-sandstone"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -98,20 +98,20 @@ export function ContactPage() {
         </motion.section>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-6 sm:-mt-16 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-4 sm:gap-8">
             {/* Contact Form */}
             <motion.div
-              className="bg-white/95 rounded-2xl shadow-xl p-8"
+              className="bg-white/95 rounded-2xl shadow-xl p-4 sm:p-8"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl font-serif text-venetian-brown mb-6">Send us a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-6">
+              <h2 className="text-2xl sm:text-3xl font-serif text-venetian-brown mb-4 sm:mb-6">Send us a Message</h2>
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-venetian-brown/80 mb-1">
+                    <label htmlFor="firstName" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                       First Name
                     </label>
                     <input
@@ -119,12 +119,12 @@ export function ContactPage() {
                       id="firstName"
                       value={formData.firstName}
                       onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                      className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-venetian-brown/80 mb-1">
+                    <label htmlFor="lastName" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                       Last Name
                     </label>
                     <input
@@ -132,13 +132,13 @@ export function ContactPage() {
                       id="lastName"
                       value={formData.lastName}
                       onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                      className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-venetian-brown/80 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                     Email
                   </label>
                   <input
@@ -146,19 +146,19 @@ export function ContactPage() {
                     id="email"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-venetian-brown/80 mb-1">
+                  <label htmlFor="subject" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                     Subject
                   </label>
                   <select
                     id="subject"
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                    className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                   >
                     <option value="reservation">Make a Reservation</option>
                     <option value="event">Private Event Inquiry</option>
@@ -167,7 +167,7 @@ export function ContactPage() {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-venetian-brown/80 mb-1">
+                  <label htmlFor="message" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                     Message
                   </label>
                   <textarea
@@ -175,7 +175,7 @@ export function ContactPage() {
                     rows={4}
                     value={formData.message}
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                    className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                     required
                   ></textarea>
                 </div>
@@ -231,7 +231,7 @@ export function ContactPage() {
 
             {/* Contact Information */}
             <motion.div
-              className="space-y-8"
+              className="space-y-4 sm:space-y-8"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
@@ -241,7 +241,7 @@ export function ContactPage() {
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2799.935720139675!2d12.333893776271696!3d45.43802573632649!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x477eb1c7fefa139f%3A0x5a3c4b0e784ea266!2sPonte%20di%20Rialto!5e0!3m2!1sen!2sus!4v1709294611439!5m2!1sen!2sus"
                   width="100%"
-                  height="300"
+                  height="220"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
@@ -251,7 +251,7 @@ export function ContactPage() {
               </div>
 
               {/* Info Cards */}
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {[
                   {
                     icon: MapPin,
@@ -276,15 +276,15 @@ export function ContactPage() {
                 ].map((item, index) => (
                   <motion.div
                     key={item.title}
-                    className="bg-white/95 rounded-xl shadow-lg p-6"
+                    className="bg-white/95 rounded-xl shadow-lg p-4 sm:p-6"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
                     whileHover={{ scale: 1.02 }}
                   >
-                    <item.icon className="w-6 h-6 text-venetian-gold mb-3" />
-                    <h3 className="text-lg font-serif text-venetian-brown mb-2">{item.title}</h3>
-                    <p className="text-venetian-brown/70 whitespace-pre-line">{item.content}</p>
+                    <item.icon className="w-5 h-5 text-venetian-gold mb-2" />
+                    <h3 className="text-base sm:text-lg font-serif text-venetian-brown mb-1">{item.title}</h3>
+                    <p className="text-sm text-venetian-brown/70 whitespace-pre-line leading-snug">{item.content}</p>
                   </motion.div>
                 ))}
               </div>
@@ -321,7 +321,7 @@ export function ContactPage() {
 
           {/* Additional Information */}
           <motion.div
-            className="mt-12 bg-white/80 rounded-xl p-6 text-center"
+            className="mt-6 sm:mt-12 bg-white/80 rounded-xl p-4 sm:p-6 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}

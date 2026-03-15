@@ -66,7 +66,7 @@ export function ReservePage() {
     special_requests: '',
     marketing_consent: false
   });
-  const [phonePrefix, setPhonePrefix] = useState('+39');
+  const [phonePrefix, setPhonePrefix] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [customPrefix, setCustomPrefix] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -189,10 +189,10 @@ export function ReservePage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-venetian-sandstone/20 pt-24">
+      <div className="min-h-screen bg-venetian-sandstone/20 pt-20 sm:pt-24">
         {/* Hero Section */}
         <motion.section
-          className="relative h-[40vh] overflow-hidden"
+          className="relative h-[28vh] sm:h-[40vh] overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -207,13 +207,13 @@ export function ReservePage() {
           <div className="relative h-full flex items-center justify-center text-center px-4">
             <div className="max-w-3xl">
               <motion.h1
-                className="text-5xl sm:text-6xl font-serif text-white mb-4"
+                className="text-3xl sm:text-5xl lg:text-6xl font-serif text-white mb-2 sm:mb-4"
                 {...fadeIn}
               >
                 Make a Reservation
               </motion.h1>
               <motion.p
-                className="text-xl text-venetian-sandstone"
+                className="text-base sm:text-xl text-venetian-sandstone"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -225,106 +225,108 @@ export function ReservePage() {
         </motion.section>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10 pb-20">
-          <div className="grid lg:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-6 sm:-mt-16 relative z-10 pb-16">
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
             {/* Reservation Form */}
             <motion.div
-              className="lg:col-span-2 bg-white/95 rounded-2xl shadow-xl p-8"
+              className="lg:col-span-2 bg-white/95 rounded-2xl shadow-xl p-4 sm:p-8"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl font-serif text-venetian-brown mb-6">Reservation Details</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <h2 className="text-2xl sm:text-3xl font-serif text-venetian-brown mb-4 sm:mb-6">Reservation Details</h2>
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 {/* Personal Information */}
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
+                    <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                       Full Name
                     </label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
+                    <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                       Email
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
+                    <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                       Phone Number
                     </label>
-                    {/* Prefix selector + number input */}
                     <div className="flex flex-col gap-2">
-                      <div className="flex rounded-lg border border-venetian-brown/20 focus-within:border-venetian-gold focus-within:ring-1 focus-within:ring-venetian-gold overflow-hidden bg-white/50">
-                        <select
-                          value={phonePrefix}
-                          onChange={(e) => {
-                            setPhonePrefix(e.target.value);
-                            if (e.target.value !== 'other') setCustomPrefix('');
-                          }}
-                          className="shrink-0 bg-venetian-brown/5 border-r border-venetian-brown/20 text-venetian-brown/80 text-sm font-medium px-2 py-2 focus:outline-none cursor-pointer"
-                          aria-label="Country code"
-                        >
-                          {PHONE_PREFIXES.map((p) => (
-                            <option key={p.code} value={p.code}>
-                              {p.flag} {p.code !== 'other' ? p.code : 'Altro…'}
-                            </option>
-                          ))}
-                        </select>
-                        <input
-                          type="tel"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9\s\-]/g, ''))}
-                          placeholder="041 520 4603"
-                          className="flex-1 px-4 py-2 bg-transparent focus:outline-none min-w-0"
-                          required
-                        />
-                      </div>
-                      {/* Custom prefix input shown only when "other" is selected */}
+                      {/* Prefix selector */}
+                      <select
+                        value={phonePrefix}
+                        onChange={(e) => {
+                          setPhonePrefix(e.target.value);
+                          if (e.target.value !== 'other') setCustomPrefix('');
+                        }}
+                        className="w-full px-3 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base text-venetian-brown/80 cursor-pointer"
+                        aria-label="Country code"
+                        required
+                      >
+                        <option value="" disabled>🌍 Select country code *</option>
+                        {PHONE_PREFIXES.map((p) => (
+                          <option key={p.code} value={p.code}>
+                            {p.flag} {p.label}
+                          </option>
+                        ))}
+                      </select>
+                      {/* Custom prefix input */}
                       {phonePrefix === 'other' && (
                         <input
                           type="text"
                           value={customPrefix}
                           onChange={(e) => setCustomPrefix(e.target.value.replace(/[^0-9+]/g, ''))}
-                          placeholder="+00 Inserisci prefisso"
-                          className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-sm"
+                          placeholder="+00 custom prefix"
+                          className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                           maxLength={7}
-                          required={phonePrefix === 'other'}
+                          required
                         />
                       )}
-                      {/* Show full number preview */}
-                      {phoneNumber && (
-                        <p className="text-xs text-venetian-brown/50 pl-1">
-                          Numero completo: {phonePrefix === 'other' ? customPrefix : phonePrefix} {phoneNumber}
-                        </p>
+                      {/* Number input — shown only after prefix is selected */}
+                      {phonePrefix && (
+                        <div className="flex rounded-lg border border-venetian-brown/20 focus-within:border-venetian-gold focus-within:ring-1 focus-within:ring-venetian-gold overflow-hidden bg-white/50">
+                          <span className="shrink-0 bg-venetian-brown/5 border-r border-venetian-brown/20 text-venetian-brown/70 text-sm font-medium px-3 flex items-center">
+                            {phonePrefix === 'other' ? (customPrefix || '?') : phonePrefix}
+                          </span>
+                          <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9\s\-]/g, ''))}
+                            placeholder="Number"
+                            className="flex-1 px-4 py-3 bg-transparent focus:outline-none text-base min-w-0"
+                            required
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
+                    <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                       <Users className="w-4 h-4 inline-block mr-2" />
                       Number of Guests
                     </label>
                     <select
                       value={formData.guests}
                       onChange={(e) => setFormData(prev => ({ ...prev, guests: Number(e.target.value) }))}
-                      className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                       required
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
@@ -337,22 +339,20 @@ export function ReservePage() {
                 </div>
 
                 {/* Date & Time Selection */}
-                <div className="grid sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
-                      <Calendar className="w-4 h-4 inline-block mr-2" />
-                      Date
-                    </label>
-                    <input
-                      type="date"
-                      min={today}
-                      max={maxDateString}
-                      value={formData.date}
-                      onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value, time: '' }))}
-                      className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
-                      required
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
+                    <Calendar className="w-4 h-4 inline-block mr-2" />
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    min={today}
+                    max={maxDateString}
+                    value={formData.date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value, time: '' }))}
+                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
+                    required
+                  />
                 </div>
 
                 {/* Time Slots */}
@@ -371,7 +371,7 @@ export function ReservePage() {
                         No available time slots for this date
                       </p>
                     ) : (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                      <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 gap-2">
                         {timeSlots.map((slot) => (
                           <motion.button
                             key={slot.time}
@@ -426,14 +426,14 @@ export function ReservePage() {
 
                 {/* Additional Information */}
                 <div>
-                  <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
+                  <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                     <ChefHat className="w-4 h-4 inline-block mr-2" />
                     Occasion (Optional)
                   </label>
                   <select
                     value={formData.occasion || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, occasion: e.target.value }))}
-                    className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                   >
                     <option value="">Select an occasion</option>
                     <option value="birthday">Birthday</option>
@@ -445,20 +445,20 @@ export function ReservePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-venetian-brown/80 mb-2">
+                  <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                     <UtensilsCrossed className="w-4 h-4 inline-block mr-2" />
                     Special Requests (Optional)
                   </label>
                   <textarea
                     value={formData.special_requests || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, special_requests: e.target.value }))}
-                    rows={4}
+                    rows={3}
                     placeholder="Dietary restrictions, allergies, seating preferences..."
-                    className="w-full px-4  py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                   />
                 </div>
 
-                <div className="space-y-4 mt-6">
+                <div className="space-y-3 mt-4">
                   <div className="flex items-start gap-2">
                     <input
                       type="checkbox"
@@ -517,13 +517,13 @@ export function ReservePage() {
 
             {/* Sidebar Information */}
             <motion.div
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
               {/* Reservation Policy */}
-              <div className="bg-white/95 rounded-2xl shadow-lg p-6">
+              <div className="bg-white/95 rounded-2xl shadow-lg p-4 sm:p-6">
                 <h3 className="text-xl font-serif text-venetian-brown mb-4 flex items-center">
                   <CalendarClock className="w-5 h-5 mr-2 text-venetian-gold" />
                   Reservation Policy
@@ -545,37 +545,37 @@ export function ReservePage() {
               </div>
 
               {/* Special Notes */}
-              <div className="bg-white/95 rounded-2xl shadow-lg p-6">
-                <h3 className="text-xl font-serif text-venetian-brown mb-4 flex items-center">
+              <div className="bg-white/95 rounded-2xl shadow-lg p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-serif text-venetian-brown mb-3 flex items-center">
                   <AlertCircle className="w-5 h-5 mr-2 text-venetian-gold" />
                   Important Information
                 </h3>
-                <ul className="space-y-3 text-venetian-brown/70">
+                <ul className="space-y-2 text-sm text-venetian-brown/70">
                   <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-venetian-gold" />
+                    <span className="w-1.5 h-1.5 mt-1.5 mr-2 shrink-0 rounded-full bg-venetian-gold" />
                     Tables are held for 15 minutes after reservation time
                   </li>
                   <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-venetian-gold" />
+                    <span className="w-1.5 h-1.5 mt-1.5 mr-2 shrink-0 rounded-full bg-venetian-gold" />
                     Cancellations must be made at least 24 hours in advance
                   </li>
                   <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-venetian-gold" />
+                    <span className="w-1.5 h-1.5 mt-1.5 mr-2 shrink-0 rounded-full bg-venetian-gold" />
                     Smart casual dress code is required
                   </li>
                 </ul>
               </div>
 
               {/* Featured */}
-              <div className="bg-venetian-brown/90 rounded-2xl shadow-lg p-6 text-white">
-                <h3 className="text-xl font-serif mb-4 flex items-center">
+              <div className="bg-venetian-brown/90 rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+                <h3 className="text-lg sm:text-xl font-serif mb-3 flex items-center">
                   <Wine className="w-5 h-5 mr-2 text-venetian-gold" />
                   Chef's Recommendation
                 </h3>
-                <p className="text-venetian-sandstone/90 mb-4">
+                <p className="text-sm text-venetian-sandstone/90 mb-3">
                   Join us for our special "Taste of Venice" tasting menu, available every evening with wine pairings.
                 </p>
-                <p className="text-sm text-venetian-sandstone/70">
+                <p className="text-xs text-venetian-sandstone/70">
                   Please note in special requests if you're interested in the tasting menu.
                 </p>
               </div>
@@ -593,12 +593,12 @@ export function ReservePage() {
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 overflow-hidden"
+                className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-3 overflow-hidden"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
               >
-                <div className="p-6 text-center">
+                <div className="p-5 sm:p-6 text-center">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
