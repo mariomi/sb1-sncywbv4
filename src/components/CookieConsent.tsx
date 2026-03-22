@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './Button';
-import { Cookie, X } from 'lucide-react';
+import { Cookie } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function CookieConsent() {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Clock, Phone, Mail, Instagram, Facebook, Utensils } from 'lucide-react';
+import { MapPin, Clock, Phone, Mail, Facebook, Utensils } from 'lucide-react';
 import { Button } from '../components/Button';
 import { PageTransition } from '../components/PageTransition';
 import toast from 'react-hot-toast';
@@ -53,7 +53,7 @@ export function ContactPage() {
       });
       setPrivacyConsent(false);
       setMarketingConsent(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);

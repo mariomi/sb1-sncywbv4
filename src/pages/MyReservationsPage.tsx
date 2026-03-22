@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Users, Search, AlertCircle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { Calendar, Clock, Users, Search, Loader2, XCircle } from 'lucide-react';
 import { Button } from '../components/Button';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -16,7 +16,7 @@ const fadeIn = {
 
 export function MyReservationsPage() {
     const [email, setEmail] = useState('');
-    const [reservations, setReservations] = useState<any[]>([]);
+    const [reservations, setReservations] = useState<{ id: string; date: string; time: string; guests: number; status: string }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [processingId, setProcessingId] = useState<string | null>(null);

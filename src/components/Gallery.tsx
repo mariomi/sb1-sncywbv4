@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useSpring, useTransform, animate, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '../lib/i18n';
@@ -174,24 +174,10 @@ function GalleryModal({ group, onClose }: { group: GalleryGroup; onClose: () => 
 }
 
 export default function Gallery() {
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState<GalleryGroup | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMouseX(e.clientX - rect.left);
-        setMouseY(e.clientY - rect.top);
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   return (
     <>

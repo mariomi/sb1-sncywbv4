@@ -17,12 +17,9 @@ const fadeUp = {
   })
 };
 
-const sectionIcons = [Fish, BookOpen, MapPin];
-
 export function Home() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
 
-  // Typed access helpers (t() returns string only for simple keys)
   const storyItems = language === 'it'
     ? [
         { icon: Fish, title: 'Pesce dal Mercato di Rialto', description: 'Ogni mattina scegliamo il pescato più fresco al mercato ittico del Rialto, a 200 metri dalla nostra cucina.' },

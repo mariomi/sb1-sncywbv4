@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Fish, Wheat, Pizza, Loader2, Menu as MenuIcon } from 'lucide-react';
 
-// Se usi questa util e i18n come nel progetto originale, lasciali;
-// altrimenti puoi rimuovere cn/useLanguage e usare classi statiche.
 import { cn } from '../lib/utils';
-import { useLanguage } from '../lib/i18n';
 
 type MenuItem = {
   name: string;
@@ -251,7 +248,6 @@ const RestaurantMenu2026 = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
-  const { language } = useLanguage?.() || { language: 'it' };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 100);

@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calendar, 
-  Clock, 
-  Users, 
-  CheckCircle2, 
-  XCircle, 
-  AlertCircle, 
+import {
+  Clock,
+  Users,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -64,12 +60,6 @@ const statusColors = {
   completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200',
 };
 
-const statusIcons = {
-  pending: AlertCircle,
-  confirmed: CheckCircle2,
-  cancelled: XCircle,
-  completed: CheckCircle2,
-};
 
 const daysOfWeek = [
   'Sunday',
