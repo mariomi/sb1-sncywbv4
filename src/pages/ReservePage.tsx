@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Users, UtensilsCrossed, ChefHat, Wine, CalendarClock, AlertCircle, CheckCircle2, Loader2, Lock } from 'lucide-react';
 import { Button } from '../components/Button';
-import { format, parseISO } from 'date-fns';
-import { z } from 'zod';
+import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { getAvailableTimeSlots, createReservation, getClosedDates } from '../lib/api';
@@ -309,7 +308,7 @@ export function ReservePage() {
                           <input
                             type="tel"
                             value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9\s\-]/g, ''))}
+                            onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9\s-]/g, ''))}
                             placeholder="Number"
                             className="flex-1 px-4 py-3 bg-transparent focus:outline-none text-base min-w-0"
                             required

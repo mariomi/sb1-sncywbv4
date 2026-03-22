@@ -6,7 +6,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const t = (key: string) => {
     const keys = key.split('.');
-    let value: any = translations[language];
+    let value: Record<string, unknown> = translations[language] as Record<string, unknown>;
     
     for (const k of keys) {
       if (value === undefined) return key;

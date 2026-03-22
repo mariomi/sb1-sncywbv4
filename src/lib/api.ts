@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
+import { parseISO } from 'date-fns';
 import { ReservationFormData } from './validators';
-import { addDays, format, isAfter, isBefore, parseISO, startOfDay } from 'date-fns';
 import { sendReservationConfirmation } from './notifications';
 
 export type TimeSlot = {
