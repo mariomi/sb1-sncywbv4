@@ -224,9 +224,9 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
             <p style="margin:0;font-size:14px;color:#6b5244;line-height:2;">
               Per qualsiasi necessità non esiti a contattarci:<br/>
               <strong style="color:${gColor};">📞 +39 041 520 4603</strong><br/>
-              <a href="mailto:reservations@ristorantealgobbodirialto.com"
+              <a href="mailto:reservations@ristorantealgobbodirialto.it"
                  style="color:${gold};text-decoration:none;font-weight:600;">
-                reservations@ristorantealgobbodirialto.com
+                reservations@ristorantealgobbodirialto.it
               </a>
             </p>
           </td>
@@ -244,8 +244,8 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
             <p style="margin:12px 0 0;font-size:12px;color:#a08878;line-height:1.6;">
               Ristorante Al Gobbo di Rialto<br/>
               Campo San Polo 649, 30125 Venezia VE<br/>
-              <a href="https://ristorantealgobbodirialto.com" style="color:#c9a87a;text-decoration:none;">
-                ristorantealgobbodirialto.com
+              <a href="https://ristorantealgobbodirialto.it" style="color:#c9a87a;text-decoration:none;">
+                ristorantealgobbodirialto.it
               </a>
             </p>
           </td>
@@ -289,7 +289,7 @@ function buildCustomerText({ name, date, time, guests, occasion, special_request
     '',
     'Contatti / Contact:',
     '  Tel: +39 041 520 4603',
-    '  Email: reservations@ristorantealgobbodirialto.com',
+    '  Email: reservations@ristorantealgobbodirialto.it',
     '',
     'A presto a Venezia!',
     'Lo staff del Ristorante Al Gobbo di Rialto',
@@ -369,9 +369,9 @@ app.post('/send-email', async (req, res) => {
 
   try {
     const response = await resend.emails.send({
-      from:     'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.com>',
+      from:     'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
       to:       email,
-      reply_to: 'reservations@ristorantealgobbodirialto.com',
+      reply_to: 'reservations@ristorantealgobbodirialto.it',
       subject:  `✅ Prenotazione confermata — ${formatDate(date).it} alle ${formatTime(time)}`,
       html:     buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests }),
       text:     buildCustomerText({ name, date, time, guests, occasion, special_requests }),
@@ -392,8 +392,8 @@ app.post('/send-admin-confirmation', async (req, res) => {
 
   try {
     const response = await resend.emails.send({
-      from:    'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.com>',
-      to:      'reservations@ristorantealgobbodirialto.com',
+      from:    'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
+      to:      'reservations@ristorantealgobbodirialto.it',
       subject: `🔔 Nuova prenotazione — ${name} · ${formatDate(date).it} ${formatTime(time)} · ${guests} ospiti`,
       html:    buildAdminHtml({ name, email, phone, date, time, guests, occasion, special_requests, marketing_consent }),
     });
