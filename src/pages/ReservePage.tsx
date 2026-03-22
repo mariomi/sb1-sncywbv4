@@ -5,7 +5,7 @@ import { Button } from '../components/Button';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { getAvailableTimeSlots, createReservation, getClosedDates } from '../lib/api';
+import { getAvailableTimeSlots, createReservation, getClosedDates, joinWaitlist } from '../lib/api';
 import type { ReservationFormData } from '../lib/validators';
 import { PageTransition } from '../components/PageTransition';
 import img2939 from '../Img/G1/IMG_2939.JPEG';
@@ -75,6 +75,9 @@ export function ReservePage() {
   const [closedDates, setClosedDates] = useState<string[]>([]);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [showWaitlistBanner, setShowWaitlistBanner] = useState(false);
+  const [isJoiningWaitlist, setIsJoiningWaitlist] = useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = useState(false);
 
   // Keep formData.phone in sync whenever prefix or number changes
   useEffect(() => {
@@ -117,6 +120,8 @@ export function ReservePage() {
 
   const loadTimeSlots = async () => {
     setIsLoadingTimeSlots(true);
+    setShowWaitlistBanner(false);
+    setWaitlistSuccess(false);
     try {
       const slots = await getAvailableTimeSlots(formData.date);
       setTimeSlots(slots);
@@ -155,13 +160,24 @@ export function ReservePage() {
       console.log('Submitting reservation with data:', reservationData);
       await createReservation(reservationData);
       setShowConfirmation(true);
+      setShowWaitlistBanner(false);
     } catch (error) {
       console.error('Reservation error:', error);
       if (error instanceof Error) {
-        toast.error(error.message, {
-          duration: 5000,
-          icon: <AlertCircle className="text-red-500" />
-        });
+        const msg = error.message.toLowerCase();
+        const isCapacityError =
+          msg.includes('capacity') ||
+          msg.includes('available') ||
+          msg.includes('remaining') ||
+          msg.includes('no longer available');
+        if (isCapacityError && formData.date && formData.time) {
+          setShowWaitlistBanner(true);
+        } else {
+          toast.error(error.message, {
+            duration: 5000,
+            icon: <AlertCircle className="text-red-500" />
+          });
+        }
       } else {
         toast.error('An unexpected error occurred. Please try again later.', {
           duration: 5000,
@@ -176,6 +192,33 @@ export function ReservePage() {
   const handleConfirmationClose = () => {
     setShowConfirmation(false);
     navigate('/');
+  };
+
+  const handleJoinWaitlist = async () => {
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast.error('Compila nome, email e telefono prima di iscriverti alla lista d\'attesa');
+      return;
+    }
+    setIsJoiningWaitlist(true);
+    try {
+      await joinWaitlist({
+        date: formData.date,
+        time: formData.time,
+        guests: formData.guests,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        occasion: formData.occasion || undefined,
+        special_requests: formData.special_requests || undefined,
+      });
+      setWaitlistSuccess(true);
+      setShowWaitlistBanner(false);
+    } catch (error) {
+      console.error('Waitlist error:', error);
+      toast.error('Errore nell\'iscrizione alla lista d\'attesa. Riprova.');
+    } finally {
+      setIsJoiningWaitlist(false);
+    }
   };
 
   // Update marketing consent
@@ -422,6 +465,61 @@ export function ReservePage() {
                     )}
                   </div>
                 )}
+
+                {/* Waitlist banner */}
+                <AnimatePresence>
+                  {showWaitlistBanner && !waitlistSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-amber-50 border-l-4 border-venetian-gold rounded-r-lg p-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-venetian-gold mt-0.5 shrink-0" />
+                        <div className="flex-1">
+                          <p className="font-medium text-venetian-brown text-sm">
+                            Questo orario è esaurito.
+                          </p>
+                          <p className="text-sm text-venetian-brown/80 mt-1">
+                            Vuoi metterti in lista d'attesa? Ti contatteremo se si libera un posto.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleJoinWaitlist}
+                            disabled={isJoiningWaitlist}
+                            className="mt-3 px-4 py-2 bg-venetian-gold text-venetian-brown text-sm font-medium rounded-lg hover:bg-venetian-gold/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                          >
+                            {isJoiningWaitlist ? (
+                              <><Loader2 size={14} className="animate-spin" /> Iscrizione...</>
+                            ) : (
+                              'Sì, mettimi in lista d\'attesa'
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                  {waitlistSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="font-medium text-green-800 text-sm">
+                            Sei in lista d'attesa!
+                          </p>
+                          <p className="text-sm text-green-700 mt-1">
+                            Ti contatteremo appena si libera un posto per {formData.date} alle {formData.time.slice(0, 5)}.
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Additional Information */}
                 <div>
