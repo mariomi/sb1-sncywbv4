@@ -1,27 +1,38 @@
-export async function sendReservationConfirmation(
-  reservation: ReservationFormData
-) {
-  console.log(
-    '📩 Chiamata a sendReservationConfirmation con i dati:',
-    reservation
-  );
+import type { ReservationFormData } from './validators';
 
-  try {
-    const response = await fetch('https://sb1-sncywbv4.onrender.com/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(reservation),
-    });
+const API_BASE = 'https://sb1-sncywbv4.onrender.com';
 
-    const result = await response.json();
-    if (!result.success) throw new Error(result.error || 'Errore sconosciuto');
+async function postEmail(endpoint: string, data: ReservationFormData): Promise<void> {
+  const response = await fetch(`${API_BASE}/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
 
-    console.log('✅ Email inviata con successo:', result);
-    return result;
-  } catch (error) {
-    console.error("❌ Errore nell'invio dell'email:", error);
-    throw new Error(error.message || 'Errore sconosciuto');
+  const result = await response.json();
+  if (!result.success) throw new Error(result.error || 'Errore sconosciuto');
+}
+
+export async function sendReservationConfirmation(reservation: ReservationFormData): Promise<void> {
+  console.log('📩 Invio email di conferma prenotazione...', reservation);
+
+  // Send both emails concurrently; admin failure must not block the customer email
+  const [customerResult, adminResult] = await Promise.allSettled([
+    postEmail('send-email', reservation),
+    postEmail('send-admin-confirmation', reservation),
+  ]);
+
+  if (customerResult.status === 'rejected') {
+    console.error('❌ Email cliente non inviata:', customerResult.reason);
+    throw new Error(customerResult.reason?.message || 'Invio email fallito');
+  }
+
+  console.log('✅ Email cliente inviata con successo');
+
+  if (adminResult.status === 'rejected') {
+    // Non-blocking: log but don't throw
+    console.error('❌ Email admin non inviata (non bloccante):', adminResult.reason);
+  } else {
+    console.log('✅ Email admin inviata con successo');
   }
 }
