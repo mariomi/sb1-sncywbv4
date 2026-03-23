@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Users, UtensilsCrossed, ChefHat, Wine, CalendarClock, AlertCircle, CheckCircle2, Loader2, Lock } from 'lucide-react';
+import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -231,6 +232,11 @@ export function ReservePage() {
 
   return (
     <PageTransition>
+      <SEOHead
+        title="Prenota un Tavolo"
+        canonical="/reserve"
+        description="Prenota il tuo tavolo al Ristorante Al Gobbo di Rialto a Venezia. Disponibilità in tempo reale, pranzo e cena. Prenotazione online semplice e veloce."
+      />
       <div className="min-h-screen bg-venetian-sandstone/20 pt-20 sm:pt-24">
         {/* Hero Section */}
         <motion.section

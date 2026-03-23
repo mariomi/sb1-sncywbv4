@@ -38,11 +38,14 @@
     <meta name="twitter:image" content="https://www.ristorantealgobbodirialto.it/og-image.jpg" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
     <!-- Theme color for browser UI -->
     <meta name="theme-color" content="#5C4033" />
+
+    <!-- Hero image preload for LCP -->
+    <link rel="preload" as="image" href="/images/hero/img0.jpg" fetchpriority="high" />
 
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -83,15 +86,28 @@
         {
           "@type": "OpeningHoursSpecification",
           "dayOfWeek": ["Monday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-          "opens": "11:00",
-          "closes": "23:00"
+          "opens": "12:00",
+          "closes": "14:30"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "opens": "19:00",
+          "closes": "22:00"
         }
       ],
       "servesCuisine": ["Veneziana", "Italiana", "Pesce", "Pizza", "Seafood"],
       "priceRange": "€€",
       "paymentAccepted": "Cash, Credit Card",
       "currenciesAccepted": "EUR",
-      "hasMenu": "https://www.ristorantealgobbodirialto.it/menu",
+      "smokingAllowed": false,
+      "amenityFeature": [
+        { "@type": "LocationFeatureSpecification", "name": "Terrazza esterna", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Wi-Fi gratuito", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Accessibile ai disabili", "value": true }
+      ],
+      "hasMenu": "https://www.ristorantealgobbodirialto.it/menu-schema.json",
+      "menu": "https://www.ristorantealgobbodirialto.it/menu",
       "reservations": "https://www.ristorantealgobbodirialto.it/reserve",
       "acceptsReservations": true,
       "sameAs": [
@@ -108,7 +124,97 @@
     }
     </script>
 
-    <!-- JSON-LD: LocalBusiness (duplicated breadcrumb for local search) -->
+    <!-- JSON-LD: ReservationAction for Google "Book a Table" -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ReservationAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://www.ristorantealgobbodirialto.it/reserve",
+        "inLanguage": ["it", "en"],
+        "actionPlatform": [
+          "http://schema.org/DesktopWebPlatform",
+          "http://schema.org/MobileWebPlatform"
+        ]
+      },
+      "result": {
+        "@type": "FoodEstablishmentReservation",
+        "provider": {
+          "@type": "Restaurant",
+          "@id": "https://www.ristorantealgobbodirialto.it/#restaurant"
+        }
+      }
+    }
+    </script>
+
+    <!-- JSON-LD: FAQ for rich snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Come posso prenotare un tavolo al Ristorante Al Gobbo di Rialto?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Puoi prenotare direttamente online tramite il nostro sito web alla pagina Prenota, oppure chiamarci al +39 041 520 4603. Accettiamo prenotazioni per pranzo (12:00–14:30) e cena (19:00–22:00), dal lunedì al sabato escluso il martedì, e la domenica."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quali giorni è aperto il ristorante?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Il ristorante è aperto lunedì, mercoledì, giovedì, venerdì, sabato e domenica. Siamo chiusi il martedì. Orari: pranzo 12:00–14:30, cena 19:00–22:00."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Dove si trova il Ristorante Al Gobbo di Rialto?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Siamo in Sestiere San Polo 649, vicino al Ponte di Rialto a Venezia (CAP 30125). Raggiungibile a piedi dal vaporetto Rialto Mercato in circa 2 minuti."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Il ristorante è adatto alle famiglie con bambini?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sì, siamo un ristorante a misura di famiglia. Disponiamo di seggioloni per bambini e un menu che soddisfa anche i palati più piccoli. Vi accogliamo con piacere!"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Avete opzioni vegetariane o per allergie alimentari?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sì, il nostro menu include piatti vegetariani (segnalati nel menu). Per allergie o intolleranze alimentari vi preghiamo di informarci al momento della prenotazione o all'arrivo: lo chef sarà lieto di adattare i piatti alle vostre esigenze."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Qual è la specialità del ristorante?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Siamo famosi per il pesce fresco della laguna veneziana, i risotti di mare, le paste fatte in casa e le pizze artigianali. Dal 1955 proponiamo l'autentica cucina veneziana con ingredienti selezionati ogni giorno al mercato di Rialto."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "È possibile organizzare eventi privati o cene di gruppo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Certamente! Organizziamo cene private, compleanni, anniversari e pranzi di gruppo. Contattateci tramite il modulo online o chiamateci al +39 041 520 4603 per discutere il vostro evento e ricevere un preventivo personalizzato."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- JSON-LD: BreadcrumbList -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -137,6 +243,12 @@
           "position": 4,
           "name": "Chi Siamo",
           "item": "https://www.ristorantealgobbodirialto.it/about"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "name": "FAQ",
+          "item": "https://www.ristorantealgobbodirialto.it/faq"
         }
       ]
     }

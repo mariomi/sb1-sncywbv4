@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PageTransition } from '../components/PageTransition';
+import { SEOHead } from '../components/SEOHead';
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 import { Mail, Clock, User, MessageSquare, Loader2, Search, Filter } from 'lucide-react';
@@ -80,6 +81,7 @@ export function MessagesPage() {
 
   return (
     <PageTransition>
+      <SEOHead title="Messaggi" noindex />
       <div className="min-h-screen bg-venetian-sandstone/20 pt-24">
         {/* Header */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

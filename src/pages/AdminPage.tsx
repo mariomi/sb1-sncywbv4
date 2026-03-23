@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SEOHead } from '../components/SEOHead';
 import {
   Clock,
   Users,
@@ -285,6 +286,7 @@ export function AdminPage() {
 
   return (
     <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24">
+      <SEOHead title="Dashboard Admin" noindex />
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="md:flex md:items-center md:justify-between">

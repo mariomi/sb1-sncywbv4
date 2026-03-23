@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../lib/i18n';
 import { ChevronDown } from 'lucide-react';
-import img0 from '../Img/img0.jpg';
-import img1 from '../Img/img1.jpg';
-import img2 from '../Img/ing2.jpg';
-
-const images = [img0, img1, img2];
+const images = [
+  '/images/hero/img0.jpg',
+  '/images/hero/img1.jpg',
+  '/images/hero/img2.jpg',
+];
 
 // Ken Burns animation: each slide slowly zooms + shifts slightly for cinematic feel
 const kenBurnsVariants = [

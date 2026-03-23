@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RestaurantMenu from '../components/Menu';
+import { SEOHead } from '../components/SEOHead';
 import { ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageTransition } from '../components/PageTransition';
@@ -22,6 +23,11 @@ export function MenuPage() {
 
   return (
     <PageTransition>
+      <SEOHead
+        title="Menu"
+        canonical="/menu"
+        description="Scopri il menu del Ristorante Al Gobbo di Rialto: pesce fresco della laguna, risotti di mare, paste fatte in casa e pizze artigianali. Cucina veneziana autentica dal 1955."
+      />
       <RestaurantMenu />
       
       {/* Back to Top Button */}

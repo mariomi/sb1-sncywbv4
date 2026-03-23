@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SEOHead } from '../components/SEOHead';
 import { Calendar, Clock, Users, Search, Loader2, XCircle } from 'lucide-react';
 import { Button } from '../components/Button';
 import { format } from 'date-fns';
@@ -58,6 +59,7 @@ export function MyReservationsPage() {
 
     return (
         <PageTransition>
+            <SEOHead title="Le Mie Prenotazioni" canonical="/my-reservations" noindex />
             <div className="min-h-screen bg-venetian-sandstone/20 pt-24">
                 {/* Hero Section */}
                 <motion.section

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { SEOHead } from '../components/SEOHead';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Lock, Mail } from 'lucide-react';
@@ -31,6 +32,7 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-venetian-sandstone/20 pt-24">
+      <SEOHead title="Accesso Admin" noindex />
       <div className="max-w-md mx-auto px-4">
         <motion.div
           className="bg-white/95 rounded-2xl shadow-xl p-8"

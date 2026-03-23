@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { SEOHead } from '../components/SEOHead';
 import { motion } from 'framer-motion';
 import { Hero } from '../components/Hero';
 import { Gallery } from '../components/Gallery';
@@ -46,6 +47,10 @@ export function Home() {
 
   return (
     <PageTransition>
+      <SEOHead
+        canonical="/"
+        description="Ristorante storico a Venezia dal 1955. Cucina veneziana autentica: pesce fresco della laguna, risotti, paste fatte in casa e pizze artigianali. Prenota il tuo tavolo online – San Polo 649."
+      />
       <Hero />
 
       {/* ── Story Section ─────────────────────────────────────────── */}
