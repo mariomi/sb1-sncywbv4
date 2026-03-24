@@ -266,7 +266,7 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
             <p style="margin:12px 0 0;font-size:12px;color:#a08878;line-height:1.6;">
               Ristorante Al Gobbo di Rialto<br/>
               Campo San Polo 649, 30125 Venezia VE<br/>
-              <a href="https://ristorantealgobbodirialto.it" style="color:#c9a87a;text-decoration:none;">
+              <a href="https://www.ristorantealgobbodirialto.it" style="color:#c9a87a;text-decoration:none;">
                 ristorantealgobbodirialto.it
               </a>
             </p>
