@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { getAvailableTimeSlots, createReservation, getClosedDates, joinWaitlist } from '../lib/api';
+import { useFeatureFlag } from '../lib/featureFlags';
 import type { ReservationFormData } from '../lib/validators';
 import { PageTransition } from '../components/PageTransition';
 import img2939 from '../Img/G1/IMG_2939.JPEG';
@@ -55,6 +56,8 @@ const PHONE_PREFIXES = [
 
 export function ReservePage() {
   const navigate = useNavigate();
+  const waitlistEnabled = useFeatureFlag('waitlist');
+  const onlineReservationsEnabled = useFeatureFlag('online_reservations');
   const [formData, setFormData] = useState<ReservationFormData>({
     date: '',
     time: '',
@@ -283,6 +286,15 @@ export function ReservePage() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-2xl sm:text-3xl font-serif text-venetian-brown mb-4 sm:mb-6">Reservation Details</h2>
+              {!onlineReservationsEnabled ? (
+                <div className="p-6 rounded-xl bg-amber-50 border border-amber-200 text-center">
+                  <p className="text-venetian-brown font-semibold mb-1">Prenotazioni temporaneamente sospese</p>
+                  <p className="text-venetian-brown/70 text-sm">
+                    Le prenotazioni online sono temporaneamente sospese. Chiamaci al{' '}
+                    <a href="tel:+390415204603" className="text-venetian-gold hover:underline font-medium">+39 041 520 4603</a>
+                  </p>
+                </div>
+              ) : (
               <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 {/* Personal Information */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -474,7 +486,7 @@ export function ReservePage() {
 
                 {/* Waitlist banner */}
                 <AnimatePresence>
-                  {showWaitlistBanner && !waitlistSuccess && (
+                  {waitlistEnabled && showWaitlistBanner && !waitlistSuccess && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -616,6 +628,7 @@ export function ReservePage() {
                   </Button>
                 </motion.div>
               </form>
+              )}
             </motion.div>
 
             {/* Sidebar Information */}

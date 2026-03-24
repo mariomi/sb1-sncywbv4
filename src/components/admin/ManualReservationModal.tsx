@@ -110,7 +110,7 @@ export function ManualReservationModal({ isOpen, onClose, onSuccess }: Props) {
           onClick={onClose}
         >
           <motion.div
-            className="bg-white dark:bg-venetian-brown/95 rounded-2xl shadow-xl w-full max-w-2xl max-h-screen overflow-y-auto"
+            className="bg-white dark:bg-venetian-brown/95 w-full md:max-w-2xl md:rounded-2xl rounded-none min-h-screen md:min-h-0 md:max-h-[90vh] shadow-xl overflow-y-auto"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}

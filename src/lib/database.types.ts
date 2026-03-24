@@ -180,6 +180,8 @@ export interface Database {
           // New columns
           source: string | null
           admin_notes: string | null
+          reminder_sent_at: string | null
+          cancellation_token: string
         }
         Insert: {
           id?: string
@@ -206,6 +208,8 @@ export interface Database {
           updated_at?: string
           source?: string | null
           admin_notes?: string | null
+          reminder_sent_at?: string | null
+          cancellation_token?: string
         }
         Update: {
           id?: string
@@ -232,6 +236,37 @@ export interface Database {
           updated_at?: string
           source?: string | null
           admin_notes?: string | null
+          reminder_sent_at?: string | null
+          cancellation_token?: string
+        }
+      }
+      feature_flags: {
+        Row: {
+          id: string
+          key: string
+          label: string
+          description: string | null
+          enabled: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          label: string
+          description?: string | null
+          enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          label?: string
+          description?: string | null
+          enabled?: boolean
+          created_at?: string
+          updated_at?: string
         }
       }
       waitlist: {

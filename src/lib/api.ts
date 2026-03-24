@@ -736,6 +736,88 @@ export async function notifyWaitlistEntry(
   }
 }
 
+// ─── Reservation by cancellation token ──────────────────────────────────────
+
+export type Reservation = Database['public']['Tables']['reservations']['Row'];
+
+export async function getReservationByToken(token: string): Promise<Reservation | null> {
+  try {
+    const { data, error } = await supabase
+      .from('reservations')
+      .select('*')
+      .eq('cancellation_token', token)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching reservation by token:', error);
+    throw error;
+  }
+}
+
+export async function cancelReservationByToken(token: string): Promise<void> {
+  try {
+    const { data: existing, error: fetchError } = await supabase
+      .from('reservations')
+      .select('id, status')
+      .eq('cancellation_token', token)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
+    if (!existing) throw new Error('Reservation not found');
+    if (existing.status === 'cancelled') throw new Error('already_cancelled');
+    if (existing.status === 'completed') throw new Error('already_completed');
+
+    const { error } = await supabase
+      .from('reservations')
+      .update({ status: 'cancelled' })
+      .eq('cancellation_token', token);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error cancelling reservation by token:', error);
+    throw error;
+  }
+}
+
+// ─── Stats ───────────────────────────────────────────────────────────────────
+
+export async function getReservationsForStats(
+  startDate: string,
+  endDate: string
+): Promise<Reservation[]> {
+  try {
+    const { data, error } = await supabase
+      .from('reservations')
+      .select('*')
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching reservations for stats:', error);
+    throw error;
+  }
+}
+
+export function exportReservationsToCSV(reservations: Reservation[]): string {
+  const header = 'ID,Data,Orario,Nome,Email,Telefono,Ospiti,Status,Occasione';
+  const rows = reservations.map(r => [
+    r.id,
+    r.date,
+    r.time.slice(0, 5),
+    `"${r.name.replace(/"/g, '""')}"`,
+    r.email,
+    r.phone,
+    r.guests,
+    r.status,
+    r.occasion ? `"${r.occasion.replace(/"/g, '""')}"` : '',
+  ].join(','));
+  return [header, ...rows].join('\n');
+}
+
 export async function createContactMessage(data: {
   first_name: string;
   last_name: string;

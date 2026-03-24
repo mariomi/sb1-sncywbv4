@@ -12,10 +12,13 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { MyReservationsPage } from './pages/MyReservationsPage';
 import { FaqPage } from './pages/FaqPage';
+import { CancelReservationPage } from './pages/CancelReservationPage';
+import { StatsPage } from './pages/StatsPage';
 import { AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './components/AuthProvider';
 import { LanguageProvider } from './components/LanguageProvider';
 import { ThemeProvider } from './lib/ThemeProvider';
+import { FeatureFlagsProvider } from './lib/featureFlags';
 import { Toaster } from 'react-hot-toast';
 import { CookieConsent } from './components/CookieConsent';
 
@@ -49,6 +52,7 @@ function AppRoutes() {
         <Route path="/reserve" element={<ReservePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/faq" element={<FaqPage />} />
+        <Route path="/cancella/:token" element={<CancelReservationPage />} />
         <Route path="/my-reservations" element={<MyReservationsPage />} />
         <Route path="/admin" element={<LoginPage />} />
         <Route
@@ -56,6 +60,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/stats"
+          element={
+            <ProtectedRoute>
+              <StatsPage />
             </ProtectedRoute>
           }
         />
@@ -77,6 +89,7 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <LanguageProvider>
+        <FeatureFlagsProvider>
           <Router>
             <main className="min-h-screen dark:bg-venetian-brown/95">
               <Navbar />
@@ -85,6 +98,7 @@ function App() {
               <Toaster position="top-right" />
             </main>
           </Router>
+        </FeatureFlagsProvider>
         </LanguageProvider>
       </ThemeProvider>
     </AuthProvider>
