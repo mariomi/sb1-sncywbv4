@@ -221,7 +221,11 @@ export async function createReservation(data: ReservationFormData) {
 
     // Send confirmation email
     try {
-      await sendReservationConfirmation(data);
+      await sendReservationConfirmation({
+        ...data,
+        cancellation_token: reservation.cancellation_token,
+        reservation_id: reservation.id,
+      });
     } catch (emailError) {
       console.error('Failed to send confirmation email:', emailError);
       // Don't fail the reservation if email fails
@@ -468,6 +472,8 @@ export async function createManualReservation(data: ManualReservationData) {
           occasion: data.occasion || '',
           special_requests: data.special_requests || '',
           marketing_consent: false,
+          cancellation_token: reservation.cancellation_token,
+          reservation_id: reservation.id,
         });
       } catch (emailError) {
         console.error('❌ Failed to send confirmation email (non-blocking):', emailError);
@@ -802,10 +808,10 @@ export async function getReservationsForStats(
   }
 }
 
-export function exportReservationsToCSV(reservations: Reservation[]): string {
-  const header = 'ID,Data,Orario,Nome,Email,Telefono,Ospiti,Status,Occasione';
+export function exportReservationsToCSV(reservations: Reservation[], filename?: string): void {
+  const header = 'ID,Data,Orario,Nome,Email,Telefono,Ospiti,Status,Occasione,Note admin,Fonte,Richieste speciali';
   const rows = reservations.map(r => [
-    r.id,
+    r.id.slice(0, 8),
     r.date,
     r.time.slice(0, 5),
     `"${r.name.replace(/"/g, '""')}"`,
@@ -814,8 +820,20 @@ export function exportReservationsToCSV(reservations: Reservation[]): string {
     r.guests,
     r.status,
     r.occasion ? `"${r.occasion.replace(/"/g, '""')}"` : '',
+    r.admin_notes ? `"${r.admin_notes.replace(/"/g, '""')}"` : '',
+    r.source ?? 'online',
+    r.special_requests ? `"${r.special_requests.replace(/"/g, '""')}"` : '',
   ].join(','));
-  return [header, ...rows].join('\n');
+
+  // BOM for correct Italian Excel UTF-8 rendering
+  const csv = '\uFEFF' + [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename ?? `prenotazioni-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export async function createContactMessage(data: {

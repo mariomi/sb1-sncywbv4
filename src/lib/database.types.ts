@@ -181,6 +181,7 @@ export interface Database {
           source: string | null
           admin_notes: string | null
           reminder_sent_at: string | null
+          reminder_2h_sent_at: string | null
           cancellation_token: string
         }
         Insert: {
@@ -209,6 +210,7 @@ export interface Database {
           source?: string | null
           admin_notes?: string | null
           reminder_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
           cancellation_token?: string
         }
         Update: {
@@ -237,6 +239,7 @@ export interface Database {
           source?: string | null
           admin_notes?: string | null
           reminder_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
           cancellation_token?: string
         }
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOHead } from '../components/SEOHead';
 import {
@@ -25,13 +25,16 @@ import {
   BarChart2,
   ToggleLeft,
   ToggleRight,
-  LogOut
+  LogOut,
+  Bell,
+  Download
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Link } from 'react-router-dom';
 import { format, parseISO, isToday, isTomorrow, addDays, subDays } from 'date-fns';
 import { useAuth } from '../components/AuthProvider';
 import { useFeatureFlags, useFeatureFlag } from '../lib/featureFlags';
+import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import {
   getAvailableTimeSlots,
@@ -47,6 +50,7 @@ import {
   deleteRecurringClosure,
   assignTableToReservation,
   getAvailableTables,
+  exportReservationsToCSV,
   type RecurringClosure,
   type Table
 } from '../lib/api';
@@ -124,6 +128,10 @@ export function AdminPage() {
   const [showFeatureFlags, setShowFeatureFlags] = useState(false);
   // Mobile bottom nav active tab: 'list' | 'today' | 'settings' | 'logout'
   const [mobileTab, setMobileTab] = useState<'list' | 'today' | 'settings' | 'logout'>('list');
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+  );
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -132,6 +140,42 @@ export function AdminPage() {
     fetchClosedDates();
     fetchRecurringClosures();
   }, [user, selectedDate]);
+
+  // Supabase Realtime: subscribe to new reservations
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('admin-reservations')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'reservations' },
+        (payload) => {
+          const r = payload.new as Reservation;
+          fetchReservations();
+          toast.success(`Nuova prenotazione: ${r.name} — ${r.date} alle ${r.time.slice(0, 5)}`);
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            new Notification('Al Gobbo — Nuova prenotazione', {
+              body: `${r.name} · ${r.date} · ${r.time.slice(0, 5)} · ${r.guests} ospiti`,
+              icon: '/favicon.svg',
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleRequestNotifications = async () => {
+    if (typeof Notification === 'undefined') return;
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+  };
 
   useEffect(() => {
     if (!selectedReservation) {
@@ -355,12 +399,28 @@ export function AdminPage() {
               </Button>
             </Link>
             <Button
+              onClick={() => exportReservationsToCSV(filteredReservations, `prenotazioni-${format(selectedDate, 'yyyy-MM-dd')}.csv`)}
+              className="hidden md:inline-flex bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Esporta CSV
+            </Button>
+            <Button
               onClick={() => setShowFeatureFlags(true)}
               className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
             >
               <ToggleRight className="w-4 h-4 mr-2" />
               Funzionalità
             </Button>
+            {notificationPermission === 'default' && (
+              <Button
+                onClick={handleRequestNotifications}
+                className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Attiva notifiche
+              </Button>
+            )}
           </div>
         </div>
       </div>

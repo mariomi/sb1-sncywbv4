@@ -40,7 +40,7 @@ function occasionLabel(occasion) {
 
 // ─── HTML template for CUSTOMER confirmation ────────────────────────────────
 
-function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests }) {
+function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests, manageUrl }) {
   const fDate = formatDate(date);
   const fTime = formatTime(time);
   const occ   = occasion ? occasionLabel(occasion) : null;
@@ -198,6 +198,28 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
           </td>
         </tr>
 
+        ${manageUrl ? `<!-- Manage reservation buttons -->
+        <tr>
+          <td style="padding:0 40px 24px;text-align:center;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="padding-right:8px;">
+                  <a href="${manageUrl}"
+                     style="display:inline-block;background:#9E4638;color:#ffffff;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">
+                    ✕ &nbsp;Cancella prenotazione
+                  </a>
+                </td>
+                <td style="padding-left:8px;">
+                  <a href="tel:+390415204603"
+                     style="display:inline-block;background:${gold};color:${gColor};font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">
+                    📞 &nbsp;Contattaci
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>` : ''}
+
         <!-- Policy reminder -->
         <tr>
           <td style="padding:0 40px 24px;">
@@ -266,7 +288,7 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
 
 // ─── Plain-text fallback for CUSTOMER ───────────────────────────────────────
 
-function buildCustomerText({ name, date, time, guests, occasion, special_requests }) {
+function buildCustomerText({ name, date, time, guests, occasion, special_requests, manageUrl }) {
   const fDate = formatDate(date);
   const fTime = formatTime(time);
   const occ   = occasion ? occasionLabel(occasion) : null;
@@ -286,6 +308,7 @@ function buildCustomerText({ name, date, time, guests, occasion, special_request
     '─'.repeat(46),
     'Il tavolo viene mantenuto 15 minuti dopo l\'orario prenotato.',
     'Cancellazioni entro 24 ore prima.',
+    manageUrl ? `\nPer cancellare la prenotazione: ${manageUrl}` : '',
     '',
     'Contatti / Contact:',
     '  Tel: +39 041 520 4603',
@@ -365,7 +388,9 @@ app.post('/send-email', async (req, res) => {
   console.log('API Key:', process.env.VITE_RESEND_API_KEY ? '✅ Present' : '❌ Missing');
   console.log('📝 Body:', JSON.stringify(req.body, null, 2));
 
-  const { name, email, phone, date, time, guests, occasion, special_requests } = req.body;
+  const { name, email, phone, date, time, guests, occasion, special_requests, cancellation_token, reservation_id } = req.body;
+  const baseUrl = 'https://ristorantealgobbodirialto.it';
+  const manageUrl = cancellation_token ? `${baseUrl}/cancella/${cancellation_token}` : null;
 
   try {
     const response = await resend.emails.send({
@@ -373,8 +398,8 @@ app.post('/send-email', async (req, res) => {
       to:       email,
       reply_to: 'reservations@ristorantealgobbodirialto.it',
       subject:  `✅ Prenotazione confermata — ${formatDate(date).it} alle ${formatTime(time)}`,
-      html:     buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests }),
-      text:     buildCustomerText({ name, date, time, guests, occasion, special_requests }),
+      html:     buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests, manageUrl }),
+      text:     buildCustomerText({ name, date, time, guests, occasion, special_requests, manageUrl }),
     });
 
     console.log('✅ Customer email sent:', response);

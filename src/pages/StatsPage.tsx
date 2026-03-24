@@ -118,14 +118,8 @@ export function StatsPage() {
   const maxDow = Math.max(...Object.values(byDow));
 
   const handleExportCSV = () => {
-    const csv = exportReservationsToCSV(reservations);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `prenotazioni-${getPeriodDates(period).start}-${getPeriodDates(period).end}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const { start, end } = getPeriodDates(period);
+    exportReservationsToCSV(reservations, `prenotazioni-${start}-${end}.csv`);
   };
 
   return (
