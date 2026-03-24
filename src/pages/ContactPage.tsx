@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { SEOHead } from '../components/SEOHead';
 import { MapPin, Clock, Phone, Mail, Facebook, Utensils } from 'lucide-react';
 import { Button } from '../components/Button';
 import { PageTransition } from '../components/PageTransition';
@@ -62,6 +63,11 @@ export function ContactPage() {
 
   return (
     <PageTransition>
+      <SEOHead
+        title="Contatti"
+        canonical="/contact"
+        description="Contatta il Ristorante Al Gobbo di Rialto a Venezia. Siamo in Sestiere San Polo 649, vicino al Ponte di Rialto. Tel: +39 041 520 4603. Scrivi un messaggio o vieni a trovarci."
+      />
       <div className="min-h-screen bg-venetian-sandstone/20 pt-20 sm:pt-24">
         {/* Hero Section */}
         <motion.section

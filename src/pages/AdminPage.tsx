@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SEOHead } from '../components/SEOHead';
 import {
   Clock,
   Users,
@@ -17,29 +18,48 @@ import {
   Lock,
   Loader2,
   Plus,
-  Trash2
+  Trash2,
+  Calendar,
+  List,
+  Table as TableIcon,
+  BarChart2,
+  ToggleLeft,
+  ToggleRight,
+  LogOut,
+  Bell,
+  Download
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Link } from 'react-router-dom';
 import { format, parseISO, isToday, isTomorrow, addDays, subDays } from 'date-fns';
 import { useAuth } from '../components/AuthProvider';
+import { useFeatureFlags, useFeatureFlag } from '../lib/featureFlags';
+import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
-import { 
-  getAvailableTimeSlots, 
-  updateTimeSlot, 
-  getClosedDates, 
-  addClosedDate, 
-  removeClosedDate, 
-  getReservations, 
+import {
+  getAvailableTimeSlots,
+  updateTimeSlot,
+  getClosedDates,
+  addClosedDate,
+  removeClosedDate,
+  getReservations,
   updateReservationStatus,
   getRecurringClosures,
   createRecurringClosure,
   updateRecurringClosure,
   deleteRecurringClosure,
-  type RecurringClosure
+  assignTableToReservation,
+  getAvailableTables,
+  exportReservationsToCSV,
+  type RecurringClosure,
+  type Table
 } from '../lib/api';
 import toast from 'react-hot-toast';
 import type { Database } from '../lib/database.types';
+import { ManualReservationModal } from '../components/admin/ManualReservationModal';
+import { ReservationCalendar } from '../components/admin/ReservationCalendar';
+import { TableManagement } from '../components/admin/TableManagement';
+import { WaitlistPanel } from '../components/admin/WaitlistPanel';
 
 type Reservation = Database['public']['Tables']['reservations']['Row'];
 type TimeSlot = {
@@ -72,7 +92,11 @@ const daysOfWeek = [
 ];
 
 export function AdminPage() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const { flagsMeta, setFlag } = useFeatureFlags();
+  const manualReservationsEnabled = useFeatureFlag('manual_reservations');
+  const calendarViewEnabled = useFeatureFlag('calendar_view');
+  const tableManagementEnabled = useFeatureFlag('table_management');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -94,6 +118,20 @@ export function AdminPage() {
     end_time: '23:59',
     active: true
   });
+  // New state for added features
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [calendarView, setCalendarView] = useState(false);
+  const [showTableManagement, setShowTableManagement] = useState(false);
+  const [waitlistSlot, setWaitlistSlot] = useState<{ date: string; time: string } | null>(null);
+  const [availableTables, setAvailableTables] = useState<Table[]>([]);
+  const [selectedTableId, setSelectedTableId] = useState<string>('');
+  const [showFeatureFlags, setShowFeatureFlags] = useState(false);
+  // Mobile bottom nav active tab: 'list' | 'today' | 'settings' | 'logout'
+  const [mobileTab, setMobileTab] = useState<'list' | 'today' | 'settings' | 'logout'>('list');
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+  );
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -102,6 +140,54 @@ export function AdminPage() {
     fetchClosedDates();
     fetchRecurringClosures();
   }, [user, selectedDate]);
+
+  // Supabase Realtime: subscribe to new reservations
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('admin-reservations')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'reservations' },
+        (payload) => {
+          const r = payload.new as Reservation;
+          fetchReservations();
+          toast.success(`Nuova prenotazione: ${r.name} — ${r.date} alle ${r.time.slice(0, 5)}`);
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            new Notification('Al Gobbo — Nuova prenotazione', {
+              body: `${r.name} · ${r.date} · ${r.time.slice(0, 5)} · ${r.guests} ospiti`,
+              icon: '/favicon.svg',
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleRequestNotifications = async () => {
+    if (typeof Notification === 'undefined') return;
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+  };
+
+  useEffect(() => {
+    if (!selectedReservation) {
+      setAvailableTables([]);
+      setSelectedTableId('');
+      return;
+    }
+    setSelectedTableId(selectedReservation.table_id ?? '');
+    getAvailableTables(selectedReservation.date, selectedReservation.time, selectedReservation.guests)
+      .then(tables => setAvailableTables(tables))
+      .catch(err => console.error('Error loading available tables:', err));
+  }, [selectedReservation]);
 
   const fetchRecurringClosures = async () => {
     try {
@@ -255,7 +341,8 @@ export function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24">
+    <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24 pb-16 md:pb-0">
+      <SEOHead title="Dashboard Admin" noindex />
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="md:flex md:items-center md:justify-between">
@@ -264,7 +351,16 @@ export function AdminPage() {
               Reservation Management
             </h2>
           </div>
-          <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
+          <div className="mt-4 flex md:ml-4 md:mt-0 flex-wrap gap-2">
+            {manualReservationsEnabled && (
+              <Button
+                onClick={() => setShowManualModal(true)}
+                className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Nuova Prenotazione
+              </Button>
+            )}
             <Link to="/messages">
               <Button
                 className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
@@ -273,20 +369,58 @@ export function AdminPage() {
                 Messaggi
               </Button>
             </Link>
+            {tableManagementEnabled && (
+              <Button
+                onClick={() => setShowTableManagement(true)}
+                className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+              >
+                <TableIcon className="w-4 h-4 mr-2" />
+                Tavoli
+              </Button>
+            )}
             <Button
               onClick={() => setShowClosedDatesModal(true)}
-              className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+              className="hidden md:inline-flex bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
             >
               <Lock className="w-4 h-4 mr-2" />
-              Manage Closed Dates
+              Chiusure
             </Button>
             <Button
               onClick={() => setShowTimeSlotsModal(true)}
-              className="bg-venetian-brown text-white hover:bg-venetian-gold dark:text-venetian-brown"
+              className="hidden md:inline-flex bg-venetian-brown text-white hover:bg-venetian-gold dark:text-venetian-brown"
             >
               <Settings className="w-4 h-4 mr-2" />
-              Manage Time Slots
+              Orari
             </Button>
+            <Link to="/admin/stats">
+              <Button className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown">
+                <BarChart2 className="w-4 h-4 mr-2" />
+                Statistiche
+              </Button>
+            </Link>
+            <Button
+              onClick={() => exportReservationsToCSV(filteredReservations, `prenotazioni-${format(selectedDate, 'yyyy-MM-dd')}.csv`)}
+              className="hidden md:inline-flex bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Esporta CSV
+            </Button>
+            <Button
+              onClick={() => setShowFeatureFlags(true)}
+              className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+            >
+              <ToggleRight className="w-4 h-4 mr-2" />
+              Funzionalità
+            </Button>
+            {notificationPermission === 'default' && (
+              <Button
+                onClick={handleRequestNotifications}
+                className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Attiva notifiche
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -430,46 +564,84 @@ export function AdminPage() {
 
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
-            {/* Search and Actions */}
+            {/* Calendar / List toggle + Search */}
             <motion.div
               className="bg-white/95 dark:bg-venetian-brown/50 rounded-xl shadow-lg p-6"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-venetian-brown/40 dark:text-venetian-sandstone/40" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Search by name, email, or phone..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-venetian-brown/20 dark:border-venetian-sandstone/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 dark:bg-venetian-brown/10 dark:text-venetian-sandstone"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-brown/5 dark:hover:bg-white/5"
-                    onClick={() => fetchReservations()}
-                  >
-                    <RefreshCcw size={18} className="mr-2" />
-                    Refresh
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-brown/5 dark:hover:bg-white/5"
-                    onClick={() => setStatusFilter([])}
-                  >
-                    <Filter size={18} className="mr-2" />
-                    Filters
-                  </Button>
-                </div>
+              {/* View toggle */}
+              {calendarViewEnabled && (
+              <div className="flex items-center gap-2 mb-4">
+                <button
+                  onClick={() => setCalendarView(false)}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                    !calendarView
+                      ? 'bg-venetian-brown text-white dark:bg-venetian-gold dark:text-venetian-brown'
+                      : 'text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-brown/5 dark:hover:bg-white/5'
+                  )}
+                >
+                  <List size={16} />
+                  Lista
+                </button>
+                <button
+                  onClick={() => setCalendarView(true)}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                    calendarView
+                      ? 'bg-venetian-brown text-white dark:bg-venetian-gold dark:text-venetian-brown'
+                      : 'text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-brown/5 dark:hover:bg-white/5'
+                  )}
+                >
+                  <Calendar size={16} />
+                  Calendario
+                </button>
               </div>
+              )}
+
+              {calendarView ? (
+                <ReservationCalendar
+                  selectedDate={selectedDate}
+                  onSelectDate={(date) => setSelectedDate(date)}
+                />
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-venetian-brown/40 dark:text-venetian-sandstone/40" size={20} />
+                    <input
+                      type="text"
+                      placeholder="Search by name, email, or phone..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-venetian-brown/20 dark:border-venetian-sandstone/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 dark:bg-venetian-brown/10 dark:text-venetian-sandstone"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-brown/5 dark:hover:bg-white/5"
+                      onClick={() => fetchReservations()}
+                    >
+                      <RefreshCcw size={18} className="mr-2" />
+                      Refresh
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-brown/5 dark:hover:bg-white/5"
+                      onClick={() => setStatusFilter([])}
+                    >
+                      <Filter size={18} className="mr-2" />
+                      Filters
+                    </Button>
+                  </div>
+                </div>
+              )}
             </motion.div>
 
-            {/* Reservations List */}
+            {/* Reservations List (only in list view) */}
+            {!calendarView && (
             <motion.div
               className="bg-white/95 dark:bg-venetian-brown/50 rounded-xl shadow-lg overflow-hidden"
               initial={{ opacity: 0, y: -20 }}
@@ -490,56 +662,72 @@ export function AdminPage() {
                   {filteredReservations.map((reservation) => (
                     <motion.div
                       key={reservation.id}
-                      className="p-6 hover:bg-venetian-brown/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                      className="p-4 md:p-6 min-h-[80px] hover:bg-venetian-brown/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       whileHover={{ scale: 1.01 }}
                       onClick={() => setSelectedReservation(reservation)}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-2">
-                            <h4 className="text-lg font-medium text-venetian-brown dark:text-venetian-sandstone">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center flex-wrap gap-2 mb-1">
+                            <h4 className="text-base md:text-lg font-semibold text-venetian-brown dark:text-venetian-sandstone">
                               {reservation.name}
                             </h4>
                             <span className={cn(
-                              'ml-3 px-2 py-1 rounded-full text-xs font-medium',
+                              'px-2 py-0.5 rounded-full text-xs font-medium',
                               statusColors[reservation.status as keyof typeof statusColors]
                             )}>
                               {reservation.status}
                             </span>
+                            {/* Reminder badge */}
+                            {isTomorrow(parseISO(reservation.date)) && (
+                              reservation.reminder_sent_at ? (
+                                <span title={`Reminder inviato il ${format(new Date(reservation.reminder_sent_at), 'dd/MM HH:mm')}`}
+                                  className="text-xs px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400">
+                                  ✅ reminder
+                                </span>
+                              ) : (
+                                <span title="Reminder non ancora inviato"
+                                  className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800/40 text-gray-500 dark:text-gray-400">
+                                  ⏰ reminder
+                                </span>
+                              )
+                            )}
                           </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-venetian-brown/70 dark:text-venetian-sandstone/70">
-                            <div className="flex items-center">
-                              <Clock size={16} className="mr-2" />
+                          {/* Mobile: compact one-liner */}
+                          <div className="flex items-center gap-3 text-sm text-venetian-brown/70 dark:text-venetian-sandstone/70">
+                            <span className="flex items-center gap-1">
+                              <Clock size={14} />
                               {reservation.time.slice(0, 5)}
-                            </div>
-                            <div className="flex items-center">
-                              <Users size={16} className="mr-2" />
-                              {reservation.guests} guests
-                            </div>
-                            <div className="flex items-center">
-                              <Phone size={16} className="mr-2" />
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Users size={14} />
+                              {reservation.guests}
+                            </span>
+                            {/* Phone/email: show only on desktop */}
+                            <span className="hidden md:flex items-center gap-1">
+                              <Phone size={14} />
                               {reservation.phone}
-                            </div>
-                            <div className="flex items-center">
-                              <Mail size={16} className="mr-2" />
+                            </span>
+                            <span className="hidden md:flex items-center gap-1">
+                              <Mail size={14} />
                               {reservation.email}
-                            </div>
+                            </span>
                           </div>
                           {reservation.special_requests && (
-                            <div className="mt-2 flex items-start text-sm text-venetian-brown/70 dark:text-venetian-sandstone/70">
+                            <div className="hidden md:flex mt-2 items-start text-sm text-venetian-brown/70 dark:text-venetian-sandstone/70">
                               <MessageSquare size={16} className="mr-2 mt-1 flex-shrink-0" />
                               <p>{reservation.special_requests}</p>
                             </div>
                           )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 shrink-0">
                           {reservation.status === 'pending' && (
                             <>
                               <Button
                                 size="sm"
-                                className="bg-green-500 hover:bg-green-600 text-white"
+                                className="bg-green-500 hover:bg-green-600 text-white min-h-[40px] px-3 md:px-4"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleStatusUpdate(reservation.id, 'confirmed');
@@ -550,7 +738,7 @@ export function AdminPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                className="border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[40px] px-3 md:px-4"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleStatusUpdate(reservation.id, 'cancelled');
@@ -563,7 +751,7 @@ export function AdminPage() {
                           {reservation.status === 'confirmed' && (
                             <Button
                               size="sm"
-                              className="bg-blue-500 hover:bg-blue-600 text-white"
+                              className="bg-blue-500 hover:bg-blue-600 text-white min-h-[40px] px-3 md:px-4"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleStatusUpdate(reservation.id, 'completed');
@@ -579,9 +767,147 @@ export function AdminPage() {
                 </div>
               )}
             </motion.div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Manual Reservation Modal */}
+      <ManualReservationModal
+        isOpen={showManualModal}
+        onClose={() => setShowManualModal(false)}
+        onSuccess={() => fetchReservations()}
+      />
+
+      {/* Feature Flags Modal */}
+      <AnimatePresence>
+        {showFeatureFlags && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowFeatureFlags(false)}
+          >
+            <motion.div
+              className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-lg md:rounded-2xl rounded-t-2xl rounded-b-none md:rounded-b-2xl shadow-xl md:mx-4 max-h-[85vh] overflow-y-auto"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <h3 className="text-xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-1">
+                  ⚙️ Funzionalità
+                </h3>
+                <p className="text-sm text-venetian-brown/60 dark:text-venetian-sandstone/60 mb-5">
+                  Attiva o disattiva le funzionalità del sistema.
+                </p>
+                <div className="space-y-3">
+                  {flagsMeta.map(flag => (
+                    <div key={flag.id} className="flex items-center justify-between gap-4 p-3 rounded-lg bg-venetian-brown/5 dark:bg-white/5">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-venetian-brown dark:text-venetian-sandstone">{flag.label}</p>
+                        {flag.description && (
+                          <p className="text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50 mt-0.5 truncate">{flag.description}</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setFlag(flag.key, !flag.enabled)}
+                        className="shrink-0 transition-colors"
+                        title={flag.enabled ? 'Disabilita' : 'Abilita'}
+                      >
+                        {flag.enabled ? (
+                          <ToggleRight className="w-7 h-7 text-venetian-gold" />
+                        ) : (
+                          <ToggleLeft className="w-7 h-7 text-venetian-brown/30 dark:text-venetian-sandstone/30" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                  {flagsMeta.length === 0 && (
+                    <p className="text-center py-4 text-venetian-brown/50 dark:text-venetian-sandstone/50 text-sm">
+                      Caricamento...
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="px-6 py-4 bg-venetian-brown/5 dark:bg-white/5 flex justify-end">
+                <Button variant="outline" onClick={() => setShowFeatureFlags(false)}>
+                  Chiudi
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Table Management Modal */}
+      <AnimatePresence>
+        {showTableManagement && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowTableManagement(false)}
+          >
+            <motion.div
+              className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-2xl md:rounded-2xl rounded-none min-h-screen md:min-h-0 md:max-h-[90vh] shadow-xl md:mx-4 overflow-y-auto"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <h3 className="text-2xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-6">
+                  Gestione Tavoli
+                </h3>
+                <TableManagement />
+              </div>
+              <div className="px-6 py-4 bg-venetian-brown/5 dark:bg-white/5 flex justify-end">
+                <Button variant="outline" onClick={() => setShowTableManagement(false)}>
+                  Chiudi
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Waitlist Slot Modal */}
+      <AnimatePresence>
+        {waitlistSlot && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setWaitlistSlot(null)}
+          >
+            <motion.div
+              className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-lg md:rounded-2xl rounded-none min-h-screen md:min-h-0 md:max-h-[90vh] shadow-xl md:mx-4 overflow-y-auto"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <h3 className="text-xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-2">
+                  Lista d'attesa
+                </h3>
+                <p className="text-sm text-venetian-brown/60 dark:text-venetian-sandstone/60 mb-4">
+                  {waitlistSlot.date} alle {waitlistSlot.time.slice(0, 5)}
+                </p>
+                <WaitlistPanel date={waitlistSlot.date} time={waitlistSlot.time} />
+              </div>
+              <div className="px-6 py-4 bg-venetian-brown/5 dark:bg-white/5 flex justify-end">
+                <Button variant="outline" onClick={() => setWaitlistSlot(null)}>Chiudi</Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Time Slots Modal */}
       <AnimatePresence>
@@ -594,7 +920,7 @@ export function AdminPage() {
             onClick={() => setShowTimeSlotsModal(false)}
           >
             <motion.div
-              className="bg-white dark:bg-venetian-brown/90 rounded-2xl shadow-xl max-w-4xl w-full mx-4 overflow-hidden"
+              className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-4xl md:rounded-2xl rounded-none min-h-screen md:min-h-0 md:max-h-[90vh] shadow-xl md:mx-4 overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -626,6 +952,14 @@ export function AdminPage() {
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setWaitlistSlot({ date: format(selectedDate, 'yyyy-MM-dd'), time: slot.time })}
+                                className="text-venetian-brown dark:text-venetian-sandstone text-xs"
+                              >
+                                Attesa
+                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -677,6 +1011,14 @@ export function AdminPage() {
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setWaitlistSlot({ date: format(selectedDate, 'yyyy-MM-dd'), time: slot.time })}
+                                className="text-venetian-brown dark:text-venetian-sandstone text-xs"
+                              >
+                                Attesa
+                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -733,7 +1075,7 @@ export function AdminPage() {
             onClick={() => setEditingTimeSlot(null)}
           >
             <motion.div
-              className="bg-white dark:bg-venetian-brown/90 rounded-2xl shadow-xl max-w-lg w-full mx-4 overflow-hidden"
+              className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-lg md:rounded-2xl rounded-none min-h-screen md:min-h-0 md:max-h-[90vh] shadow-xl md:mx-4 overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -804,7 +1146,7 @@ export function AdminPage() {
             onClick={() => setShowClosedDatesModal(false)}
           >
             <motion.div
-              className="bg-white dark:bg-venetian-brown/90 rounded-2xl shadow-xl max-w-2xl w-full mx-4 overflow-hidden"
+              className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-2xl md:rounded-2xl rounded-none min-h-screen md:min-h-0 md:max-h-[90vh] shadow-xl md:mx-4 overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -954,7 +1296,7 @@ export function AdminPage() {
             onClick={() => setShowAddRecurringModal(false)}
           >
             <motion.div
-              className="bg-white dark:bg-venetian-brown/90 rounded-2xl shadow-xl max-w-lg w-full mx-4 overflow-hidden"
+              className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-lg md:rounded-2xl rounded-none min-h-screen md:min-h-0 md:max-h-[90vh] shadow-xl md:mx-4 overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -1024,6 +1366,36 @@ export function AdminPage() {
         )}
       </AnimatePresence>
 
+      {/* Mobile Bottom Navigation — visible only on mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 block md:hidden bg-white dark:bg-venetian-brown/95 border-t border-venetian-brown/20 dark:border-venetian-sandstone/10">
+        <div className="flex h-16">
+          {[
+            { id: 'list' as const,     icon: <List size={20} />,     label: 'Prenotazioni' },
+            { id: 'today' as const,    icon: <Calendar size={20} />, label: 'Oggi' },
+            { id: 'settings' as const, icon: <Settings size={20} />, label: 'Impostazioni' },
+            { id: 'logout' as const,   icon: <LogOut size={20} />,   label: 'Esci' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                if (tab.id === 'settings') { setShowFeatureFlags(true); }
+                else if (tab.id === 'logout') { signOut?.(); }
+                else { setMobileTab(tab.id); }
+              }}
+              className={cn(
+                'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors',
+                mobileTab === tab.id && tab.id !== 'logout'
+                  ? 'text-venetian-gold'
+                  : 'text-venetian-brown/40 dark:text-venetian-sandstone/40 hover:text-venetian-brown dark:hover:text-venetian-sandstone'
+              )}
+            >
+              {tab.icon}
+              <span className="text-[10px] font-medium">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Reservation Details Modal */}
       <AnimatePresence>
         {selectedReservation && (
@@ -1035,7 +1407,7 @@ export function AdminPage() {
             onClick={() => setSelectedReservation(null)}
           >
             <motion.div
-              className="bg-white dark:bg-venetian-brown/90 rounded-2xl shadow-xl max-w-2xl w-full mx-4 overflow-hidden"
+              className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-2xl md:rounded-2xl rounded-none min-h-screen md:min-h-0 md:max-h-[90vh] shadow-xl md:mx-4 overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -1108,6 +1480,53 @@ export function AdminPage() {
                       <p className="text-venetian-brown dark:text-venetian-sandstone">{selectedReservation.special_requests}</p>
                     </div>
                   )}
+                  {selectedReservation.admin_notes && (
+                    <div>
+                      <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
+                        Note Admin
+                      </label>
+                      <p className="text-venetian-brown dark:text-venetian-sandstone italic">{selectedReservation.admin_notes}</p>
+                    </div>
+                  )}
+                  {/* Table assignment */}
+                  <div>
+                    <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
+                      Tavolo assegnato
+                    </label>
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedTableId}
+                        onChange={e => setSelectedTableId(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-lg border border-venetian-brown/20 dark:border-venetian-sandstone/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 dark:bg-venetian-brown/10 dark:text-venetian-sandstone text-sm"
+                      >
+                        <option value="">Nessun tavolo</option>
+                        {availableTables.map(t => (
+                          <option key={t.id} value={t.id}>
+                            {t.name} · {t.capacity} posti · {t.location}
+                          </option>
+                        ))}
+                        {selectedReservation.table_id && !availableTables.find(t => t.id === selectedReservation.table_id) && (
+                          <option value={selectedReservation.table_id}>Tavolo attuale (assegnato)</option>
+                        )}
+                      </select>
+                      <Button
+                        size="sm"
+                        className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90 shrink-0"
+                        onClick={async () => {
+                          try {
+                            await assignTableToReservation(selectedReservation.id, selectedTableId || null);
+                            toast.success('Tavolo assegnato');
+                            await fetchReservations();
+                          } catch (err) {
+                            console.error(err);
+                            toast.error('Errore nell\'assegnazione del tavolo');
+                          }
+                        }}
+                      >
+                        Salva
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="px-6 py-4 bg-venetian-brown/5 dark:bg-white/5 flex justify-end gap-2">

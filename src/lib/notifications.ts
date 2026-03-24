@@ -2,7 +2,12 @@ import type { ReservationFormData } from './validators';
 
 const API_BASE = 'https://sb1-sncywbv4.onrender.com';
 
-async function postEmail(endpoint: string, data: ReservationFormData): Promise<void> {
+export type ReservationEmailData = ReservationFormData & {
+  cancellation_token?: string;
+  reservation_id?: string;
+};
+
+async function postEmail(endpoint: string, data: ReservationEmailData): Promise<void> {
   const response = await fetch(`${API_BASE}/${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -13,7 +18,7 @@ async function postEmail(endpoint: string, data: ReservationFormData): Promise<v
   if (!result.success) throw new Error(result.error || 'Errore sconosciuto');
 }
 
-export async function sendReservationConfirmation(reservation: ReservationFormData): Promise<void> {
+export async function sendReservationConfirmation(reservation: ReservationEmailData): Promise<void> {
   console.log('📩 Invio email di conferma prenotazione...', reservation);
 
   // Send both emails concurrently; admin failure must not block the customer email

@@ -1,0 +1,155 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Menu",
+  "@id": "https://www.ristorantealgobbodirialto.it/menu#menu",
+  "name": "Menu Ristorante Al Gobbo di Rialto",
+  "url": "https://www.ristorantealgobbodirialto.it/menu",
+  "inLanguage": "it",
+  "hasMenuSection": [
+    {
+      "@type": "MenuSection",
+      "name": "Antipasti di Mare",
+      "description": "Antipasti di pesce della tradizione veneziana",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Insalata di mare", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Sarde in saòr", "description": "Specialità veneziana tradizionale", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Salmone affumicato", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Baccalà mantecato con polenta", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Saltata di cozze e vongole", "offers": { "@type": "Offer", "price": "19", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Capesante gratinate al forno", "offers": { "@type": "Offer", "price": "20", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Tartare di tonno", "offers": { "@type": "Offer", "price": "22", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Antipasto misto di pesce", "offers": { "@type": "Offer", "price": "30", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Scampi crudi", "offers": { "@type": "Offer", "price": "24", "priceCurrency": "EUR" } }
+      ]
+    },
+    {
+      "@type": "MenuSection",
+      "name": "Antipasti di Terra",
+      "description": "Selezione di antipasti di terra",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Bruschetta", "offers": { "@type": "Offer", "price": "7", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Antipasto misto di verdure", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Prosciutto crudo e melone", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Caprese con burrata", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Prosciutto crudo e burrata", "offers": { "@type": "Offer", "price": "19", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Carpaccio di bresaola con rucola e grana", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Tagliere di formaggi misti con confettura", "offers": { "@type": "Offer", "price": "20", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Insalatona", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Carpaccio di manzo con rucola e grana", "offers": { "@type": "Offer", "price": "20", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Affettati misti", "offers": { "@type": "Offer", "price": "19", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Petto d'oca affumicato con crostini e burro", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } }
+      ]
+    },
+    {
+      "@type": "MenuSection",
+      "name": "Primi di Mare",
+      "description": "Paste e risotti di pesce",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Spaghetti alle vongole", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Spaghetti al nero di seppia", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Spaghetti allo scoglio", "offers": { "@type": "Offer", "price": "20", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Gnocchi con crema di salmone", "offers": { "@type": "Offer", "price": "17", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Pasticcio di pesce", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Bigoli in salsa", "description": "Pasta veneziana tradizionale", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Spaghetti alla bùsara", "offers": { "@type": "Offer", "price": "24", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Tagliatelle all'astice", "offers": { "@type": "Offer", "price": "28", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Risotto ai frutti di mare", "description": "Minimo 2 persone", "offers": { "@type": "Offer", "price": "22", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Zuppetta di mare", "offers": { "@type": "Offer", "price": "22", "priceCurrency": "EUR" } }
+      ]
+    },
+    {
+      "@type": "MenuSection",
+      "name": "Primi di Terra",
+      "description": "Classici della cucina italiana",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Spaghetti al ragù o al pomodoro", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Spaghetti alla carbonara", "offers": { "@type": "Offer", "price": "17", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Tortellini panna e prosciutto", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Lasagne al forno", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Pasticcio di verdure di stagione", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Parmigiana di melanzane al forno", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Gnocchi ai quattro formaggi", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Penne all'arrabbiata", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Penne Primavera", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Tagliolini con pomodorini, basilico e pecorino", "offers": { "@type": "Offer", "price": "17", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Risotto alle verdure", "description": "Minimo 2 persone", "offers": { "@type": "Offer", "price": "20", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Zuppa di verdure", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Pasta e fagioli", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" }
+      ]
+    },
+    {
+      "@type": "MenuSection",
+      "name": "Secondi di Mare",
+      "description": "Secondi piatti di pesce",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Branzino o orata ai ferri", "offers": { "@type": "Offer", "price": "22", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Salmone ai ferri", "offers": { "@type": "Offer", "price": "20", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Seppie alla veneziana con polenta", "offers": { "@type": "Offer", "price": "20", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Calamari fritti", "offers": { "@type": "Offer", "price": "21", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Fritto misto", "offers": { "@type": "Offer", "price": "26", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Scampi alla bùsara", "offers": { "@type": "Offer", "price": "26", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Rombo alla greca", "offers": { "@type": "Offer", "price": "30", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Branzino al forno con patate", "offers": { "@type": "Offer", "price": "28", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Tagliata di tonno", "offers": { "@type": "Offer", "price": "28", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Grigliata di pesce", "offers": { "@type": "Offer", "price": "34", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Branzino al sale", "description": "Per 2 persone", "offers": { "@type": "Offer", "price": "70", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Branzino al cartoccio", "description": "Per 2 persone", "offers": { "@type": "Offer", "price": "90", "priceCurrency": "EUR" } }
+      ]
+    },
+    {
+      "@type": "MenuSection",
+      "name": "Secondi di Terra",
+      "description": "Carni e specialità",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Cotoletta di pollo con patate", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Galletto alla brace con patate e salsa speciale", "offers": { "@type": "Offer", "price": "28", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Bistecca di manzo ai ferri", "offers": { "@type": "Offer", "price": "20", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Fegato alla veneziana con polenta", "offers": { "@type": "Offer", "price": "19", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Scaloppine al vino bianco", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Costicine di agnello ai ferri", "offers": { "@type": "Offer", "price": "26", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Costata o fiorentina di manzo alla brace", "offers": { "@type": "Offer", "price": "37", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Filetto di manzo ai ferri", "offers": { "@type": "Offer", "price": "29", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Filetto di manzo al pepe verde", "offers": { "@type": "Offer", "price": "32", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Filetto di manzo ai funghi porcini", "offers": { "@type": "Offer", "price": "32", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Contorno a scelta", "description": "Insalata mista, verdure ai ferri, spinaci, patate fritte", "offers": { "@type": "Offer", "price": "6", "priceCurrency": "EUR" } }
+      ]
+    },
+    {
+      "@type": "MenuSection",
+      "name": "Pizze Classiche",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Margherita", "offers": { "@type": "Offer", "price": "11", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Siciliana", "offers": { "@type": "Offer", "price": "13", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Viennese", "offers": { "@type": "Offer", "price": "13", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Diavola", "offers": { "@type": "Offer", "price": "14", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Prosciutto e funghi", "offers": { "@type": "Offer", "price": "14", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Capricciosa", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "4 stagioni", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } }
+      ]
+    },
+    {
+      "@type": "MenuSection",
+      "name": "Calzoni",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Calzone classico", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Calzone napoletano", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } }
+      ]
+    },
+    {
+      "@type": "MenuSection",
+      "name": "Pizze Speciali",
+      "hasMenuItem": [
+        { "@type": "MenuItem", "name": "4 formaggi", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Gorgospeck", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Verdure", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "Ricotta e spinaci", "offers": { "@type": "Offer", "price": "15", "priceCurrency": "EUR" }, "suitableForDiet": "https://schema.org/VegetarianDiet" },
+        { "@type": "MenuItem", "name": "San Daniele", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Valtellina", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Arrotolato paradiso", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Gamberetti e zucchine", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Carbonara", "offers": { "@type": "Offer", "price": "16", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Scogliera", "offers": { "@type": "Offer", "price": "18", "priceCurrency": "EUR" } }
+      ]
+    }
+  ]
+}

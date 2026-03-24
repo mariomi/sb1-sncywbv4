@@ -8,4 +8,18 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   assetsInclude: ['**/*.JPEG'], // Add support for JPEG files
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'motion': ['framer-motion'],
+          'supabase': ['@supabase/supabase-js'],
+          'charts': ['recharts'],
+          'utils': ['date-fns', 'zod', 'clsx', 'tailwind-merge'],
+        },
+      },
+    },
+  },
 });

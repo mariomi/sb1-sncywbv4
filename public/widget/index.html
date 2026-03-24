@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prenota — Al Gobbo di Rialto</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brown: #5C4033;
+      --gold: #D4AF37;
+      --sand: #E6D5B8;
+      --sand-light: #F5EDD8;
+      --red: #9E4638;
+      --green: #708D81;
+      --text: #3d2b1f;
+      --muted: #9e8272;
+      --border: #e0c99a;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: #f5ede0;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .widget {
+      width: 100%;
+      max-width: 480px;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(92, 64, 51, 0.15);
+    }
+
+    .widget-header {
+      background: var(--brown);
+      padding: 24px 28px 20px;
+      text-align: center;
+    }
+    .widget-header .label {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .widget-header h1 {
+      font-size: 22px;
+      color: #fff;
+      font-family: Georgia, serif;
+      font-weight: 700;
+    }
+
+    .gold-bar { height: 4px; background: var(--gold); }
+
+    .widget-body { padding: 24px 24px 28px; }
+
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+      transition: border-color 0.2s;
+      outline: none;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+    }
+    textarea { resize: vertical; min-height: 72px; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .slot-btn {
+      padding: 9px 4px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brown);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .slot-btn:hover:not(:disabled) {
+      border-color: var(--gold);
+      background: #fffaf0;
+    }
+    .slot-btn.selected {
+      background: var(--brown);
+      border-color: var(--brown);
+      color: #fff;
+    }
+    .slot-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: #f5f0eb;
+    }
+    .slot-btn.full { color: var(--muted); }
+
+    .slot-label { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .slot-section { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                    letter-spacing: 1px; color: var(--muted); padding: 10px 0 4px; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--gold);
+      color: var(--brown);
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+    .submit-btn:hover:not(:disabled) { background: #c9a42e; }
+    .submit-btn:active:not(:disabled) { transform: scale(0.99); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .msg {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .msg.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .msg.info  { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+    .success-screen {
+      text-align: center;
+      padding: 32px 24px 36px;
+    }
+    .success-icon {
+      width: 64px; height: 64px;
+      background: #ecfdf5;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 30px;
+    }
+    .success-screen h2 {
+      font-family: Georgia, serif;
+      font-size: 22px;
+      color: var(--brown);
+      margin-bottom: 8px;
+    }
+    .success-screen p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .success-screen .new-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: var(--gold);
+      color: var(--brown);
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(92,64,51,0.3);
+      border-top-color: var(--brown);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer {
+      padding: 14px 24px;
+      background: var(--sand-light);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .footer a { color: var(--gold); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="widget" id="widget">
+  <div class="widget-header">
+    <div class="label">Ristorante</div>
+    <h1>Al Gobbo di Rialto</h1>
+  </div>
+  <div class="gold-bar"></div>
+
+  <!-- Form screen -->
+  <div class="widget-body" id="form-screen">
+    <div id="msg-banner" class="msg" style="display:none;"></div>
+
+    <form id="booking-form" novalidate>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="date">Data *</label>
+          <input type="date" id="date" required />
+        </div>
+        <div class="field">
+          <label for="guests">Ospiti *</label>
+          <select id="guests" required>
+            <option value="">—</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Orario *</label>
+        <div id="slots-container">
+          <p style="font-size:13px;color:var(--muted);">Seleziona data e numero ospiti per vedere gli orari disponibili.</p>
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="name">Nome completo *</label>
+          <input type="text" id="name" required placeholder="Mario Rossi" />
+        </div>
+        <div class="field">
+          <label for="phone">Telefono *</label>
+          <input type="tel" id="phone" required placeholder="+39 340 …" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email *</label>
+        <input type="email" id="email" required placeholder="mario@email.it" />
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="occasion">Occasione</label>
+          <select id="occasion">
+            <option value="">Nessuna</option>
+            <option value="birthday">Compleanno</option>
+            <option value="anniversary">Anniversario</option>
+            <option value="business">Cena di lavoro</option>
+            <option value="date">Serata romantica</option>
+            <option value="other">Altra occasione</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end;padding-bottom:4px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted);">
+            <input type="checkbox" id="marketing" style="width:auto;accent-color:var(--gold);" />
+            Accetto comunicazioni promozionali
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="requests">Richieste speciali</label>
+        <textarea id="requests" placeholder="Allergie, seggiolone, tavolo finestra…"></textarea>
+      </div>
+
+      <p style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+        Confermando accetti la nostra
+        <a href="https://ristorantealgobbodirialto.it/privacy" target="_blank" style="color:var(--gold);">privacy policy</a>.
+        Il tavolo è riservato per 15 minuti.
+      </p>
+
+      <button type="submit" class="submit-btn" id="submit-btn">
+        Prenota ora
+      </button>
+    </form>
+  </div>
+
+  <!-- Success screen (hidden initially) -->
+  <div id="success-screen" class="success-screen" style="display:none;">
+    <div class="success-icon">✓</div>
+    <h2>Prenotazione ricevuta!</h2>
+    <p id="success-detail"></p>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted);">Riceverai una email di conferma a breve.</p>
+    <button class="new-btn" onclick="resetForm()">Nuova prenotazione</button>
+  </div>
+
+  <div class="footer">
+    Ristorante Al Gobbo di Rialto · Campo San Polo 649, Venezia<br/>
+    <a href="tel:+390415204603">+39 041 520 4603</a>
+  </div>
+</div>
+
+<script>
+  // ─── Config ───────────────────────────────────────────────────────────────
+  const SUPABASE_URL     = 'https://vnbiyzomryhusdorvamj.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuYml5em9tcnlodXNkb3J2YW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk3MTUyNzEsImV4cCI6MjA1NTI5MTI3MX0.1qNFDLpXwO3VYMdFn2asJbfkOaHmdKGm4JMe57_m2fE';
+  const EMAIL_API        = 'https://sb1-sncywbv4.onrender.com';
+
+  // ─── State ────────────────────────────────────────────────────────────────
+  let selectedTime = null;
+  let loadingSlots = false;
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+  function sb(path, options = {}) {
+    const url = `${SUPABASE_URL}/rest/v1/${path}`;
+    const headers = {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...options.headers
+    };
+    return fetch(url, { ...options, headers });
+  }
+
+  function showMsg(text, type = 'error') {
+    const el = document.getElementById('msg-banner');
+    el.textContent = text;
+    el.className = `msg ${type}`;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function hideMsg() {
+    document.getElementById('msg-banner').style.display = 'none';
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = loading;
+    btn.innerHTML = loading
+      ? '<span class="spinner"></span>Elaborazione…'
+      : 'Prenota ora';
+  }
+
+  function formatDateIt(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  // Minimum date = today
+  (function setMinDate() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById('date').min = `${yyyy}-${mm}-${dd}`;
+    // Max = 6 months ahead
+    const max = new Date(today);
+    max.setMonth(max.getMonth() + 6);
+    document.getElementById('date').max = max.toISOString().split('T')[0];
+  })();
+
+  // ─── Load available time slots ─────────────────────────────────────────────
+  async function loadSlots() {
+    const date   = document.getElementById('date').value;
+    const guests = parseInt(document.getElementById('guests').value);
+    const container = document.getElementById('slots-container');
+
+    selectedTime = null;
+
+    if (!date || !guests) {
+      container.innerHTML = '<p style="font-size:13px;color:var(--muted);">Seleziona data e numero ospiti per vedere gli orari disponibili.</p>';
+      return;
+    }
+
+    container.innerHTML = '<p style="font-size:13px;color:var(--muted);"><span class="spinner"></span>Caricamento orari…</p>';
+
+    try {
+      // Check closed dates
+      const closedRes = await sb(`closed_dates?date=eq.${date}&select=date`);
+      const closed = await closedRes.json();
+      if (closed.length > 0) {
+        container.innerHTML = '<p style="font-size:13px;color:var(--red);">Il ristorante è chiuso in questa data.</p>';
+        return;
+      }
+
+      // Check recurring closures for day of week
+      const dayOfWeek = new Date(date + 'T00:00:00').getDay();
+      const recRes = await sb(`recurring_closures?day_of_week=eq.${dayOfWeek}&active=eq.true&select=start_time,end_time`);
+      const recClosures = await recRes.json();
+
+      // Get all active time slots
+      const slotsRes = await sb('time_slots?is_active=eq.true&select=*&order=time');
+      const allSlots = await slotsRes.json();
+
+      // Get existing reservations for the date
+      const resRes = await sb(`reservations?date=eq.${date}&status=in.(pending,confirmed)&select=time,guests`);
+      const existingReservations = await resRes.json();
+
+      // Build slot availability
+      const html = buildSlotsHtml(allSlots, existingReservations, recClosures, guests);
+      container.innerHTML = html;
+
+      // Add click handlers
+      container.querySelectorAll('.slot-btn:not(:disabled)').forEach(btn => {
+        btn.addEventListener('click', () => {
+          container.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedTime = btn.dataset.time;
+          hideMsg();
+        });
+      });
+    } catch (err) {
+      container.innerHTML = '<p style="font-size:13px;color:var(--red);">Errore nel caricamento degli orari. Riprova.</p>';
+      console.error(err);
+    }
+  }
+
+  function buildSlotsHtml(slots, reservations, recClosures, guests) {
+    const lunchSlots  = slots.filter(s => s.is_lunch);
+    const dinnerSlots = slots.filter(s => !s.is_lunch);
+
+    function renderGroup(groupSlots, label) {
+      if (groupSlots.length === 0) return '';
+      const btns = groupSlots.map(slot => {
+        const isRecurringClosed = recClosures.some(rc =>
+          slot.time >= rc.start_time && slot.time <= rc.end_time
+        );
+        const taken = reservations
+          .filter(r => r.time === slot.time)
+          .reduce((s, r) => s + r.guests, 0);
+        const remaining = slot.max_capacity - taken;
+        const available = !isRecurringClosed && remaining >= guests;
+        const timeLabel = slot.time.slice(0, 5);
+
+        return `<button type="button" class="slot-btn${available ? '' : ' full'}"
+          data-time="${slot.time}"
+          ${available ? '' : 'disabled'}
+          title="${available ? `${remaining} posti disponibili` : 'Non disponibile'}"
+        >${timeLabel}</button>`;
+      }).join('');
+
+      return `<div class="slot-section">${label}</div><div class="slots-grid">${btns}</div>`;
+    }
+
+    const lunchHtml  = renderGroup(lunchSlots, 'Pranzo');
+    const dinnerHtml = renderGroup(dinnerSlots, 'Cena');
+
+    if (!lunchHtml && !dinnerHtml) {
+      return '<p style="font-size:13px;color:var(--red);">Nessun orario disponibile per questa data.</p>';
+    }
+    return lunchHtml + dinnerHtml;
+  }
+
+  // ─── Form submission ───────────────────────────────────────────────────────
+  document.getElementById('booking-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMsg();
+
+    const date     = document.getElementById('date').value;
+    const guests   = parseInt(document.getElementById('guests').value);
+    const name     = document.getElementById('name').value.trim();
+    const email    = document.getElementById('email').value.trim().toLowerCase();
+    const phone    = document.getElementById('phone').value.trim();
+    const occasion = document.getElementById('occasion').value;
+    const requests = document.getElementById('requests').value.trim();
+    const marketing = document.getElementById('marketing').checked;
+
+    // Validate
+    if (!date)          return showMsg('Seleziona una data.');
+    if (!guests)        return showMsg('Seleziona il numero di ospiti.');
+    if (!selectedTime)  return showMsg('Seleziona un orario.');
+    if (!name)          return showMsg('Inserisci il tuo nome.');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+                        return showMsg('Inserisci un\'email valida.');
+    if (!phone)         return showMsg('Inserisci il tuo numero di telefono.');
+
+    setLoading(true);
+
+    try {
+      // Check for duplicate
+      const dupRes = await sb(
+        `reservations?date=eq.${date}&time=eq.${selectedTime}&email=eq.${encodeURIComponent(email)}&select=id`,
+        { headers: { 'Prefer': 'return=minimal' } }
+      );
+      const dup = await dupRes.json();
+      if (dup.length > 0) {
+        showMsg('Hai già una prenotazione per questa data e orario.');
+        setLoading(false);
+        return;
+      }
+
+      // Insert reservation
+      const insertRes = await sb('reservations', {
+        method: 'POST',
+        body: JSON.stringify({
+          date,
+          time: selectedTime,
+          guests,
+          name,
+          email,
+          phone,
+          occasion: occasion || null,
+          special_requests: requests || null,
+          marketing_consent: marketing,
+          status: 'pending',
+          source: 'online'
+        }),
+        headers: { 'Prefer': 'return=representation' }
+      });
+
+      if (!insertRes.ok) {
+        const errData = await insertRes.json();
+        // Duplicate constraint
+        if (errData.code === '23505') {
+          showMsg('Hai già una prenotazione per questa data e orario.');
+          setLoading(false);
+          return;
+        }
+        throw new Error(errData.message || 'Errore nella prenotazione');
+      }
+
+      const [reservation] = await insertRes.json();
+
+      // Send confirmation email (non-blocking)
+      fetch(`${EMAIL_API}/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name, email, phone, date,
+          time: selectedTime, guests,
+          occasion, special_requests: requests,
+          marketing_consent: marketing,
+          cancellation_token: reservation.cancellation_token,
+          reservation_id: reservation.id
+        })
+      }).catch(err => console.warn('Email non inviata (non critico):', err));
+
+      // Show success
+      const dateLabel = formatDateIt(date);
+      const timeLabel = selectedTime.slice(0, 5);
+      document.getElementById('success-detail').textContent =
+        `${name} · ${dateLabel} · ore ${timeLabel} · ${guests} ${guests === 1 ? 'ospite' : 'ospiti'}`;
+      document.getElementById('form-screen').style.display = 'none';
+      document.getElementById('success-screen').style.display = 'block';
+
+    } catch (err) {
+      console.error(err);
+      showMsg('Si è verificato un errore. Riprova o chiamaci al +39 041 520 4603.');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  // ─── Slot reload triggers ──────────────────────────────────────────────────
+  document.getElementById('date').addEventListener('change', loadSlots);
+  document.getElementById('guests').addEventListener('change', loadSlots);
+
+  // ─── Reset ────────────────────────────────────────────────────────────────
+  function resetForm() {
+    selectedTime = null;
+    document.getElementById('booking-form').reset();
+    document.getElementById('slots-container').innerHTML =
+      '<p style="font-size:13px;color:var(--muted);">Seleziona data e numero ospiti per vedere gli orari disponibili.</p>';
+    hideMsg();
+    document.getElementById('success-screen').style.display = 'none';
+    document.getElementById('form-screen').style.display = 'block';
+  }
+</script>
+</body>
+</html>

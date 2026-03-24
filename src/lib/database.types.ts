@@ -154,66 +154,169 @@ export interface Database {
       reservations: {
         Row: {
           id: string
-          restaurant_id: string
-          table_id: string | null
-          occasion_id: string | null
-          status_id: string
+          created_at: string
           date: string
           time: string
           guests: number
           name: string
           email: string
           phone: string
-          notes: string | null
+          // Original text columns
+          status: string
+          occasion: string | null
           special_requests: string | null
+          user_id: string | null
           marketing_consent: boolean
+          // Extended columns from migration
+          restaurant_id: string | null
+          table_id: string | null
+          occasion_id: string | null
+          status_id: string | null
+          notes: string | null
           arrival_time: string | null
           departure_time: string | null
           cancellation_reason: string | null
-          created_at: string
-          updated_at: string
+          updated_at: string | null
+          // New columns
+          source: string | null
+          admin_notes: string | null
+          reminder_sent_at: string | null
+          reminder_2h_sent_at: string | null
+          cancellation_token: string
         }
         Insert: {
           id?: string
-          restaurant_id: string
-          table_id?: string | null
-          occasion_id?: string | null
-          status_id: string
+          created_at?: string
           date: string
           time: string
           guests: number
           name: string
           email: string
           phone: string
-          notes?: string | null
+          status?: string
+          occasion?: string | null
           special_requests?: string | null
+          user_id?: string | null
           marketing_consent?: boolean
+          restaurant_id?: string | null
+          table_id?: string | null
+          occasion_id?: string | null
+          status_id?: string | null
+          notes?: string | null
           arrival_time?: string | null
           departure_time?: string | null
           cancellation_reason?: string | null
-          created_at?: string
           updated_at?: string
+          source?: string | null
+          admin_notes?: string | null
+          reminder_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
+          cancellation_token?: string
         }
         Update: {
           id?: string
-          restaurant_id?: string
-          table_id?: string | null
-          occasion_id?: string | null
-          status_id?: string
+          created_at?: string
           date?: string
           time?: string
           guests?: number
           name?: string
           email?: string
           phone?: string
-          notes?: string | null
+          status?: string
+          occasion?: string | null
           special_requests?: string | null
+          user_id?: string | null
           marketing_consent?: boolean
+          restaurant_id?: string | null
+          table_id?: string | null
+          occasion_id?: string | null
+          status_id?: string | null
+          notes?: string | null
           arrival_time?: string | null
           departure_time?: string | null
           cancellation_reason?: string | null
+          updated_at?: string
+          source?: string | null
+          admin_notes?: string | null
+          reminder_sent_at?: string | null
+          reminder_2h_sent_at?: string | null
+          cancellation_token?: string
+        }
+      }
+      feature_flags: {
+        Row: {
+          id: string
+          key: string
+          label: string
+          description: string | null
+          enabled: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          label: string
+          description?: string | null
+          enabled?: boolean
           created_at?: string
           updated_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          label?: string
+          description?: string | null
+          enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      waitlist: {
+        Row: {
+          id: string
+          created_at: string
+          date: string
+          time: string
+          guests: number
+          name: string
+          email: string
+          phone: string
+          occasion: string | null
+          special_requests: string | null
+          status: string
+          notified_at: string | null
+          position: number
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          date: string
+          time: string
+          guests: number
+          name: string
+          email: string
+          phone: string
+          occasion?: string | null
+          special_requests?: string | null
+          status?: string
+          notified_at?: string | null
+          position?: number
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          date?: string
+          time?: string
+          guests?: number
+          name?: string
+          email?: string
+          phone?: string
+          occasion?: string | null
+          special_requests?: string | null
+          status?: string
+          notified_at?: string | null
+          position?: number
         }
       }
     }

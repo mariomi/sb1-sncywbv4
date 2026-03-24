@@ -40,7 +40,7 @@ function occasionLabel(occasion) {
 
 // ─── HTML template for CUSTOMER confirmation ────────────────────────────────
 
-function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests }) {
+function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests, manageUrl }) {
   const fDate = formatDate(date);
   const fTime = formatTime(time);
   const occ   = occasion ? occasionLabel(occasion) : null;
@@ -198,6 +198,28 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
           </td>
         </tr>
 
+        ${manageUrl ? `<!-- Manage reservation buttons -->
+        <tr>
+          <td style="padding:0 40px 24px;text-align:center;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="padding-right:8px;">
+                  <a href="${manageUrl}"
+                     style="display:inline-block;background:#9E4638;color:#ffffff;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">
+                    ✕ &nbsp;Cancella prenotazione
+                  </a>
+                </td>
+                <td style="padding-left:8px;">
+                  <a href="tel:+390415204603"
+                     style="display:inline-block;background:${gold};color:${gColor};font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">
+                    📞 &nbsp;Contattaci
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>` : ''}
+
         <!-- Policy reminder -->
         <tr>
           <td style="padding:0 40px 24px;">
@@ -266,7 +288,7 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
 
 // ─── Plain-text fallback for CUSTOMER ───────────────────────────────────────
 
-function buildCustomerText({ name, date, time, guests, occasion, special_requests }) {
+function buildCustomerText({ name, date, time, guests, occasion, special_requests, manageUrl }) {
   const fDate = formatDate(date);
   const fTime = formatTime(time);
   const occ   = occasion ? occasionLabel(occasion) : null;
@@ -286,6 +308,7 @@ function buildCustomerText({ name, date, time, guests, occasion, special_request
     '─'.repeat(46),
     'Il tavolo viene mantenuto 15 minuti dopo l\'orario prenotato.',
     'Cancellazioni entro 24 ore prima.',
+    manageUrl ? `\nPer cancellare la prenotazione: ${manageUrl}` : '',
     '',
     'Contatti / Contact:',
     '  Tel: +39 041 520 4603',
@@ -365,7 +388,9 @@ app.post('/send-email', async (req, res) => {
   console.log('API Key:', process.env.VITE_RESEND_API_KEY ? '✅ Present' : '❌ Missing');
   console.log('📝 Body:', JSON.stringify(req.body, null, 2));
 
-  const { name, email, phone, date, time, guests, occasion, special_requests } = req.body;
+  const { name, email, phone, date, time, guests, occasion, special_requests, cancellation_token, reservation_id } = req.body;
+  const baseUrl = 'https://ristorantealgobbodirialto.it';
+  const manageUrl = cancellation_token ? `${baseUrl}/cancella/${cancellation_token}` : null;
 
   try {
     const response = await resend.emails.send({
@@ -373,8 +398,8 @@ app.post('/send-email', async (req, res) => {
       to:       email,
       reply_to: 'reservations@ristorantealgobbodirialto.it',
       subject:  `✅ Prenotazione confermata — ${formatDate(date).it} alle ${formatTime(time)}`,
-      html:     buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests }),
-      text:     buildCustomerText({ name, date, time, guests, occasion, special_requests }),
+      html:     buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests, manageUrl }),
+      text:     buildCustomerText({ name, date, time, guests, occasion, special_requests, manageUrl }),
     });
 
     console.log('✅ Customer email sent:', response);
@@ -402,6 +427,134 @@ app.post('/send-admin-confirmation', async (req, res) => {
     res.json({ success: true, response });
   } catch (error) {
     console.error('❌ Error sending admin email:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ─── Waitlist notification email ─────────────────────────────────────────────
+
+app.post('/send-waitlist-notification', async (req, res) => {
+  console.log('📧 /send-waitlist-notification called');
+  const { name, email, date, time, guests } = req.body;
+
+  const fDate = formatDate(date);
+  const fTime = formatTime(time);
+  const gColor = '#5C4033';
+  const gold = '#D4AF37';
+  const sand = '#F5EDD8';
+
+  // Reservation link with pre-filled date and time
+  const baseUrl = 'https://ristorantealgobbodirialto.it';
+  const reserveLink = `${baseUrl}/prenota?date=${date}&time=${encodeURIComponent(time.slice(0, 5))}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="UTF-8"/><title>Posto disponibile — Al Gobbo di Rialto</title></head>
+<body style="margin:0;padding:0;background:#f0e8d5;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0e8d5;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0"
+             style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(92,64,51,0.12);">
+        <tr>
+          <td style="background:${gColor};padding:36px 40px 28px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:13px;letter-spacing:4px;text-transform:uppercase;color:${gold};font-weight:600;">Ristorante</p>
+            <h1 style="margin:0;font-size:26px;font-weight:700;color:#ffffff;font-family:Georgia,serif;">Al Gobbo di Rialto</h1>
+            <p style="margin:8px 0 0;font-size:12px;color:#d4b896;letter-spacing:2px;text-transform:uppercase;">Venezia · Dal 1987</p>
+          </td>
+        </tr>
+        <tr><td style="height:4px;background:${gold};"></td></tr>
+        <tr>
+          <td style="background:${sand};padding:24px 40px;text-align:center;border-bottom:1px solid #e8d5b0;">
+            <p style="margin:0;font-size:22px;font-weight:700;color:${gColor};font-family:Georgia,serif;">
+              🎉 &nbsp;Si è liberato un posto!
+            </p>
+            <p style="margin:4px 0 0;font-size:13px;color:#8a7060;">A spot has become available</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 40px;">
+            <p style="margin:0;font-size:16px;color:${gColor};">Gentile <strong>${name}</strong>,</p>
+            <p style="margin:12px 0 0;font-size:15px;color:#6b5244;line-height:1.8;">
+              Si è liberato un posto per la sua lista d'attesa!<br/>
+              Ha <strong>2 ore</strong> di tempo per completare la prenotazione.
+            </p>
+            <p style="margin:8px 0 0;font-size:13px;color:#9e8272;font-style:italic;line-height:1.7;">
+              A spot has opened up for your waitlist request. You have 2 hours to complete your reservation.
+            </p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:${sand};border-radius:10px;border:1px solid #e0c99a;margin-top:20px;">
+              <tr><td style="padding:16px 20px;border-bottom:1px solid #e0c99a;">
+                <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${gold};font-weight:700;">Dettagli / Details</p>
+              </td></tr>
+              <tr><td style="padding:12px 20px 4px;">
+                <p style="margin:0;font-size:13px;color:#9e8272;">📅 Data / Date</p>
+                <p style="margin:2px 0 0;font-size:16px;font-weight:700;color:${gColor};">${fDate.it}</p>
+                <p style="margin:1px 0 0;font-size:12px;color:#9e8272;font-style:italic;">${fDate.en}</p>
+              </td></tr>
+              <tr><td style="padding:12px 20px 4px;">
+                <p style="margin:0;font-size:13px;color:#9e8272;">🕐 Orario / Time</p>
+                <p style="margin:2px 0 0;font-size:16px;font-weight:700;color:${gColor};">${fTime}</p>
+              </td></tr>
+              <tr><td style="padding:12px 20px 16px;">
+                <p style="margin:0;font-size:13px;color:#9e8272;">👥 Ospiti / Guests</p>
+                <p style="margin:2px 0 0;font-size:16px;font-weight:700;color:${gColor};">${guests} ${guests === 1 ? 'persona' : 'persone'}</p>
+              </td></tr>
+            </table>
+            <div style="text-align:center;margin-top:24px;">
+              <a href="${reserveLink}"
+                 style="display:inline-block;background:${gold};color:${gColor};font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">
+                Prenota ora / Book now
+              </a>
+            </div>
+          </td>
+        </tr>
+        <tr><td style="height:4px;background:${gold};"></td></tr>
+        <tr>
+          <td style="background:${gColor};padding:20px 40px;text-align:center;">
+            <p style="margin:0;font-size:13px;font-family:Georgia,serif;color:${gold};font-style:italic;">"A presto a Venezia"</p>
+            <p style="margin:10px 0 0;font-size:11px;color:#a08878;">
+              Ristorante Al Gobbo di Rialto · Campo San Polo 649, 30125 Venezia
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const text = [
+    'RISTORANTE AL GOBBO DI RIALTO — Venezia',
+    '─'.repeat(46),
+    '',
+    `Gentile ${name},`,
+    'Si è liberato un posto per la sua lista d\'attesa!',
+    `Ha 2 ore di tempo per completare la prenotazione.`,
+    '',
+    `📅 Data: ${fDate.it}`,
+    `🕐 Orario: ${fTime}`,
+    `👥 Ospiti: ${guests}`,
+    '',
+    `Prenota ora: ${reserveLink}`,
+    '',
+    'A presto a Venezia!',
+    'Lo staff del Ristorante Al Gobbo di Rialto',
+  ].join('\n');
+
+  try {
+    const response = await resend.emails.send({
+      from: 'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
+      to: email,
+      reply_to: 'reservations@ristorantealgobbodirialto.it',
+      subject: `🎉 Si è liberato un posto — ${fDate.it} alle ${fTime}`,
+      html,
+      text,
+    });
+
+    console.log('✅ Waitlist notification sent:', response);
+    res.json({ success: true, response });
+  } catch (error) {
+    console.error('❌ Error sending waitlist notification:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

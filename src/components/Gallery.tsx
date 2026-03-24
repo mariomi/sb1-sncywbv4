@@ -236,6 +236,8 @@ export default function Gallery() {
                     src={group.images[0].url}
                     alt={t(`gallery.groups.${group.id}.title`)}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-x-0 bottom-0 p-4 z-20">
                     <h3 className="text-xl font-serif text-white mb-1">

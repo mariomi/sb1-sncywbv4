@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { SEOHead } from '../components/SEOHead';
 import { Clock, MapPin, Phone, Mail, ChefHat, Star, Fish } from 'lucide-react';
 import { PageTransition } from '../components/PageTransition';
 import { Link } from 'react-router-dom';
@@ -45,6 +46,11 @@ const timeline = [
 export function AboutPage() {
   return (
     <PageTransition>
+      <SEOHead
+        title="Chi Siamo"
+        canonical="/about"
+        description="La storia del Ristorante Al Gobbo di Rialto dal 1955. Cucina veneziana tradizionale nel cuore di San Polo, Venezia. Scopri la nostra tradizione e passione per la gastronomia lagunare."
+      />
       <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24">
 
         {/* ── Hero ────────────────────────────────────────────────── */}
