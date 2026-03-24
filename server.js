@@ -267,7 +267,7 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
               Ristorante Al Gobbo di Rialto<br/>
               Campo San Polo 649, 30125 Venezia VE<br/>
               <a href="https://www.ristorantealgobbodirialto.it" style="color:#c9a87a;text-decoration:none;">
-                ristorantealgobbodirialto.it
+                www.ristorantealgobbodirialto.it
               </a>
             </p>
           </td>
@@ -389,7 +389,7 @@ app.post('/send-email', async (req, res) => {
   console.log('📝 Body:', JSON.stringify(req.body, null, 2));
 
   const { name, email, phone, date, time, guests, occasion, special_requests, cancellation_token, reservation_id } = req.body;
-  const baseUrl = 'https://ristorantealgobbodirialto.it';
+  const baseUrl = 'https://www.ristorantealgobbodirialto.it';
   const manageUrl = cancellation_token ? `${baseUrl}/cancella/${cancellation_token}` : null;
 
   try {
@@ -444,7 +444,7 @@ app.post('/send-waitlist-notification', async (req, res) => {
   const sand = '#F5EDD8';
 
   // Reservation link with pre-filled date and time
-  const baseUrl = 'https://ristorantealgobbodirialto.it';
+  const baseUrl = 'https://www.ristorantealgobbodirialto.it';
   const reserveLink = `${baseUrl}/prenota?date=${date}&time=${encodeURIComponent(time.slice(0, 5))}`;
 
   const html = `<!DOCTYPE html>
