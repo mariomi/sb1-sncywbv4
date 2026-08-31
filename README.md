@@ -69,6 +69,10 @@ La configurazione di Google Business Profile, Google Ads, Meta/Instagram,
 tracking UTM e dashboard marketing è descritta in
 [docs/MARKETING_PLAYBOOK.md](docs/MARKETING_PLAYBOOK.md).
 
+La separazione degli account cliente, i ruoli di Netawebs, la verifica
+inserzionista, il modello di pagamento e il flusso di onboarding sono definiti
+in [docs/NETAWEBS_AGENCY_MODEL.md](docs/NETAWEBS_AGENCY_MODEL.md).
+
 ## Comandi disponibili
 
 | Comando | Scopo |

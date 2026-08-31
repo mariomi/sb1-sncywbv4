@@ -15,6 +15,14 @@ ottimizzare è una prenotazione valida, non il numero di follower o di clic.
 - Non inviare alle piattaforme nome, email, telefono, note o altre informazioni
   personali della prenotazione.
 
+## Modello di gestione
+
+Netawebs opera come agenzia per conto del ristorante. Il ristorante resta
+l'inserzionista finale e proprietario dei propri account, asset e dati; gli
+accessi di Netawebs devono passare da account manager o ruoli partner. La
+struttura completa, riutilizzabile anche per altri clienti, è definita in
+[NETAWEBS_AGENCY_MODEL.md](NETAWEBS_AGENCY_MODEL.md).
+
 ## 1. Fondazione di misurazione
 
 Il sito registra già gli eventi:
@@ -292,6 +300,9 @@ decisione sulla granularità dei dati.
 
 ### Prima del giorno 1
 
+- Collegare l'account cliente al Google Ads Manager Account Netawebs e
+  verificare che inserzionista, agenzia e soggetto pagatore siano dichiarati
+  correttamente.
 - Ruotare la chiave Resend esposta nella cronologia Git.
 - Configurare e verificare email, GA4/GTM, Ads, Meta Pixel e consenso.
 - Verificare orari, menu, immagini e link Business Profile.
