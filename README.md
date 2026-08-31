@@ -65,6 +65,10 @@ file in un commit successivo non è sufficiente.
 Le procedure per segreti, deploy delle Edge Functions, pianificazioni UTC/Roma
 e verifica operativa sono in [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
+La configurazione di Google Business Profile, Google Ads, Meta/Instagram,
+tracking UTM e dashboard marketing è descritta in
+[docs/MARKETING_PLAYBOOK.md](docs/MARKETING_PLAYBOOK.md).
+
 ## Comandi disponibili
 
 | Comando | Scopo |

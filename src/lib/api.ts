@@ -602,6 +602,11 @@ export async function notifyWaitlistEntry(
 
 export type Reservation = Database['public']['Tables']['reservations']['Row'];
 export type ReservationSummary = Pick<Reservation, 'id' | 'name' | 'date' | 'time' | 'guests' | 'status'>;
+export type MarketingCampaignMetric = Database['public']['Tables']['marketing_campaign_metrics']['Row'];
+export type MarketingCampaignMetricInput = Pick<
+  Database['public']['Tables']['marketing_campaign_metrics']['Insert'],
+  'metric_date' | 'channel' | 'campaign' | 'impressions' | 'clicks' | 'sessions' | 'spend_eur' | 'revenue_eur' | 'notes'
+>;
 
 export async function getReservationByToken(token: string): Promise<ReservationSummary | null> {
   try {
@@ -651,6 +656,50 @@ export async function getReservationsForStats(
     console.error('Error fetching reservations for stats:', error);
     throw error;
   }
+}
+
+export async function getMarketingCampaignMetrics(
+  startDate: string,
+  endDate: string
+): Promise<MarketingCampaignMetric[]> {
+  const { data, error } = await supabase
+    .from('marketing_campaign_metrics')
+    .select('*')
+    .gte('metric_date', startDate)
+    .lte('metric_date', endDate)
+    .order('metric_date', { ascending: false })
+    .order('channel', { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function upsertMarketingCampaignMetric(
+  input: MarketingCampaignMetricInput
+): Promise<MarketingCampaignMetric> {
+  const campaign = (input.campaign || 'all').trim().toLowerCase().replace(/\s+/g, '_') || 'all';
+  const normalized = {
+    ...input,
+    campaign,
+    notes: input.notes?.trim() || null,
+  };
+  const { data, error } = await supabase
+    .from('marketing_campaign_metrics')
+    .upsert(normalized, { onConflict: 'metric_date,channel,campaign' })
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteMarketingCampaignMetric(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('marketing_campaign_metrics')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
 }
 
 export function exportReservationsToCSV(reservations: Reservation[], filename?: string): void {

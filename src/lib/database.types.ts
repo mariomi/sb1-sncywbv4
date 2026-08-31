@@ -95,6 +95,51 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_campaign_metrics: {
+        Row: {
+          campaign: string
+          channel: string
+          clicks: number
+          created_at: string
+          id: string
+          impressions: number
+          metric_date: string
+          notes: string | null
+          revenue_eur: number
+          sessions: number
+          spend_eur: number
+          updated_at: string
+        }
+        Insert: {
+          campaign?: string
+          channel: string
+          clicks?: number
+          created_at?: string
+          id?: string
+          impressions?: number
+          metric_date: string
+          notes?: string | null
+          revenue_eur?: number
+          sessions?: number
+          spend_eur?: number
+          updated_at?: string
+        }
+        Update: {
+          campaign?: string
+          channel?: string
+          clicks?: number
+          created_at?: string
+          id?: string
+          impressions?: number
+          metric_date?: string
+          notes?: string | null
+          revenue_eur?: number
+          sessions?: number
+          spend_eur?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       menu_items: {
         Row: {
           active: boolean | null
