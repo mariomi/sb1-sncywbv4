@@ -93,3 +93,16 @@ variable, or shared outside the deployment system:
 Deleting `.env` in a later commit does not remove a secret from Git history.
 History rewriting should be planned separately because it changes commit IDs
 for every collaborator.
+
+## Disabled legacy function
+
+The `create-admin-user` Edge Function is intentionally deployed as an inert
+HTTP 410 response. Its former implementation belonged to another project and
+contained embedded SMTP credentials. Do not restore it. Rotate the affected
+mailbox/SMTP credential in its provider even though the active function no
+longer contains or uses it.
+
+Restaurant administrators must be provisioned deliberately through the
+Supabase Admin API or dashboard, and authorization belongs in
+`app_metadata.role = "admin"`. Confirm the exact operator email before granting
+that role.
