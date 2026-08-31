@@ -1,0 +1,3 @@
+-- The production project applied the restaurant/table schema under this
+-- migration version. The equivalent schema is already represented locally by
+-- 20250220124843_sparkling_art.sql, so this history-alignment file is a no-op.

@@ -1,43 +1,25 @@
-import type { ReservationFormData } from './validators';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
 
-const API_BASE = 'https://sb1-sncywbv4.onrender.com';
-
-export type ReservationEmailData = ReservationFormData & {
-  cancellation_token?: string;
-  reservation_id?: string;
-};
-
-async function postEmail(endpoint: string, data: ReservationEmailData): Promise<void> {
-  const response = await fetch(`${API_BASE}/${endpoint}`, {
+/**
+ * Ask the trusted backend to send the confirmation. The backend reloads the
+ * reservation from Supabase, so a browser can never choose the recipient or
+ * alter the email content.
+ */
+export async function sendReservationConfirmation(
+  reservationId: string,
+  cancellationToken: string,
+): Promise<void> {
+  const response = await fetch(`${API_BASE}/send-reservation-confirmation`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      reservation_id: reservationId,
+      cancellation_token: cancellationToken,
+    }),
   });
 
-  const result = await response.json();
-  if (!result.success) throw new Error(result.error || 'Errore sconosciuto');
-}
-
-export async function sendReservationConfirmation(reservation: ReservationEmailData): Promise<void> {
-  console.log('📩 Invio email di conferma prenotazione...', reservation);
-
-  // Send both emails concurrently; admin failure must not block the customer email
-  const [customerResult, adminResult] = await Promise.allSettled([
-    postEmail('send-email', reservation),
-    postEmail('send-admin-confirmation', reservation),
-  ]);
-
-  if (customerResult.status === 'rejected') {
-    console.error('❌ Email cliente non inviata:', customerResult.reason);
-    throw new Error(customerResult.reason?.message || 'Invio email fallito');
-  }
-
-  console.log('✅ Email cliente inviata con successo');
-
-  if (adminResult.status === 'rejected') {
-    // Non-blocking: log but don't throw
-    console.error('❌ Email admin non inviata (non bloccante):', adminResult.reason);
-  } else {
-    console.log('✅ Email admin inviata con successo');
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error || 'Impossibile inviare la conferma email');
   }
 }

@@ -11,6 +11,7 @@ import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
 import { getReservationsForStats, exportReservationsToCSV } from '../lib/api';
 import type { Reservation } from '../lib/api';
+import { reservationChannel } from '../lib/reservationAttribution';
 
 const COLORS = {
   confirmed: '#5C4033',
@@ -108,6 +109,19 @@ export function StatsPage() {
   const pieData = Object.entries(occasionCounts).map(([name, value]) => ({ name, value }));
   const PIE_COLORS = ['#5C4033', '#D4AF37', '#9E4638', '#708D81', '#A3865B'];
 
+  const channelTotals = new Map<string, { bookings: number; guests: number }>();
+  for (const reservation of active) {
+    const channel = reservationChannel(reservation);
+    const current = channelTotals.get(channel) || { bookings: 0, guests: 0 };
+    current.bookings += 1;
+    current.guests += reservation.guests;
+    channelTotals.set(channel, current);
+  }
+  const channelData = [...channelTotals.entries()]
+    .map(([channel, values]) => ({ channel, ...values }))
+    .sort((a, b) => b.bookings - a.bookings);
+  const maxChannelBookings = Math.max(0, ...channelData.map(item => item.bookings));
+
   // Table: by day of week
   const DOW_LABELS = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
   const byDow: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
@@ -180,6 +194,31 @@ export function StatsPage() {
                 sub={`${cancelled} di ${total}`}
                 color="text-red-600 dark:text-red-400"
               />
+            </div>
+
+            <div className="bg-white dark:bg-venetian-brown/50 rounded-xl shadow p-6">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-5">
+                <div>
+                  <h2 className="font-serif text-lg text-venetian-brown dark:text-venetian-sandstone">Prenotazioni per canale</h2>
+                  <p className="text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50 mt-1">Attribuzione last-touch da UTM e click ID, senza dati personali inviati alle piattaforme.</p>
+                </div>
+                <span className="text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50">Escluse le cancellazioni</span>
+              </div>
+              {channelData.length === 0 ? (
+                <p className="text-center py-8 text-venetian-brown/50 dark:text-venetian-sandstone/50 text-sm">Nessun dato nel periodo selezionato</p>
+              ) : (
+                <div className="space-y-3">
+                  {channelData.map(item => (
+                    <div key={item.channel} className="grid grid-cols-[minmax(7rem,0.8fr)_minmax(7rem,2fr)_auto] items-center gap-3">
+                      <span className="text-sm text-venetian-brown/75 dark:text-venetian-sandstone/75 truncate" title={item.channel}>{item.channel}</span>
+                      <div className="h-2.5 rounded-full bg-venetian-brown/10 dark:bg-white/10 overflow-hidden">
+                        <div className="h-full rounded-full bg-venetian-gold" style={{ width: `${maxChannelBookings ? (item.bookings / maxChannelBookings) * 100 : 0}%` }} />
+                      </div>
+                      <span className="text-xs text-right text-venetian-brown/60 dark:text-venetian-sandstone/60 whitespace-nowrap">{item.bookings} pren. · {item.guests} ospiti</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Chart 1: Daily bar chart */}

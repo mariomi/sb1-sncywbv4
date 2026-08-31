@@ -31,6 +31,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Hook and provider intentionally share this small module.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {

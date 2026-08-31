@@ -147,10 +147,13 @@ Managed via migration files in `supabase/migrations/`. Always update migrations 
 
 ### Row-Level Security (RLS) Policies
 
-- Public users can **create reservations** and **view active time slots**
-- Public users can **view their own reservations** by email (no login required)
-- **Authenticated users** (admins) have full read/write access to all tables
-- Menu items are **publicly readable**, admin-writable
+- Public visitors use validated RPC functions for availability, booking, waitlist,
+  contact messages, and token-scoped cancellation. Customer tables are not
+  directly readable from the public client.
+- Administrative table access requires an authenticated JWT with
+  `app_metadata.role = "admin"`.
+- Public catalogue/configuration data is readable only through explicit RLS
+  policies; administrative writes remain role-protected.
 
 ---
 
@@ -159,11 +162,14 @@ Managed via migration files in `supabase/migrations/`. Always update migrations 
 ```
 VITE_SUPABASE_URL=      # Supabase project URL
 VITE_SUPABASE_ANON_KEY= # Supabase anonymous/public key
-VITE_RESEND_API_KEY=    # Resend email API key (also used server-side)
+VITE_API_BASE_URL=      # Trusted Express API used for confirmation emails
+RESEND_API_KEY=         # Server/Edge Function only; never prefix with VITE_
+REMINDER_CRON_SECRET=   # Secret header for scheduled reminder invocations
 ```
 
-- All frontend-accessible variables must be prefixed with `VITE_`
-- The Express backend reads from the same `.env` file via `dotenv`
+- Only values intended for the browser may use the `VITE_` prefix.
+- The Express backend reads server-only values from the local `.env` file.
+- Supabase reminder functions receive server-only values through Function Secrets.
 - **Never commit `.env` to source control**
 
 ---
@@ -189,7 +195,8 @@ npm run dev
 node server.js
 ```
 
-> **Note:** The email API endpoint in `src/lib/notifications.ts` is currently hardcoded to the production URL. Change it to `http://localhost:3000` for local development.
+Set `VITE_API_BASE_URL=http://localhost:3000` for local development. Production
+must point it at the deployed trusted Express API.
 
 ### Available Scripts
 
@@ -198,6 +205,8 @@ npm run dev          # Start Vite dev server
 npm run build        # Production build
 npm run preview      # Preview production build locally
 npm run lint         # Run ESLint
+npm run typecheck    # Validate TypeScript
+npm test             # Run security and timezone tests
 npm run create-admin # Create initial admin user (run once)
 ```
 
@@ -260,11 +269,14 @@ This runs `src/scripts/createAdmin.ts` which creates a Supabase auth user with a
 - Use `async/await` for all async operations
 - Always include try-catch with user-facing error messages via `react-hot-toast`
 - Validate all user input with Zod before calling any API function
-- Prevent duplicate reservations — the unique constraint on `(date, time, email)` enforces this at DB level
+- Public booking calls must use the validated RPCs in `src/lib/api.ts`; the
+  database handles duplicate detection and capacity atomically.
 
 ### Email Notifications
 
 - Email sending goes through `src/lib/notifications.ts` → Express server → Resend API
+- Scheduled reminders run in protected Supabase Edge Functions and use a
+  server-only `RESEND_API_KEY` plus `REMINDER_CRON_SECRET`.
 - Email failures should never block the primary action (e.g., reservation creation)
 - Log email results with emoji prefixes: `📧`, `✅`, `❌`
 
@@ -278,25 +290,23 @@ This runs `src/scripts/createAdmin.ts` which creates a Supabase auth user with a
 
 - Dates: ISO 8601 format `YYYY-MM-DD`
 - Times: `HH:MM:SS` format
-- Use `date-fns` for all date manipulation — do not use raw `Date` math
+- Use `date-fns` for UI date formatting. Server-side scheduling must explicitly
+  use `Europe/Rome` and include DST-focused tests.
 - Availability checking is always server-side to prevent race conditions
 
 ### Internationalization
 
 - All UI strings must be added to the translation map in `src/lib/i18n.ts`
-- Supported languages: `en` (English), `it` (Italian)
+- Supported languages: English, Italian, French, German, and Spanish
 - Access translations via `useLanguage()` hook — never hardcode user-visible strings
 
 ---
 
 ## Testing
 
-There is currently **no automated test suite** in this project. ESLint is the only automated code quality tool.
-
-When adding tests, the recommended setup would be:
-- **Unit tests:** Vitest (compatible with Vite)
-- **Component tests:** React Testing Library
-- **E2E tests:** Playwright
+Run `npm test` for the Node test suite, `npm run typecheck`, `npm run lint`, and
+`npm run build` before every release. Add focused regression tests whenever a
+security, scheduling, or conversion-flow bug is fixed.
 
 ---
 
@@ -304,15 +314,17 @@ When adding tests, the recommended setup would be:
 
 1. **No global state library** — Context API is sufficient for this app's complexity
 2. **Supabase RLS** handles authorization at the database level — admin checks use Supabase auth session
-3. **Express backend is email-only** — all other business logic is in the frontend calling Supabase directly
-4. **No test suite** — prioritize adding Vitest before expanding the codebase significantly
-5. **Bilingual by design** — all new UI text must go through `i18n.ts`
+3. **Express backend is email-only** — public business operations use validated
+   Supabase RPCs; scheduled reminders use Edge Functions.
+4. **Regression tests cover trusted boundaries** — extend them for every
+   security-sensitive change.
+5. **Five-language design** — all new UI text must go through `i18n.ts`.
 
 ---
 
 ## Common Pitfalls
 
-- The email endpoint URL in `src/lib/notifications.ts` is hardcoded to production — update to `localhost:3000` for local testing
+- Set `VITE_API_BASE_URL` correctly for local and production environments.
 - The `.env` file is required to run — the app will not start without Supabase credentials
 - Admin access requires a Supabase auth user created via `npm run create-admin`
 - Menu item prices are stored as numbers — display with locale formatting (`toFixed(2)`)

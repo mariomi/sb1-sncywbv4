@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import {
@@ -42,17 +42,7 @@ export function ReservationCalendar({ onSelectDate, selectedDate }: Props) {
   const [loadingMonth, setLoadingMonth] = useState(false);
   const [loadingDay, setLoadingDay] = useState(false);
 
-  useEffect(() => {
-    loadMonthData();
-  }, [currentMonth]);
-
-  useEffect(() => {
-    if (selectedDate) {
-      loadDayReservations(selectedDate);
-    }
-  }, [selectedDate]);
-
-  const loadMonthData = async () => {
+  const loadMonthData = useCallback(async () => {
     setLoadingMonth(true);
     try {
       const year = currentMonth.getFullYear();
@@ -70,9 +60,9 @@ export function ReservationCalendar({ onSelectDate, selectedDate }: Props) {
     } finally {
       setLoadingMonth(false);
     }
-  };
+  }, [currentMonth]);
 
-  const loadDayReservations = async (date: Date) => {
+  const loadDayReservations = useCallback(async (date: Date) => {
     setLoadingDay(true);
     try {
       const data = await getReservations(format(date, 'yyyy-MM-dd'));
@@ -82,7 +72,17 @@ export function ReservationCalendar({ onSelectDate, selectedDate }: Props) {
     } finally {
       setLoadingDay(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadMonthData();
+  }, [loadMonthData]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      loadDayReservations(selectedDate);
+    }
+  }, [loadDayReservations, selectedDate]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);

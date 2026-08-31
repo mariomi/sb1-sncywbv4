@@ -8,14 +8,16 @@ import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
 import { getReservationByToken, cancelReservationByToken } from '../lib/api';
-import type { Reservation } from '../lib/api';
+import type { ReservationSummary } from '../lib/api';
+
+const primaryLinkClass = 'inline-flex h-10 items-center justify-center rounded-xl bg-venetian-gold px-4 text-sm font-medium text-venetian-brown shadow transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-brown';
 
 type PageState = 'loading' | 'found' | 'confirming' | 'success' | 'already_cancelled' | 'already_completed' | 'not_found' | 'error';
 
 export function CancelReservationPage() {
   const { token } = useParams<{ token: string }>();
   const [state, setState] = useState<PageState>('loading');
-  const [reservation, setReservation] = useState<Reservation | null>(null);
+  const [reservation, setReservation] = useState<ReservationSummary | null>(null);
 
   useEffect(() => {
     if (!token) { setState('not_found'); return; }
@@ -105,10 +107,13 @@ export function CancelReservationPage() {
                   </p>
 
                   <div className="flex gap-3">
-                    <Link to="/reserve" className="flex-1">
-                      <Button variant="outline" className="w-full" disabled={state === 'confirming'}>
-                        Mantieni prenotazione
-                      </Button>
+                    <Link
+                      to="/book"
+                      aria-disabled={state === 'confirming'}
+                      onClick={event => state === 'confirming' && event.preventDefault()}
+                      className={`inline-flex h-10 flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-900 shadow-sm transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-brown ${state === 'confirming' ? 'pointer-events-none opacity-50' : ''}`}
+                    >
+                      Mantieni prenotazione
                     </Link>
                     <Button
                       className="flex-1 bg-red-600 hover:bg-red-700 text-white"
@@ -138,10 +143,8 @@ export function CancelReservationPage() {
                   <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-sm max-w-sm">
                     La tua prenotazione è stata cancellata con successo. Speriamo di rivederti presto!
                   </p>
-                  <Link to="/reserve">
-                    <Button className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90 mt-2">
-                      Fai una nuova prenotazione
-                    </Button>
+                  <Link to="/book" className={`${primaryLinkClass} mt-2`}>
+                    Fai una nuova prenotazione
                   </Link>
                 </div>
               )}
@@ -156,10 +159,8 @@ export function CancelReservationPage() {
                   <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-sm max-w-sm">
                     Questa prenotazione risulta già cancellata.
                   </p>
-                  <Link to="/reserve">
-                    <Button className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90 mt-2">
-                      Fai una nuova prenotazione
-                    </Button>
+                  <Link to="/book" className={`${primaryLinkClass} mt-2`}>
+                    Fai una nuova prenotazione
                   </Link>
                 </div>
               )}
@@ -174,10 +175,8 @@ export function CancelReservationPage() {
                   <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-sm max-w-sm">
                     Non è possibile cancellare una prenotazione già completata.
                   </p>
-                  <Link to="/">
-                    <Button className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90 mt-2">
-                      Torna alla home
-                    </Button>
+                  <Link to="/" className={`${primaryLinkClass} mt-2`}>
+                    Torna alla home
                   </Link>
                 </div>
               )}
@@ -195,10 +194,8 @@ export function CancelReservationPage() {
                     <a href="tel:+390415204603" className="text-venetian-gold hover:underline">+39 041 520 4603</a>{' '}
                     per assistenza.
                   </p>
-                  <Link to="/">
-                    <Button className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90 mt-2">
-                      Torna alla home
-                    </Button>
+                  <Link to="/" className={`${primaryLinkClass} mt-2`}>
+                    Torna alla home
                   </Link>
                 </div>
               )}
@@ -214,10 +211,8 @@ export function CancelReservationPage() {
                     Si è verificato un errore. Riprova più tardi o contattaci al{' '}
                     <a href="tel:+390415204603" className="text-venetian-gold hover:underline">+39 041 520 4603</a>.
                   </p>
-                  <Link to="/">
-                    <Button className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90 mt-2">
-                      Torna alla home
-                    </Button>
+                  <Link to="/" className={`${primaryLinkClass} mt-2`}>
+                    Torna alla home
                   </Link>
                 </div>
               )}

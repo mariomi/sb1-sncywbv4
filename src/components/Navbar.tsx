@@ -1,6 +1,5 @@
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Button } from './Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from './Logo';
 import { Link, useLocation } from 'react-router-dom';
@@ -25,9 +24,10 @@ export function Navbar() {
 
   const navItems = [
     { name: t('nav.menu'), path: '/menu' },
-    { name: t('nav.about'), path: '/about' },
+    { name: t('nav.about'), path: '/our-story' },
+    { name: t('nav.gallery'), path: '/gallery' },
+    { name: t('nav.location'), path: '/location' },
     { name: t('nav.contact'), path: '/contact' },
-    { name: t('nav.myReservations'), path: '/my-reservations' }
   ];
 
   return (
@@ -68,7 +68,7 @@ export function Navbar() {
                   <motion.div
                     className="flex-shrink-0 flex items-center space-x-3"
                   >
-                    <Link to="/">
+                    <Link to="/" aria-label="Al Gobbo di Rialto home">
                       <motion.div
                         whileHover={{ rotate: 360 }}
                         transition={{ duration: 1, ease: "easeInOut" }}
@@ -77,7 +77,7 @@ export function Navbar() {
                       </motion.div>
                     </Link>
                     <div>
-                      <h1 className="text-base sm:text-lg font-serif text-white whitespace-nowrap">Al Gobbo di Rialto</h1>
+                      <p className="text-base sm:text-lg font-serif text-white whitespace-nowrap">Al Gobbo di Rialto</p>
                       <p className="text-[10px] text-venetian-sandstone/80 font-medium tracking-wider">VENEZIA • EST. 1955</p>
                     </div>
                   </motion.div>
@@ -125,13 +125,8 @@ export function Navbar() {
                       transition={{ duration: 0.3, ease: "easeOut" }}
                       className="ml-6"
                     >
-                      <Link to="/reserve">
-                        <Button
-                          size="sm"
-                          className="bg-venetian-gold/90 text-venetian-brown hover:bg-venetian-gold transition-colors duration-300 shadow-sm rounded-lg"
-                        >
-                          {t('nav.reserve')}
-                        </Button>
+                      <Link to="/book" className="inline-flex h-8 items-center justify-center rounded-lg bg-venetian-gold px-3 text-sm font-semibold text-[#4A3329] shadow-sm transition-colors duration-300 hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                        {t('nav.reserve')}
                       </Link>
                     </motion.div>
                   </div>
@@ -166,7 +161,7 @@ export function Navbar() {
             className="md:hidden bg-venetian-brown/90 dark:bg-venetian-brown backdrop-blur-sm mx-3 mt-2 rounded-xl overflow-hidden"
           >
             <div className="py-2 px-4 space-y-1">
-              {[...navItems, { name: t('nav.reserve'), path: '/reserve' }].map((item, index) => (
+              {[...navItems, { name: t('nav.reserve'), path: '/book' }].map((item, index) => (
                 <motion.div
                   key={item.name}
                   initial={{ x: -20, opacity: 0 }}
@@ -217,7 +212,7 @@ export function Navbar() {
             className="fixed top-20 left-1/2 -translate-x-1/2 bg-venetian-brown/90 dark:bg-venetian-brown backdrop-blur-sm rounded-lg shadow-sm overflow-hidden w-[90%] max-w-xs"
           >
             <div className="py-2">
-              {[...navItems, { name: t('nav.reserve'), path: '/reserve' }].map((item, index) => (
+              {[...navItems, { name: t('nav.reserve'), path: '/book' }].map((item, index) => (
                 <motion.div
                   key={item.name}
                   initial={{ x: 10, opacity: 0 }}

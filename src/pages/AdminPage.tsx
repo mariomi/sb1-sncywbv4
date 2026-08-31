@@ -139,7 +139,7 @@ export function AdminPage() {
     fetchTimeSlots();
     fetchClosedDates();
     fetchRecurringClosures();
-  }, [user, selectedDate]);
+  }, [user, selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Supabase Realtime: subscribe to new reservations
   useEffect(() => {
@@ -361,13 +361,12 @@ export function AdminPage() {
                 Nuova Prenotazione
               </Button>
             )}
-            <Link to="/messages">
-              <Button
-                className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Messaggi
-              </Button>
+            <Link
+              to="/admin/messages"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-venetian-brown px-4 text-sm font-medium text-white shadow transition-colors hover:bg-venetian-brown/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold dark:bg-venetian-gold dark:text-venetian-brown"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Messaggi
             </Link>
             {tableManagementEnabled && (
               <Button
@@ -392,11 +391,12 @@ export function AdminPage() {
               <Settings className="w-4 h-4 mr-2" />
               Orari
             </Button>
-            <Link to="/admin/stats">
-              <Button className="bg-venetian-brown text-white hover:bg-venetian-brown/90 dark:bg-venetian-gold dark:text-venetian-brown">
-                <BarChart2 className="w-4 h-4 mr-2" />
-                Statistiche
-              </Button>
+            <Link
+              to="/admin/stats"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-venetian-brown px-4 text-sm font-medium text-white shadow transition-colors hover:bg-venetian-brown/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold dark:bg-venetian-gold dark:text-venetian-brown"
+            >
+              <BarChart2 className="w-4 h-4 mr-2" />
+              Statistiche
             </Link>
             <Button
               onClick={() => exportReservationsToCSV(filteredReservations, `prenotazioni-${format(selectedDate, 'yyyy-MM-dd')}.csv`)}

@@ -1,166 +1,192 @@
-// Deno runtime — runs on Supabase Edge Functions
-// Schedule via Supabase Dashboard → Edge Functions → Schedules
-// Cron: "*/30 * * * *" (every 30 minutes)
-// Sends a reminder email to reservations starting in ~2 hours (window: +1h50m to +2h10m)
+// Two-hour reservation reminder.
+// Schedule every 10 minutes. The 110–130 minute window absorbs small scheduler
+// delays while Resend idempotency and the database timestamp prevent duplicates.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.4'
+import {
+  escapeHtml,
+  getRomeTimeWindow,
+  jsonResponse,
+  secretsMatch,
+} from '../_shared/reminder-utils.js'
 
-const RESEND_KEY   = Deno.env.get('VITE_RESEND_API_KEY')!
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SERVICE_KEY  = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const SITE_URL     = Deno.env.get('SITE_URL') ?? 'https://www.ristorantealgobbodirialto.it'
+const RESEND_KEY = Deno.env.get('RESEND_API_KEY')
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+const CRON_SECRET = Deno.env.get('REMINDER_CRON_SECRET')
+const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://www.ristorantealgobbodirialto.it').replace(/\/$/, '')
 
-Deno.serve(async () => {
-  const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
+Deno.serve(async (request) => {
+  if (request.method !== 'POST') {
+    return jsonResponse({ error: 'Method not allowed' }, 405)
+  }
+
+  if (!secretsMatch(request.headers.get('x-reminder-secret'), CRON_SECRET)) {
+    return jsonResponse({ error: 'Unauthorized' }, 401)
+  }
+
+  const missingConfiguration = [
+    ['RESEND_API_KEY', RESEND_KEY],
+    ['SUPABASE_URL', SUPABASE_URL],
+    ['SUPABASE_SERVICE_ROLE_KEY', SERVICE_KEY],
+    ['REMINDER_CRON_SECRET', CRON_SECRET],
+  ].filter(([, value]) => !value).map(([name]) => name)
+
+  if (missingConfiguration.length > 0) {
+    console.error('Missing reminder configuration:', missingConfiguration.join(', '))
+    return jsonResponse({ error: 'Reminder service is not configured' }, 503)
+  }
+
+  const supabase = createClient(SUPABASE_URL!, SERVICE_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+
+  const { data: reminderFlag, error: flagError } = await supabase
+    .from('feature_flags')
+    .select('enabled')
+    .eq('key', 'reminder_emails')
+    .maybeSingle()
+
+  if (flagError) {
+    console.error('Could not read reminder feature flag:', flagError)
+    return jsonResponse({ error: 'Could not read reminder settings' }, 500)
+  }
+  if (reminderFlag?.enabled === false) {
+    return jsonResponse({ skipped: true, reason: 'feature_disabled' })
+  }
 
   const now = new Date()
-
-  // Window: reservations starting between now+1h50m and now+2h10m
-  const windowStart = new Date(now.getTime() + 110 * 60 * 1000) // +1h50m
-  const windowEnd   = new Date(now.getTime() + 130 * 60 * 1000) // +2h10m
-
-  const todayStr        = now.toISOString().split('T')[0]
-  const windowStartTime = windowStart.toTimeString().slice(0, 5) // "HH:MM"
-  const windowEndTime   = windowEnd.toTimeString().slice(0, 5)
-
-  // Handle midnight crossover: if windowEnd crosses to next day
-  const windowEndDate = windowEnd.toISOString().split('T')[0]
-
+  const { start, end } = getRomeTimeWindow(now, 110, 130)
   let query = supabase
     .from('reservations')
-    .select('*')
+    .select('id,name,email,date,time,guests,cancellation_token')
     .in('status', ['pending', 'confirmed'])
     .is('reminder_2h_sent_at', null)
 
-  if (todayStr === windowEndDate) {
-    // Same day — simple time range
+  if (start.date === end.date) {
     query = query
-      .eq('date', todayStr)
-      .gte('time', windowStartTime + ':00')
-      .lte('time', windowEndTime + ':59')
+      .eq('date', start.date)
+      .gte('time', `${start.time}:00`)
+      .lte('time', `${end.time}:59`)
   } else {
-    // Crosses midnight — query two days
     query = query.or(
-      `and(date.eq.${todayStr},time.gte.${windowStartTime}:00),` +
-      `and(date.eq.${windowEndDate},time.lte.${windowEndTime}:59)`
+      `and(date.eq.${start.date},time.gte.${start.time}:00),` +
+      `and(date.eq.${end.date},time.lte.${end.time}:59)`,
     )
   }
 
   const { data: reservations, error } = await query
-
   if (error) {
-    console.error('❌ Query error:', error)
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+    console.error('Could not load two-hour reminders:', error)
+    return jsonResponse({ error: 'Could not load reminders' }, 500)
   }
 
-  console.log(`📧 Found ${reservations?.length ?? 0} reservations for 2h reminder`)
+  let sent = 0
+  let failed = 0
 
-  let sent = 0, failed = 0
-
-  for (const r of reservations ?? []) {
+  for (const reservation of reservations ?? []) {
     try {
-      const cancelUrl = `${SITE_URL}/cancella/${r.cancellation_token}`
-
-      const fDate = new Date(r.date + 'T00:00:00').toLocaleDateString('it-IT', {
-        weekday: 'long', day: 'numeric', month: 'long'
+      const formattedDate = new Date(`${reservation.date}T12:00:00Z`).toLocaleDateString('it-IT', {
+        timeZone: 'Europe/Rome',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
       })
-      const fTime = r.time.slice(0, 5)
+      const formattedTime = reservation.time.slice(0, 5)
+      const cancellationUrl = `${SITE_URL}/cancella/${reservation.cancellation_token}`
+      const body = {
+        from: 'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
+        to: reservation.email,
+        subject: `Tra circa 2 ore ci vediamo — ${formattedTime} al Gobbo di Rialto`,
+        html: buildReminderHtml({
+          name: reservation.name,
+          formattedDate,
+          formattedTime,
+          guests: reservation.guests,
+          cancellationUrl,
+        }),
+      }
 
-      const html = build2hReminderHtml({ ...r, fDate, fTime, cancelUrl })
-
-      const res = await fetch('https://api.resend.com/emails', {
+      const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${RESEND_KEY}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${RESEND_KEY}`,
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `reservation-two-hour/${reservation.id}/${reservation.date}`,
         },
-        body: JSON.stringify({
-          from: 'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
-          to: r.email,
-          subject: `⏰ Tra 2 ore ci vediamo — ${fTime} al Gobbo di Rialto`,
-          html
-        })
+        body: JSON.stringify(body),
       })
 
-      if (!res.ok) throw new Error(`Resend error: ${res.status}`)
+      if (!response.ok) {
+        throw new Error(`Resend returned HTTP ${response.status}`)
+      }
 
-      await supabase
+      const { error: updateError } = await supabase
         .from('reservations')
         .update({ reminder_2h_sent_at: new Date().toISOString() })
-        .eq('id', r.id)
+        .eq('id', reservation.id)
+        .is('reminder_2h_sent_at', null)
 
-      sent++
-    } catch (err) {
-      console.error(`❌ Failed for reservation ${r.id}:`, err)
-      failed++
+      if (updateError) throw updateError
+      sent += 1
+    } catch (sendError) {
+      console.error(`Two-hour reminder failed for reservation ${reservation.id}:`, sendError)
+      failed += 1
     }
   }
 
-  return new Response(JSON.stringify({ sent, failed, window: { start: windowStartTime, end: windowEndTime } }), {
-    headers: { 'Content-Type': 'application/json' }
-  })
+  return jsonResponse(
+    {
+      window: { start: `${start.date} ${start.time}`, end: `${end.date} ${end.time}` },
+      eligible: reservations?.length ?? 0,
+      sent,
+      failed,
+    },
+    failed > 0 ? 502 : 200,
+  )
 })
 
-function build2hReminderHtml(r: {
-  name: string, fDate: string, fTime: string, guests: number,
-  occasion?: string | null, cancelUrl: string
+function buildReminderHtml({
+  name,
+  formattedDate,
+  formattedTime,
+  guests,
+  cancellationUrl,
+}: {
+  name: string
+  formattedDate: string
+  formattedTime: string
+  guests: number
+  cancellationUrl: string
 }) {
-  const brown = '#5C4033'
-  const gold  = '#D4AF37'
-  const sand  = '#fdf6ee'
+  const firstName = escapeHtml(name.trim().split(/\s+/)[0] || 'ospite')
+  const safeDate = escapeHtml(formattedDate)
+  const safeTime = escapeHtml(formattedTime)
+  const safeCancellationUrl = escapeHtml(cancellationUrl)
 
-  return `<!DOCTYPE html>
+  return `<!doctype html>
 <html lang="it">
-<head><meta charset="UTF-8"/></head>
-<body style="margin:0;padding:0;background:#f0e8d5;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0e8d5;">
-    <tr><td align="center" style="padding:32px 16px;">
-      <table width="560" cellpadding="0" cellspacing="0"
-             style="max-width:560px;width:100%;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 16px rgba(92,64,51,0.10);">
-        <!-- Header -->
-        <tr><td style="background:${brown};padding:24px 28px;">
-          <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${gold};">A breve ci vediamo</p>
-          <h2 style="margin:6px 0 0;font-size:20px;color:#fff;font-family:Georgia,serif;">⏰ Tra 2 ore, ${r.name.split(' ')[0]}!</h2>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;background:#f0e8d5;font-family:Arial,sans-serif;color:#5c4033">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:32px 16px">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:10px;overflow:hidden">
+        <tr><td style="background:#5c4033;padding:24px 28px;color:#fff">
+          <p style="margin:0;color:#d4af37;font-size:11px;letter-spacing:3px;text-transform:uppercase">A breve ci vediamo</p>
+          <h1 style="margin:6px 0 0;font:20px Georgia,serif">Tra circa 2 ore, ${firstName}!</h1>
         </td></tr>
-        <tr><td style="height:3px;background:${gold};"></td></tr>
-        <!-- Body -->
-        <tr><td style="padding:28px 32px;">
-          <p style="margin:0 0 20px;font-size:15px;color:${brown};line-height:1.6;">
-            Il tuo tavolo ti aspetta tra circa <strong>2 ore</strong>. A presto al Ristorante Al Gobbo di Rialto!
-          </p>
-          <table width="100%" style="background:${sand};border-radius:8px;border:1px solid #e0c99a;">
-            <tr><td style="padding:16px 20px;border-bottom:1px solid #e0c99a;">
-              <p style="margin:0;font-size:11px;color:#9e8272;letter-spacing:2px;text-transform:uppercase;">Dettagli prenotazione</p>
-            </td></tr>
-            <tr><td style="padding:12px 20px;border-bottom:1px solid #e8d5b0;">
-              <p style="margin:0;font-size:13px;color:#9e8272;">📅 Data</p>
-              <p style="margin:4px 0 0;font-size:16px;font-weight:700;color:${brown};text-transform:capitalize;">${r.fDate}</p>
-            </td></tr>
-            <tr><td style="padding:12px 20px;border-bottom:1px solid #e8d5b0;">
-              <p style="margin:0;font-size:13px;color:#9e8272;">🕐 Orario</p>
-              <p style="margin:4px 0 0;font-size:16px;font-weight:700;color:${brown};">${r.fTime}</p>
-            </td></tr>
-            <tr><td style="padding:12px 20px;">
-              <p style="margin:0;font-size:13px;color:#9e8272;">👥 Ospiti</p>
-              <p style="margin:4px 0 0;font-size:16px;font-weight:700;color:${brown};">${r.guests} ${r.guests === 1 ? 'persona' : 'persone'}</p>
-            </td></tr>
+        <tr><td style="height:3px;background:#d4af37"></td></tr>
+        <tr><td style="padding:28px 32px">
+          <p style="margin:0 0 20px;line-height:1.6">Il tuo tavolo ti aspetta tra circa 2 ore. A presto al Ristorante Al Gobbo di Rialto.</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fdf6ee;border:1px solid #e0c99a;border-radius:8px">
+            <tr><td style="padding:12px 20px;border-bottom:1px solid #e8d5b0"><strong>Data:</strong> ${safeDate}</td></tr>
+            <tr><td style="padding:12px 20px;border-bottom:1px solid #e8d5b0"><strong>Orario:</strong> ${safeTime}</td></tr>
+            <tr><td style="padding:12px 20px"><strong>Ospiti:</strong> ${guests}</td></tr>
           </table>
-          <p style="margin:20px 0 8px;font-size:13px;color:#6b5244;line-height:1.7;">
-            📍 <strong>Ristorante Al Gobbo di Rialto</strong><br/>
-            Sestiere San Polo 649, 30125 Venezia<br/>
-            <a href="tel:+390415204603" style="color:${gold};text-decoration:none;">+39 041 520 4603</a>
-          </p>
-          <p style="margin:16px 0 0;font-size:12px;color:#9e8272;text-align:center;">
-            Non puoi più venire?
-            <a href="${r.cancelUrl}" style="color:#9E4638;text-decoration:underline;">Cancella la prenotazione</a>
-          </p>
+          <p style="margin:20px 0 8px;line-height:1.7"><strong>Ristorante Al Gobbo di Rialto</strong><br>Sestiere San Polo 649, 30125 Venezia<br><a href="tel:+390415204603" style="color:#7a342b">+39 041 520 4603</a></p>
+          <p style="margin:16px 0 0;text-align:center;font-size:13px">Non puoi più venire? <a href="${safeCancellationUrl}" style="color:#7a342b">Cancella la prenotazione</a></p>
         </td></tr>
-        <!-- Footer -->
-        <tr><td style="padding:16px 24px;background:${sand};border-top:1px solid #e8d5b0;">
-          <p style="margin:0;font-size:11px;color:#9e8272;text-align:center;font-family:Georgia,serif;font-style:italic;">
-            "A presto a Venezia" — Lo staff del Ristorante Al Gobbo di Rialto
-          </p>
-        </td></tr>
+        <tr><td style="padding:16px 24px;background:#fdf6ee;text-align:center;font-size:11px;color:#806b60">Ristorante Al Gobbo di Rialto — Sestiere San Polo 649, Venezia</td></tr>
       </table>
     </td></tr>
   </table>

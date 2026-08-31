@@ -10,9 +10,9 @@
     - Authenticated (admin) can manage all entries
 */
 
-CREATE TABLE waitlist (
+CREATE TABLE IF NOT EXISTS waitlist (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at timestamptz DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now(),
   date date NOT NULL,
   time time NOT NULL,
   guests integer NOT NULL CHECK (guests > 0 AND guests <= 20),
@@ -27,24 +27,10 @@ CREATE TABLE waitlist (
   position integer NOT NULL DEFAULT 1
 );
 
--- Enable RLS
+-- Deny direct browser access by default. The later security migration adds
+-- admin-only policies and validated public RPC functions.
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can join waitlist"
-  ON waitlist FOR INSERT
-  TO public
-  WITH CHECK (true);
-
-CREATE POLICY "Public can view own waitlist entries"
-  ON waitlist FOR SELECT
-  TO public
-  USING (email IS NOT NULL);
-
-CREATE POLICY "Authenticated users can manage waitlist"
-  ON waitlist FOR ALL
-  TO authenticated
-  USING (true);
-
 -- Indexes for performance
-CREATE INDEX idx_waitlist_date_time ON waitlist (date, time, status);
-CREATE INDEX idx_waitlist_email ON waitlist (email);
+CREATE INDEX IF NOT EXISTS idx_waitlist_date_time ON waitlist (date, time, status);
+CREATE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist (email);

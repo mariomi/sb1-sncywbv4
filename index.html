@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,8 +14,11 @@
     <link rel="canonical" href="https://www.ristorantealgobbodirialto.it/" />
 
     <!-- Hreflang for multilingual SEO -->
-    <link rel="alternate" hreflang="it" href="https://www.ristorantealgobbodirialto.it/" />
-    <link rel="alternate" hreflang="en" href="https://www.ristorantealgobbodirialto.it/?lang=en" />
+    <link rel="alternate" hreflang="en" href="https://www.ristorantealgobbodirialto.it/" />
+    <link rel="alternate" hreflang="it" href="https://www.ristorantealgobbodirialto.it/?lang=it" />
+    <link rel="alternate" hreflang="fr" href="https://www.ristorantealgobbodirialto.it/?lang=fr" />
+    <link rel="alternate" hreflang="de" href="https://www.ristorantealgobbodirialto.it/?lang=de" />
+    <link rel="alternate" hreflang="es" href="https://www.ristorantealgobbodirialto.it/?lang=es" />
     <link rel="alternate" hreflang="x-default" href="https://www.ristorantealgobbodirialto.it/" />
 
     <!-- Open Graph / Facebook -->
@@ -23,7 +26,7 @@
     <meta property="og:url" content="https://www.ristorantealgobbodirialto.it/" />
     <meta property="og:title" content="Ristorante Al Gobbo di Rialto | Cucina Veneziana dal 1955" />
     <meta property="og:description" content="Autentica cucina veneziana nel cuore di Venezia. Pesce fresco della laguna, risotti, pizze artigianali. Prenota il tuo tavolo a San Polo 649." />
-    <meta property="og:image" content="https://www.ristorantealgobbodirialto.it/og-image.jpg" />
+    <meta property="og:image" content="https://www.ristorantealgobbodirialto.it/images/hero/img0.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="it_IT" />
@@ -35,11 +38,11 @@
     <meta name="twitter:url" content="https://www.ristorantealgobbodirialto.it/" />
     <meta name="twitter:title" content="Ristorante Al Gobbo di Rialto | Cucina Veneziana dal 1955" />
     <meta name="twitter:description" content="Autentica cucina veneziana nel cuore di Venezia. Pesce fresco, risotti della laguna, pizze artigianali." />
-    <meta name="twitter:image" content="https://www.ristorantealgobbodirialto.it/og-image.jpg" />
+    <meta name="twitter:image" content="https://www.ristorantealgobbodirialto.it/images/hero/img0.jpg" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
 
     <!-- Theme color for browser UI -->
     <meta name="theme-color" content="#5C4033" />
@@ -62,11 +65,10 @@
       "alternateName": "Al Gobbo di Rialto",
       "url": "https://www.ristorantealgobbodirialto.it",
       "telephone": "+390415204603",
-      "email": "info@ristorantealgobbodirialto.it",
       "foundingDate": "1955",
       "description": "Ristorante veneziano storico dal 1955 nel cuore di San Polo. Cucina veneziana autentica con pesce fresco della laguna, risotti, paste fatte in casa e pizze artigianali.",
       "image": [
-        "https://www.ristorantealgobbodirialto.it/og-image.jpg"
+        "https://www.ristorantealgobbodirialto.it/images/hero/img0.jpg"
       ],
       "address": {
         "@type": "PostalAddress",
@@ -101,26 +103,16 @@
       "paymentAccepted": "Cash, Credit Card",
       "currenciesAccepted": "EUR",
       "smokingAllowed": false,
-      "amenityFeature": [
-        { "@type": "LocationFeatureSpecification", "name": "Terrazza esterna", "value": true },
-        { "@type": "LocationFeatureSpecification", "name": "Wi-Fi gratuito", "value": true },
-        { "@type": "LocationFeatureSpecification", "name": "Accessibile ai disabili", "value": true }
-      ],
       "hasMenu": "https://www.ristorantealgobbodirialto.it/menu-schema.json",
       "menu": "https://www.ristorantealgobbodirialto.it/menu",
-      "reservations": "https://www.ristorantealgobbodirialto.it/reserve",
+      "reservations": "https://www.ristorantealgobbodirialto.it/book",
       "acceptsReservations": true,
       "sameAs": [
         "https://www.facebook.com/ristorantealgobbodirialto",
-        "https://www.tripadvisor.it/Restaurant_Review-g187870-d20083361-Reviews-Ristorante_Pizzeria_Al_Gobbo_di_Rialto-Venice_Veneto.html"
-      ],
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.5",
-        "reviewCount": "250",
-        "bestRating": "5",
-        "worstRating": "1"
-      }
+        "https://www.instagram.com/algobbodirialto/",
+        "https://www.tripadvisor.it/Restaurant_Review-g187870-d20083361-Reviews-Ristorante_Pizzeria_Al_Gobbo_di_Rialto-Venice_Veneto.html",
+        "https://www.thefork.it/ristorante/ristorante-pizzeria-al-gobbo-di-rialto-r594937"
+      ]
     }
     </script>
 
@@ -131,8 +123,8 @@
       "@type": "ReservationAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://www.ristorantealgobbodirialto.it/reserve",
-        "inLanguage": ["it", "en"],
+        "urlTemplate": "https://www.ristorantealgobbodirialto.it/book",
+        "inLanguage": ["it", "en", "fr", "de", "es"],
         "actionPlatform": [
           "http://schema.org/DesktopWebPlatform",
           "http://schema.org/MobileWebPlatform"
@@ -148,111 +140,6 @@
     }
     </script>
 
-    <!-- JSON-LD: FAQ for rich snippets -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "Come posso prenotare un tavolo al Ristorante Al Gobbo di Rialto?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Puoi prenotare direttamente online tramite il nostro sito web alla pagina Prenota, oppure chiamarci al +39 041 520 4603. Accettiamo prenotazioni per pranzo (12:00–14:30) e cena (19:00–22:00), dal lunedì al sabato escluso il martedì, e la domenica."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Quali giorni è aperto il ristorante?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Il ristorante è aperto lunedì, mercoledì, giovedì, venerdì, sabato e domenica. Siamo chiusi il martedì. Orari: pranzo 12:00–14:30, cena 19:00–22:00."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Dove si trova il Ristorante Al Gobbo di Rialto?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Siamo in Sestiere San Polo 649, vicino al Ponte di Rialto a Venezia (CAP 30125). Raggiungibile a piedi dal vaporetto Rialto Mercato in circa 2 minuti."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Il ristorante è adatto alle famiglie con bambini?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sì, siamo un ristorante a misura di famiglia. Disponiamo di seggioloni per bambini e un menu che soddisfa anche i palati più piccoli. Vi accogliamo con piacere!"
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Avete opzioni vegetariane o per allergie alimentari?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sì, il nostro menu include piatti vegetariani (segnalati nel menu). Per allergie o intolleranze alimentari vi preghiamo di informarci al momento della prenotazione o all'arrivo: lo chef sarà lieto di adattare i piatti alle vostre esigenze."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Qual è la specialità del ristorante?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Siamo famosi per il pesce fresco della laguna veneziana, i risotti di mare, le paste fatte in casa e le pizze artigianali. Dal 1955 proponiamo l'autentica cucina veneziana con ingredienti selezionati ogni giorno al mercato di Rialto."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "È possibile organizzare eventi privati o cene di gruppo?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Certamente! Organizziamo cene private, compleanni, anniversari e pranzi di gruppo. Contattateci tramite il modulo online o chiamateci al +39 041 520 4603 per discutere il vostro evento e ricevere un preventivo personalizzato."
-          }
-        }
-      ]
-    }
-    </script>
-
-    <!-- JSON-LD: BreadcrumbList -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://www.ristorantealgobbodirialto.it/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Menu",
-          "item": "https://www.ristorantealgobbodirialto.it/menu"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Prenota",
-          "item": "https://www.ristorantealgobbodirialto.it/reserve"
-        },
-        {
-          "@type": "ListItem",
-          "position": 4,
-          "name": "Chi Siamo",
-          "item": "https://www.ristorantealgobbodirialto.it/about"
-        },
-        {
-          "@type": "ListItem",
-          "position": 5,
-          "name": "FAQ",
-          "item": "https://www.ristorantealgobbodirialto.it/faq"
-        }
-      ]
-    }
-    </script>
   </head>
   <body>
     <div id="root"></div>

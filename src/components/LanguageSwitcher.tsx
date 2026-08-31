@@ -1,36 +1,32 @@
-import { motion } from 'framer-motion';
 import { useLanguage } from '../lib/i18n';
+import { useId } from 'react';
+
+const options = [
+  { value: 'en', label: 'EN' },
+  { value: 'it', label: 'IT' },
+  { value: 'fr', label: 'FR' },
+  { value: 'de', label: 'DE' },
+  { value: 'es', label: 'ES' },
+] as const;
 
 export function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage();
+  const id = useId();
 
   return (
-    <motion.div
-      className="flex space-x-2"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      <button
-        onClick={() => setLanguage('en')}
-        className={`px-2 py-1 rounded-lg text-sm font-medium transition-colors ${
-          language === 'en'
-            ? 'bg-venetian-gold/90 text-venetian-brown'
-            : 'text-venetian-sandstone hover:text-white hover:bg-white/10'
-        }`}
+    <>
+      <label className="sr-only" htmlFor={id}>Language</label>
+      <select
+        id={id}
+        value={language}
+        onChange={event => setLanguage(event.target.value as typeof language)}
+        className="rounded-lg border border-white/20 bg-venetian-brown/80 px-2 py-1 text-sm font-semibold text-venetian-sandstone focus:border-venetian-gold focus:outline-none"
+        aria-label="Language"
       >
-        EN
-      </button>
-      <button
-        onClick={() => setLanguage('it')}
-        className={`px-2 py-1 rounded-lg text-sm font-medium transition-colors ${
-          language === 'it'
-            ? 'bg-venetian-gold/90 text-venetian-brown'
-            : 'text-venetian-sandstone hover:text-white hover:bg-white/10'
-        }`}
-      >
-        IT
-      </button>
-    </motion.div>
+        {options.map(option => (
+          <option key={option.value} value={option.value}>{option.label}</option>
+        ))}
+      </select>
+    </>
   );
 }

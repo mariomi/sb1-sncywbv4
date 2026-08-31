@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { SEOHead } from '../components/SEOHead';
-import { MapPin, Clock, Phone, Mail, Facebook, Utensils } from 'lucide-react';
+import { MapPin, Clock, Phone, Facebook, Instagram, Utensils } from 'lucide-react';
 import { Button } from '../components/Button';
 import { PageTransition } from '../components/PageTransition';
 import toast from 'react-hot-toast';
-import img2947 from '../Img/G1/IMG_2947.JPEG';
+import img2947 from '../Img/G1/IMG_2947.webp';
 import { createContactMessage } from '../lib/api';
 
 const fadeIn = {
@@ -23,7 +23,6 @@ export function ContactPage() {
     message: ''
   });
   const [privacyConsent, setPrivacyConsent] = useState(false);
-  const [marketingConsent, setMarketingConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +52,6 @@ export function ContactPage() {
         message: ''
       });
       setPrivacyConsent(false);
-      setMarketingConsent(false);
     } catch {
       toast.error('Failed to send message. Please try again.');
     } finally {
@@ -66,6 +64,7 @@ export function ContactPage() {
       <SEOHead
         title="Contatti"
         canonical="/contact"
+        availableLanguages={['en']}
         description="Contatta il Ristorante Al Gobbo di Rialto a Venezia. Siamo in Sestiere San Polo 649, vicino al Ponte di Rialto. Tel: +39 041 520 4603. Scrivi un messaggio o vieni a trovarci."
       />
       <div className="min-h-screen bg-venetian-sandstone/20 pt-20 sm:pt-24">
@@ -205,19 +204,6 @@ export function ContactPage() {
                     </label>
                   </div>
 
-                  <div className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      id="marketingConsent"
-                      checked={marketingConsent}
-                      onChange={(e) => setMarketingConsent(e.target.checked)}
-                      className="mt-1"
-                    />
-                    <label htmlFor="marketingConsent" className="text-sm text-venetian-brown/70 dark:text-venetian-sandstone/70">
-                      I would like to receive marketing communications about special offers, events, and news. 
-                      You can unsubscribe at any time.
-                    </label>
-                  </div>
                 </div>
 
                 <motion.div
@@ -245,7 +231,7 @@ export function ContactPage() {
               {/* Map */}
               <div className="bg-white/95 rounded-2xl shadow-xl overflow-hidden">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2799.935720139675!2d12.333893776271696!3d45.43802573632649!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x477eb1c7fefa139f%3A0x5a3c4b0e784ea266!2sPonte%20di%20Rialto!5e0!3m2!1sen!2sus!4v1709294611439!5m2!1sen!2sus"
+                  src="https://www.google.com/maps?q=Al+Gobbo+di+Rialto,+San+Polo+649,+Venezia&output=embed"
                   width="100%"
                   height="220"
                   style={{ border: 0 }}
@@ -267,17 +253,12 @@ export function ContactPage() {
                   {
                     icon: Clock,
                     title: 'Opening Hours',
-                    content: 'Open Daily: 11:00 - 23:00\nClosed on Tuesday'
+                    content: 'Lunch and dinner\nClosed on Tuesday'
                   },
                   {
                     icon: Phone,
                     title: 'Phone',
                     content: '(+39) 041 520 4603'
-                  },
-                  {
-                    icon: Mail,
-                    title: 'Email',
-                    content: 'info@ristorantealgobbodirialto.it'
                   }
                 ].map((item, index) => (
                   <motion.div
@@ -306,6 +287,7 @@ export function ContactPage() {
                 <div className="flex space-x-4">
                   {[
                     { icon: Facebook, label: 'Facebook', href: 'https://www.facebook.com/ristorantealgobbodirialto' },
+                    { icon: Instagram, label: 'Instagram', href: 'https://www.instagram.com/algobbodirialto/' },
                     { icon: Utensils, label: 'TripAdvisor', href: 'https://www.tripadvisor.it/Restaurant_Review-g187870-d20083361-Reviews-Ristorante_Pizzeria_Al_Gobbo_di_Rialto-Venice_Veneto.html' }
                   ].map((social) => (
                     <motion.a
@@ -313,6 +295,7 @@ export function ContactPage() {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={social.label}
                       className="p-2 rounded-lg bg-venetian-brown/5 text-venetian-brown hover:bg-venetian-gold/10 transition-colors"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
