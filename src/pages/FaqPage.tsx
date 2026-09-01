@@ -95,16 +95,14 @@ function AccordionItem({ item, index }: { item: FaqItem; index: number }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.4 }}
-      className="border border-venetian-brown/20 dark:border-venetian-sandstone/20 rounded-xl overflow-hidden"
+      className="overflow-hidden border-t border-venetian-brown/20 last:border-b dark:border-white/15"
     >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left bg-white dark:bg-venetian-brown/40 hover:bg-venetian-sandstone/30 dark:hover:bg-venetian-brown/60 transition-colors"
+        className="flex min-h-20 w-full items-center justify-between gap-5 bg-transparent py-5 text-left transition-colors hover:text-venetian-terracotta"
         aria-expanded={open}
       >
-        <span className="font-serif text-base sm:text-lg text-venetian-brown dark:text-venetian-sandstone font-medium">
-          {item.question}
-        </span>
+        <span className="flex items-start gap-4"><span className="mt-1 text-[0.62rem] font-bold tracking-[0.14em] text-venetian-terracotta">{String(index + 1).padStart(2, '0')}</span><span className="font-serif text-xl font-semibold text-venetian-brown sm:text-2xl dark:text-white">{item.question}</span></span>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.25 }}
@@ -124,7 +122,7 @@ function AccordionItem({ item, index }: { item: FaqItem; index: number }) {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <p className="px-6 py-5 text-venetian-brown/80 dark:text-venetian-sandstone/80 leading-relaxed bg-venetian-sandstone/20 dark:bg-venetian-brown/20 text-sm sm:text-base">
+            <p className="pb-7 pl-10 pr-12 text-sm leading-7 text-venetian-brown/65 sm:pl-12 sm:text-base dark:text-white/60">
               {item.answer}
             </p>
           </motion.div>
@@ -157,24 +155,23 @@ export function FaqPage() {
         structuredData={faqSchema}
       />
 
-      <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24 pb-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#f7f3eb] pb-20 pt-[84px] dark:bg-venetian-brown">
+        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-7 sm:py-24">
 
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-14"
+            className="mb-16 border-t border-venetian-brown pt-7 text-left dark:border-white"
           >
-            <p className="text-venetian-gold text-sm font-medium tracking-[0.2em] uppercase mb-3">
+            <p className="editorial-kicker">
               {language === 'it' ? 'Hai domande?' : 'Have questions?'}
             </p>
-            <h1 className="font-serif text-4xl sm:text-5xl text-venetian-brown dark:text-venetian-sandstone mb-4">
+            <h1 className="mt-5 max-w-[10ch] font-serif text-6xl font-semibold leading-[0.82] text-venetian-brown sm:text-8xl dark:text-white">
               {language === 'it' ? 'Domande Frequenti' : 'Frequently Asked Questions'}
             </h1>
-            <div className="w-16 h-px bg-venetian-gold mx-auto mb-6" />
-            <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-base sm:text-lg max-w-xl mx-auto">
+            <p className="mt-7 max-w-xl text-base leading-7 text-venetian-brown/65 dark:text-white/60">
               {language === 'it'
                 ? 'Trova le risposte alle domande più comuni sul nostro ristorante.'
                 : 'Find answers to the most common questions about our restaurant.'}
@@ -182,7 +179,7 @@ export function FaqPage() {
           </motion.div>
 
           {/* Accordion */}
-          <div className="space-y-3">
+          <div>
             {faqs.map((item, index) => (
               <AccordionItem key={index} item={item} index={index} />
             ))}
@@ -193,12 +190,12 @@ export function FaqPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="mt-16 text-center bg-venetian-brown dark:bg-venetian-brown/80 rounded-2xl p-8 sm:p-10"
+            className="mt-20 bg-venetian-terracotta p-8 text-center text-white sm:p-12"
           >
-            <h2 className="font-serif text-2xl sm:text-3xl text-venetian-sandstone mb-3">
+            <h2 className="mb-3 font-serif text-4xl font-semibold sm:text-5xl">
               {language === 'it' ? 'Non hai trovato la risposta?' : "Didn't find your answer?"}
             </h2>
-            <p className="text-venetian-sandstone/70 mb-6 text-sm sm:text-base">
+            <p className="mb-7 text-sm text-white/65 sm:text-base">
               {language === 'it'
                 ? 'Contattaci direttamente — saremo felici di aiutarti.'
                 : 'Contact us directly — we will be happy to help.'}
@@ -206,13 +203,13 @@ export function FaqPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/contact"
-                className="inline-block px-6 py-3 rounded-xl bg-venetian-gold text-venetian-brown font-semibold text-sm hover:bg-venetian-gold/90 transition-colors"
+                className="inline-flex min-h-12 items-center justify-center bg-white px-6 text-xs font-bold uppercase tracking-[0.14em] text-venetian-terracotta hover:bg-venetian-gold hover:text-venetian-brown"
               >
                 {language === 'it' ? 'Scrivici' : 'Contact Us'}
               </Link>
               <Link
                 to="/book"
-                className="inline-block px-6 py-3 rounded-xl border-2 border-venetian-sandstone/40 text-venetian-sandstone font-semibold text-sm hover:bg-venetian-sandstone/10 transition-colors"
+                className="inline-flex min-h-12 items-center justify-center border border-white/35 px-6 text-xs font-bold uppercase tracking-[0.14em] text-white hover:border-white"
               >
                 {language === 'it' ? 'Prenota un tavolo' : 'Book a Table'}
               </Link>

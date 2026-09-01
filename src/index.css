@@ -2,6 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    color: #211d18;
+    background: #f7f3eb;
+    font-synthesis: none;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background: #f7f3eb;
+  }
+
+  body {
+    min-width: 320px;
+    margin: 0;
+    overflow-x: hidden;
+    background:
+      linear-gradient(rgba(25, 22, 18, 0.025) 1px, transparent 1px),
+      #f7f3eb;
+    background-size: 100% 32px;
+    color: #211d18;
+    font-family: 'Manrope', sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    color: #fffaf0;
+    background: #b44732;
+  }
+}
+
+@layer components {
+  .editorial-kicker {
+    @apply text-[0.68rem] font-bold uppercase tracking-[0.24em] text-venetian-terracotta;
+  }
+
+  .editorial-link {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 border border-venetian-brown bg-venetian-brown px-6 text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-venetian-terracotta hover:bg-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-terracotta focus-visible:ring-offset-2;
+  }
+
+  .editorial-link-light {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 border border-venetian-brown/25 bg-transparent px-6 text-xs font-bold uppercase tracking-[0.16em] text-venetian-brown transition-colors hover:border-venetian-terracotta hover:text-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-terracotta focus-visible:ring-offset-2;
+  }
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

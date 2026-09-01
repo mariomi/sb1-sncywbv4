@@ -1,161 +1,61 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { ArrowDownRight, ArrowRight, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../lib/i18n';
-import { ChevronDown } from 'lucide-react';
-const images = [
-  '/images/hero/img0.jpg',
-  '/images/hero/img1.jpg',
-  '/images/hero/img2.jpg',
-];
+import { useLanguage, type Language } from '../lib/i18n';
+import heroImage from '../Img/G1/IMG_2922.webp';
 
-// Ken Burns animation: each slide slowly zooms + shifts slightly for cinematic feel
-const kenBurnsVariants = [
-  { initial: { scale: 1.12, x: 0, y: 0 }, animate: { scale: 1, x: '-2%', y: '-1%' } },
-  { initial: { scale: 1.12, x: '-2%', y: 0 }, animate: { scale: 1, x: '1%', y: '-2%' } },
-  { initial: { scale: 1.1, x: '1%', y: '-1%' }, animate: { scale: 1, x: 0, y: 0 } },
-];
+const heroDetails: Record<Language, { location: string; open: string; note: string }> = {
+  en: { location: 'San Polo 649 · Rialto', open: 'Lunch & dinner', note: 'Venetian kitchen · seafood · pizza' },
+  it: { location: 'San Polo 649 · Rialto', open: 'Pranzo e cena', note: 'Cucina veneziana · pesce · pizza' },
+  fr: { location: 'San Polo 649 · Rialto', open: 'Déjeuner et dîner', note: 'Cuisine vénitienne · poisson · pizza' },
+  de: { location: 'San Polo 649 · Rialto', open: 'Mittag- & Abendessen', note: 'Venezianische Küche · Fisch · Pizza' },
+  es: { location: 'San Polo 649 · Rialto', open: 'Almuerzo y cena', note: 'Cocina veneciana · pescado · pizza' },
+};
 
 export function Hero() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { t } = useLanguage();
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const scrollToStory = () => {
-    document.getElementById('story-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const { language, t } = useLanguage();
+  const details = heroDetails[language];
 
   return (
-    <div className="relative h-screen overflow-hidden">
-      {/* Ken Burns Background Slideshow */}
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={currentImageIndex}
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
-        >
-          <motion.div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
-            initial={kenBurnsVariants[currentImageIndex].initial}
-            animate={kenBurnsVariants[currentImageIndex].animate}
-            transition={{ duration: 7, ease: 'easeInOut' }}
-          />
-          {/* Gradient overlay: darker at bottom for text legibility */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80" />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Content */}
-      <div className="relative h-full flex flex-col items-center justify-center text-center px-4 sm:px-6">
-        {/* Tagline */}
-        <motion.p
-          initial={{ opacity: 0, letterSpacing: '0.3em' }}
-          animate={{ opacity: 1, letterSpacing: '0.2em' }}
-          transition={{ duration: 1.2, delay: 0.2 }}
-          className="text-venetian-gold/90 text-sm sm:text-base font-medium tracking-[0.2em] uppercase mb-6"
-        >
-          {t('hero.tagline')}
-        </motion.p>
-
-        {/* Main Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.4, ease: 'easeOut' }}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-white mb-6 leading-tight max-w-4xl whitespace-pre-line"
-        >
-          {t('hero.title')}
-        </motion.h1>
-
-        {/* Decorative divider */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="w-24 h-px bg-venetian-gold mb-6 origin-center"
-        />
-
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.0 }}
-          className="text-base sm:text-lg md:text-xl text-venetian-sandstone/90 mb-10 max-w-2xl px-4 leading-relaxed"
-        >
-          {t('hero.subtitle')}
-        </motion.p>
-
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center px-4"
-        >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full sm:w-auto"
-          >
-            <Link to="/book" className="inline-flex h-12 w-full sm:w-auto items-center justify-center rounded-xl bg-venetian-gold px-8 text-sm font-semibold text-[#4A3329] shadow-lg shadow-venetian-gold/30 transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-              {t('hero.reserveButton')}
-            </Link>
+    <section className="relative overflow-hidden bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown" aria-labelledby="home-title">
+      <div className="mx-auto grid min-h-[calc(100svh-84px)] max-w-[1480px] lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="relative flex items-center border-x border-venetian-brown/15 px-5 py-16 sm:px-10 lg:px-14 xl:px-20 dark:border-white/10">
+          <div className="pointer-events-none absolute right-5 top-8 select-none font-serif text-[8rem] font-semibold leading-none text-venetian-brown/[0.035] sm:text-[12rem] lg:right-10 lg:top-12 dark:text-white/[0.035]">55</div>
+          <motion.div initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="relative z-10 max-w-[680px]">
+            <p className="editorial-kicker mb-7">{t('hero.tagline')}</p>
+            <h1 id="home-title" className="max-w-[11ch] font-serif text-[clamp(3.8rem,8.4vw,8.2rem)] font-semibold leading-[0.77] tracking-[-0.045em] text-venetian-brown dark:text-white">
+              {t('hero.title')}
+            </h1>
+            <p className="mt-8 max-w-lg border-l-2 border-venetian-terracotta pl-5 text-base leading-7 text-venetian-brown/70 sm:text-lg dark:text-venetian-sandstone/75">
+              {t('hero.subtitle')}
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link to="/book" className="editorial-link">
+                {t('hero.reserveButton')}<ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/menu" className="editorial-link-light dark:border-white/25 dark:text-white">
+                {t('hero.viewMenu')}
+              </Link>
+            </div>
+            <div className="mt-12 grid gap-4 border-t border-venetian-brown/15 pt-5 text-[0.67rem] font-bold uppercase tracking-[0.13em] text-venetian-brown/60 sm:grid-cols-2 dark:border-white/15 dark:text-white/55">
+              <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-venetian-terracotta" />{details.location}</span>
+              <span>{details.open}</span>
+            </div>
           </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full sm:w-auto"
-          >
-            <Link to="/menu" className="inline-flex h-12 w-full sm:w-auto items-center justify-center rounded-xl border-2 border-white/80 bg-venetian-brown/35 px-8 text-sm font-semibold text-white transition-colors hover:bg-venetian-brown/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-              {t('hero.viewMenu')}
-            </Link>
-          </motion.div>
+        </div>
+
+        <motion.div initial={{ opacity: 0, scale: 1.025 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, ease: 'easeOut' }} className="relative min-h-[62svh] overflow-hidden lg:min-h-full">
+          <img src={heroImage} alt="Il giardino interno del Ristorante Al Gobbo di Rialto" className="absolute inset-0 h-full w-full object-cover" fetchPriority="high" />
+          <div className="absolute inset-0 bg-gradient-to-t from-venetian-brown/55 via-transparent to-black/10" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 text-white sm:p-8">
+            <p className="max-w-xs text-[0.66rem] font-bold uppercase leading-5 tracking-[0.18em] text-white/75">{details.note}</p>
+            <button type="button" onClick={() => document.getElementById('story-section')?.scrollIntoView({ behavior: 'smooth' })} className="grid h-14 w-14 shrink-0 place-items-center border border-white/45 bg-black/10 backdrop-blur-sm transition-colors hover:bg-white hover:text-venetian-brown" aria-label={t('hero.scrollHint')}>
+              <ArrowDownRight className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="absolute left-0 top-0 bg-venetian-terracotta px-4 py-3 text-[0.62rem] font-bold uppercase tracking-[0.2em] text-white sm:px-5">Venezia autentica</div>
         </motion.div>
       </div>
-
-      {/* Slide dots */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex space-x-2">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentImageIndex(index)}
-            className={`h-1.5 rounded-full transition-all duration-500 ${
-              index === currentImageIndex
-                ? 'bg-venetian-gold w-8'
-                : 'bg-venetian-sandstone/40 hover:bg-venetian-sandstone/70 w-3'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-
-      {/* Scroll indicator */}
-      <motion.button
-        onClick={scrollToStory}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-venetian-sandstone/60 hover:text-venetian-sandstone transition-colors"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 0.8 }}
-        aria-label="Scroll to content"
-      >
-        <span className="text-xs tracking-widest uppercase">{t('hero.scrollHint')}</span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <ChevronDown className="w-5 h-5" />
-        </motion.div>
-      </motion.button>
-    </div>
+    </section>
   );
 }

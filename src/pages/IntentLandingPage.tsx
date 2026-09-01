@@ -99,43 +99,41 @@ function LandingPage({ config }: { config: LandingConfig }) {
         canonical={config.canonical}
         availableLanguages={['en']}
       />
-      <main className="min-h-screen bg-venetian-sandstone/15 pt-20">
-        <section className="bg-venetian-brown text-white py-20 sm:py-28">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-venetian-gold uppercase tracking-[0.2em] text-sm font-semibold mb-5">{config.eyebrow}</p>
-              <h1 className="font-serif text-4xl sm:text-6xl leading-tight mb-6">{config.heading}</h1>
-              <p className="text-lg text-venetian-sandstone/85 leading-relaxed mb-9 max-w-2xl">{config.lead}</p>
+      <main className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
+        <section className="mx-auto grid max-w-[1480px] border-x border-white/10 bg-venetian-brown text-white lg:grid-cols-2">
+          <div className="flex min-h-[560px] flex-col justify-end px-5 py-14 sm:px-10 lg:px-16 lg:py-20">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-venetian-gold">{config.eyebrow}</p>
+              <h1 className="mt-6 max-w-[10ch] font-serif text-6xl font-semibold leading-[0.8] tracking-[-0.04em] sm:text-8xl">{config.heading}</h1>
+              <p className="mb-9 mt-7 max-w-2xl border-l-2 border-venetian-terracotta pl-5 text-base leading-7 text-white/65">{config.lead}</p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link to="/book" className="rounded-xl bg-venetian-gold px-7 py-3.5 text-center font-bold text-venetian-brown hover:bg-venetian-gold/90">
+                <Link to="/book" className="inline-flex min-h-12 items-center justify-center bg-venetian-gold px-7 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown hover:bg-white">
                   Book a table
                 </Link>
-                <Link to="/menu" className="rounded-xl border border-white/35 px-7 py-3.5 text-center font-semibold text-white hover:bg-white/10">
+                <Link to="/menu" className="inline-flex min-h-12 items-center justify-center border border-white/35 px-7 text-xs font-bold uppercase tracking-[0.14em] text-white hover:border-white">
                   Explore the menu
                 </Link>
               </div>
-            </div>
+          </div>
             <img
               src={config.image}
               alt={config.imageAlt}
-              className="w-full aspect-[4/3] object-cover rounded-2xl shadow-2xl"
+              className="h-full min-h-[460px] w-full object-cover"
               decoding="async"
             />
-          </div>
         </section>
 
         <SocialProof />
 
-        <section className="py-20 sm:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-20 sm:py-28">
+          <div className="mx-auto max-w-[1480px] px-4 sm:px-7 lg:px-10">
             <div className="max-w-3xl mb-12">
               <MapPin className="w-8 h-8 text-venetian-gold mb-5" />
-              <h2 className="font-serif text-3xl sm:text-4xl text-venetian-brown mb-5">{config.sectionTitle}</h2>
+              <h2 className="mb-5 font-serif text-5xl font-semibold leading-[0.88] text-venetian-brown sm:text-7xl dark:text-white">{config.sectionTitle}</h2>
               <p className="text-lg text-venetian-brown/75 leading-relaxed">{config.sectionBody}</p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {config.highlights.map(item => (
-                <article key={item.title} className="rounded-2xl bg-white p-7 shadow-sm border border-venetian-brown/10">
+                <article key={item.title} className="border-t border-venetian-brown p-7 dark:border-white">
                   <CheckCircle2 className="w-6 h-6 text-venetian-gold mb-4" />
                   <h3 className="font-serif text-xl text-venetian-brown mb-3">{item.title}</h3>
                   <p className="text-venetian-brown/70 leading-relaxed">{item.text}</p>
@@ -145,8 +143,8 @@ function LandingPage({ config }: { config: LandingConfig }) {
           </div>
         </section>
 
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="bg-[#efe6d6] py-20 dark:bg-[#211d18]">
+          <div className="mx-auto max-w-[1480px] px-4 sm:px-7 lg:px-10">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <UtensilsCrossed className="w-8 h-8 text-venetian-gold mx-auto mb-5" />
               <h2 className="font-serif text-3xl sm:text-4xl text-venetian-brown mb-4">A taste of the menu</h2>
@@ -154,7 +152,7 @@ function LandingPage({ config }: { config: LandingConfig }) {
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {config.dishes.map(dish => (
-                <article key={dish.name} className="rounded-2xl bg-venetian-sandstone/20 p-7">
+                <article key={dish.name} className="border border-venetian-brown/15 bg-white/35 p-7 dark:border-white/15 dark:bg-white/5">
                   <Star className="w-5 h-5 fill-venetian-gold text-venetian-gold mb-4" />
                   <h3 className="font-serif text-xl text-venetian-brown mb-3">{dish.name}</h3>
                   <p className="text-venetian-brown/70 leading-relaxed">{dish.description}</p>
@@ -162,7 +160,7 @@ function LandingPage({ config }: { config: LandingConfig }) {
               ))}
             </div>
             <div className="text-center mt-12">
-              <Link to="/book" className="inline-block rounded-xl bg-venetian-brown px-8 py-4 font-bold text-white hover:bg-venetian-brown/90">
+              <Link to="/book" className="editorial-link">
                 Your table in Venice is waiting
               </Link>
             </div>

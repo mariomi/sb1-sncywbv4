@@ -54,58 +54,59 @@ export function AboutPage() {
   return (
     <PageTransition>
       <SEOHead title={copy.seoTitle} canonical="/our-story" description={copy.seoDescription} />
-      <main className="min-h-screen bg-venetian-sandstone/15 pt-20">
-        <section className="relative min-h-[68vh] flex items-center overflow-hidden">
-          <img src={roomImage} alt="Dining room at Al Gobbo di Rialto in Venice" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/25" />
-          <div className="relative max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-24">
-            <div className="max-w-3xl">
-              <p className="text-venetian-gold uppercase tracking-[0.2em] text-sm font-semibold mb-5">{copy.eyebrow}</p>
-              <h1 className="font-serif text-4xl sm:text-6xl text-white leading-tight mb-6">{copy.title}</h1>
-              <p className="text-lg sm:text-xl text-white/90 leading-relaxed max-w-2xl">{copy.lead}</p>
-            </div>
+      <main className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
+        <section className="mx-auto grid max-w-[1480px] border-x border-venetian-brown/15 lg:grid-cols-[0.92fr_1.08fr] dark:border-white/10">
+          <div className="flex min-h-[520px] flex-col justify-end px-5 py-14 sm:px-10 lg:px-16 lg:py-20">
+            <p className="editorial-kicker">{copy.eyebrow}</p>
+            <h1 className="mt-6 max-w-[10ch] font-serif text-6xl font-semibold leading-[0.8] tracking-[-0.04em] text-venetian-brown sm:text-8xl dark:text-white">{copy.title}</h1>
+            <p className="mt-7 max-w-xl border-l-2 border-venetian-terracotta pl-5 text-base leading-7 text-venetian-brown/65 sm:text-lg dark:text-white/60">{copy.lead}</p>
+          </div>
+          <div className="relative min-h-[440px] overflow-hidden lg:min-h-[680px]">
+            <img src={roomImage} alt="Dining room at Al Gobbo di Rialto in Venice" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+            <p className="absolute bottom-0 left-0 bg-venetian-terracotta px-5 py-4 text-[0.62rem] font-bold uppercase tracking-[0.18em] text-white">Tre generazioni · Una tavola</p>
           </div>
         </section>
 
         <SocialProof />
 
-        <section className="py-20 sm:py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+        <section className="bg-[#f7f3eb] py-20 sm:py-28 dark:bg-venetian-brown">
+          <div className="mx-auto grid max-w-[1480px] gap-12 px-4 sm:px-7 lg:grid-cols-2 lg:items-center lg:gap-20 lg:px-10">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <p className="text-venetian-gold uppercase tracking-[0.2em] text-sm font-semibold mb-4">{copy.heritageLabel}</p>
-              <h2 className="font-serif text-3xl sm:text-5xl text-venetian-brown mb-6">{copy.heritageTitle}</h2>
-              <div className="space-y-5 text-lg text-venetian-brown/80 leading-relaxed">{copy.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
+              <p className="editorial-kicker">{copy.heritageLabel}</p>
+              <h2 className="mt-5 font-serif text-5xl font-semibold leading-[0.88] text-venetian-brown sm:text-7xl dark:text-white">{copy.heritageTitle}</h2>
+              <div className="mt-8 space-y-5 text-base leading-7 text-venetian-brown/65 dark:text-white/60">{copy.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
             </motion.div>
-            <img src={tableImage} alt="Interior of Al Gobbo di Rialto at San Polo 649" loading="lazy" decoding="async" className="w-full aspect-[4/3] object-cover rounded-2xl shadow-xl" />
+            <img src={tableImage} alt="Interior of Al Gobbo di Rialto at San Polo 649" loading="lazy" decoding="async" className="aspect-[4/5] w-full object-cover" />
           </div>
         </section>
 
-        <section className="py-14 bg-venetian-brown">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 grid sm:grid-cols-3 gap-6">
+        <section className="border-y border-white/10 bg-venetian-brown">
+          <div className="mx-auto grid max-w-[1480px] sm:grid-cols-3">
             {copy.facts.map((fact, index) => {
               const Icon = factIcons[index];
-              return <div key={fact.label} className="text-center text-white"><Icon className="w-7 h-7 text-venetian-gold mx-auto mb-3" /><p className="font-serif text-2xl mb-1">{fact.value}</p><p className="text-sm text-venetian-sandstone">{fact.label}</p></div>;
+              return <div key={fact.label} className="border-b border-white/10 p-8 text-white last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0 lg:p-12"><Icon className="h-6 w-6 text-venetian-gold" /><p className="mt-8 font-serif text-4xl font-semibold leading-none">{fact.value}</p><p className="mt-2 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/45">{fact.label}</p></div>;
             })}
           </div>
         </section>
 
-        <section className="py-20 sm:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
-            <img src={dishImage} alt="Dish served at Al Gobbo di Rialto" loading="lazy" decoding="async" className="w-full aspect-[4/3] object-cover rounded-2xl shadow-xl lg:order-1" />
+        <section className="bg-[#efe6d6] py-20 sm:py-28 dark:bg-[#211d18]">
+          <div className="mx-auto grid max-w-[1480px] gap-12 px-4 sm:px-7 lg:grid-cols-2 lg:items-center lg:gap-20 lg:px-10">
+            <img src={dishImage} alt="Dish served at Al Gobbo di Rialto" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover lg:order-1" />
             <div className="lg:order-2">
-              <p className="text-venetian-gold uppercase tracking-[0.2em] text-sm font-semibold mb-4">{copy.todayLabel}</p>
-              <h2 className="font-serif text-3xl sm:text-5xl text-venetian-brown mb-6">{copy.todayTitle}</h2>
-              <p className="text-lg text-venetian-brown/80 leading-relaxed">{copy.todayBody}</p>
+              <p className="editorial-kicker">{copy.todayLabel}</p>
+              <h2 className="mt-5 font-serif text-5xl font-semibold leading-[0.88] text-venetian-brown sm:text-7xl dark:text-white">{copy.todayTitle}</h2>
+              <p className="mt-7 text-base leading-7 text-venetian-brown/65 dark:text-white/60">{copy.todayBody}</p>
             </div>
           </div>
         </section>
 
-        <section className="py-20 bg-white text-center">
+        <section className="bg-venetian-terracotta py-20 text-center text-white sm:py-24">
           <div className="max-w-3xl mx-auto px-4">
-            <h2 className="font-serif text-3xl sm:text-5xl text-venetian-brown mb-8">{copy.ctaTitle}</h2>
+            <h2 className="mb-8 font-serif text-5xl font-semibold leading-[0.88] sm:text-7xl">{copy.ctaTitle}</h2>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <Link to="/menu" className="rounded-xl border border-venetian-brown px-7 py-3.5 font-semibold text-venetian-brown hover:bg-venetian-brown/5">{copy.menu}</Link>
-              <Link to="/book" className="rounded-xl bg-venetian-brown px-7 py-3.5 font-semibold text-white hover:bg-venetian-brown/90">{copy.book}</Link>
+              <Link to="/menu" className="inline-flex min-h-12 items-center justify-center border border-white/35 px-7 text-xs font-bold uppercase tracking-[0.16em] text-white hover:border-white">{copy.menu}</Link>
+              <Link to="/book" className="inline-flex min-h-12 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.16em] text-venetian-terracotta hover:bg-venetian-gold hover:text-venetian-brown">{copy.book}</Link>
             </div>
           </div>
         </section>

@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
         id={id}
         value={language}
         onChange={event => setLanguage(event.target.value as typeof language)}
-        className="rounded-lg border border-white/20 bg-venetian-brown/80 px-2 py-1 text-sm font-semibold text-venetian-sandstone focus:border-venetian-gold focus:outline-none"
+        className="min-h-10 border border-white/20 bg-transparent px-2.5 text-[0.66rem] font-bold uppercase tracking-[0.12em] text-white focus:border-venetian-gold focus:outline-none"
         aria-label="Language"
       >
         {options.map(option => (

@@ -1,376 +1,117 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { SEOHead } from '../components/SEOHead';
 import { motion } from 'framer-motion';
-import { Hero } from '../components/Hero';
+import { ArrowRight, Clock3, Fish, MapPin, Navigation, Phone, Star, UtensilsCrossed } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Gallery } from '../components/Gallery';
+import { Hero } from '../components/Hero';
 import { PageTransition } from '../components/PageTransition';
-import { translations, useLanguage, type Language } from '../lib/i18n';
-import { Fish, BookOpen, MapPin, Star, Phone, Navigation } from 'lucide-react';
-import img2962 from '../Img/G1/IMG_2962.webp';
-import cuisineImage from '../Img/food/IMG_2980.webp';
+import { SEOHead } from '../components/SEOHead';
 import { SocialProof } from '../components/SocialProof';
+import { translations, useLanguage, type Language } from '../lib/i18n';
+import storyImage from '../Img/G1/IMG_2962.webp';
+import dishOne from '../Img/food/IMG_2980.webp';
+import dishTwo from '../Img/food/IMG_2984.webp';
+import dishThree from '../Img/food/IMG_2986.webp';
+
+const pageCopy: Record<Language, {
+  menuKicker: string; menuTitle: string; menuBody: string; menuLink: string;
+  dishes: [string, string, string];
+  reviewsKicker: string; reviewsTitle: string; reviewsLink: string;
+  reviews: [string, string];
+  locationKicker: string; locationTitle: string; locationBody: string; locationLink: string; directions: string;
+}> = {
+  en: { menuKicker: 'From our kitchen', menuTitle: 'Venice, Served at the Table', menuBody: 'Seafood, handmade pasta, lagoon classics and pizza: a menu made for curious travellers and long, convivial dinners.', menuLink: 'Explore the complete menu', dishes: ['Lagoon & seafood', 'Venetian classics', 'Italian favourites'], reviewsKicker: 'Guest stories', reviewsTitle: 'A Place People Remember', reviewsLink: 'Read reviews on Tripadvisor', reviews: ['Fresh seafood, generous plates and unmistakably Venetian flavours are mentioned again and again.', 'Guests remember the warm welcome, attentive service and the quiet atmosphere of the garden.'], locationKicker: 'Find us', locationTitle: 'A Few Steps from Rialto', locationBody: 'San Polo 649, between the bridge and the market. Open the route before entering Venice’s maze of calli.', locationLink: 'Location details', directions: 'Open directions' },
+  it: { menuKicker: 'Dalla nostra cucina', menuTitle: 'Venezia, Servita a Tavola', menuBody: 'Pesce, pasta, ricette di laguna e pizza: un menu pensato per chi vuole scoprire e per chi ama stare a tavola.', menuLink: 'Esplora il menu completo', dishes: ['Laguna e pesce', 'Classici veneziani', 'Favoriti italiani'], reviewsKicker: 'Le storie degli ospiti', reviewsTitle: 'Un Luogo che Resta', reviewsLink: 'Leggi le recensioni su Tripadvisor', reviews: ['Pesce fresco, piatti generosi e sapori autenticamente veneziani tornano spesso nei racconti degli ospiti.', 'L’accoglienza calorosa, il servizio attento e la tranquillità del giardino sono tra i ricordi più condivisi.'], locationKicker: 'Dove siamo', locationTitle: 'A Pochi Passi da Rialto', locationBody: 'San Polo 649, tra il ponte e il mercato. Apri il percorso prima di entrare nel labirinto delle calli.', locationLink: 'Dettagli e posizione', directions: 'Apri le indicazioni' },
+  fr: { menuKicker: 'Depuis notre cuisine', menuTitle: 'Venise, Servie à Table', menuBody: 'Poissons, pâtes, recettes de la lagune et pizzas : une carte faite pour la découverte et les longues soirées.', menuLink: 'Voir toute la carte', dishes: ['Lagune et poissons', 'Classiques vénitiens', 'Favoris italiens'], reviewsKicker: 'Paroles de clients', reviewsTitle: 'Un Lieu que l’on Garde en Mémoire', reviewsLink: 'Lire les avis sur Tripadvisor', reviews: ['Poissons frais, assiettes généreuses et saveurs vénitiennes reviennent souvent dans les avis.', 'Les clients se souviennent de l’accueil, du service attentif et du calme du jardin.'], locationKicker: 'Nous trouver', locationTitle: 'À Quelques Pas du Rialto', locationBody: 'San Polo 649, entre le pont et le marché. Ouvrez l’itinéraire avant de parcourir les calli.', locationLink: 'Voir l’emplacement', directions: 'Ouvrir l’itinéraire' },
+  de: { menuKicker: 'Aus unserer Küche', menuTitle: 'Venedig, Am Tisch Serviert', menuBody: 'Fisch, Pasta, Lagunenrezepte und Pizza: eine Karte zum Entdecken und für lange Abende.', menuLink: 'Die ganze Speisekarte', dishes: ['Lagune und Fisch', 'Venezianische Klassiker', 'Italienische Favoriten'], reviewsKicker: 'Stimmen der Gäste', reviewsTitle: 'Ein Ort, der in Erinnerung Bleibt', reviewsLink: 'Bewertungen auf Tripadvisor', reviews: ['Frischer Fisch, großzügige Teller und echte venezianische Aromen werden immer wieder gelobt.', 'Gäste erinnern sich an den herzlichen Empfang, aufmerksamen Service und den ruhigen Garten.'], locationKicker: 'Anfahrt', locationTitle: 'Nur Wenige Schritte vom Rialto', locationBody: 'San Polo 649, zwischen Brücke und Markt. Öffnen Sie die Route vor dem Labyrinth der Gassen.', locationLink: 'Standort ansehen', directions: 'Route öffnen' },
+  es: { menuKicker: 'Desde nuestra cocina', menuTitle: 'Venecia, Servida en la Mesa', menuBody: 'Pescado, pasta, recetas de la laguna y pizza: una carta para descubrir y disfrutar sin prisa.', menuLink: 'Ver el menú completo', dishes: ['Laguna y pescado', 'Clásicos venecianos', 'Favoritos italianos'], reviewsKicker: 'Historias de clientes', reviewsTitle: 'Un Lugar que se Recuerda', reviewsLink: 'Leer opiniones en Tripadvisor', reviews: ['El pescado fresco, los platos generosos y los sabores venecianos aparecen una y otra vez en las opiniones.', 'Los clientes recuerdan la acogida, el servicio atento y la tranquilidad del jardín.'], locationKicker: 'Cómo llegar', locationTitle: 'A Pocos Pasos de Rialto', locationBody: 'San Polo 649, entre el puente y el mercado. Abre la ruta antes de entrar en el laberinto de calles.', locationLink: 'Ver ubicación', directions: 'Abrir indicaciones' },
+};
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, delay: i * 0.15, ease: 'easeOut' }
-  })
-};
-
-const reviewCopy: Record<Language, {
-  badge: string;
-  title: string;
-  link: string;
-  items: { text: string; author: string; origin: string; stars: number }[];
-}> = {
-  en: {
-    badge: 'Verified guest feedback',
-    title: 'What Diners Highlight',
-    link: 'Read all reviews on Tripadvisor',
-    items: [
-      { text: 'Guests regularly highlight the fresh seafood, pasta and unmistakably Venetian flavours.', author: 'Verified diner reviews', origin: 'TheFork', stars: 5 },
-      { text: 'Warm, attentive service is one of the themes that appears most often in guest experiences.', author: 'Verified diner reviews', origin: 'TheFork', stars: 5 },
-      { text: 'The peaceful atmosphere and outdoor garden are praised by couples, families and groups.', author: 'Guest reviews', origin: 'Google and Tripadvisor', stars: 5 },
-    ],
-  },
-  it: {
-    badge: 'Esperienze verificate',
-    title: 'Cosa Apprezzano gli Ospiti',
-    link: 'Leggi tutte le recensioni su Tripadvisor',
-    items: [
-      { text: 'Gli ospiti citano spesso la freschezza dei piatti di pesce, la pasta e i sapori veneziani.', author: 'Recensioni verificate', origin: 'TheFork', stars: 5 },
-      { text: 'Servizio cordiale e attento: uno dei temi più ricorrenti nelle esperienze condivise dai clienti.', author: 'Recensioni verificate', origin: 'TheFork', stars: 5 },
-      { text: 'L’atmosfera tranquilla e il giardino esterno sono apprezzati da coppie, famiglie e gruppi.', author: 'Recensioni degli ospiti', origin: 'Google e Tripadvisor', stars: 5 },
-    ],
-  },
-  fr: {
-    badge: 'Avis clients vérifiés',
-    title: 'Ce que nos hôtes apprécient',
-    link: 'Lire les avis sur Tripadvisor',
-    items: [
-      { text: 'Les clients apprécient particulièrement les poissons, les pâtes et les saveurs vénitiennes.', author: 'Avis vérifiés', origin: 'TheFork', stars: 5 },
-      { text: 'Un service chaleureux et attentif revient souvent dans les expériences partagées.', author: 'Avis vérifiés', origin: 'TheFork', stars: 5 },
-      { text: 'L’atmosphère paisible et le jardin séduisent les couples, les familles et les groupes.', author: 'Avis clients', origin: 'Google et Tripadvisor', stars: 5 },
-    ],
-  },
-  de: {
-    badge: 'Verifizierte Gästestimmen',
-    title: 'Was unsere Gäste schätzen',
-    link: 'Bewertungen auf Tripadvisor lesen',
-    items: [
-      { text: 'Gäste loben besonders Fisch, Pasta und die typisch venezianischen Aromen.', author: 'Verifizierte Bewertungen', origin: 'TheFork', stars: 5 },
-      { text: 'Herzlicher, aufmerksamer Service gehört zu den häufigsten Rückmeldungen.', author: 'Verifizierte Bewertungen', origin: 'TheFork', stars: 5 },
-      { text: 'Die ruhige Atmosphäre und der Garten gefallen Paaren, Familien und Gruppen.', author: 'Gästebewertungen', origin: 'Google und Tripadvisor', stars: 5 },
-    ],
-  },
-  es: {
-    badge: 'Opiniones verificadas',
-    title: 'Lo que valoran nuestros clientes',
-    link: 'Leer opiniones en Tripadvisor',
-    items: [
-      { text: 'Los clientes destacan el pescado, la pasta y los sabores genuinamente venecianos.', author: 'Opiniones verificadas', origin: 'TheFork', stars: 5 },
-      { text: 'El servicio cordial y atento es uno de los comentarios más frecuentes.', author: 'Opiniones verificadas', origin: 'TheFork', stars: 5 },
-      { text: 'El ambiente tranquilo y el jardín gustan a parejas, familias y grupos.', author: 'Opiniones de clientes', origin: 'Google y Tripadvisor', stars: 5 },
-    ],
-  },
-};
-
-const sinceLabels: Record<Language, string> = {
-  en: 'Since', it: 'Dal', fr: 'Depuis', de: 'Seit', es: 'Desde',
-};
-
-const extraCopy: Record<Language, {
-  cuisineBadge: string; cuisineTitle: string; cuisineBody: string; cuisineLink: string;
-  locationBadge: string; locationTitle: string; locationBody: string; locationLink: string; directions: string;
-}> = {
-  en: { cuisineBadge: 'Taste Venice', cuisineTitle: 'Cuisine Shaped by the Lagoon', cuisineBody: 'Sarde in saor, baccalà mantecato, bigoli in salsa and seafood risotto tell the story of Venice through simple ingredients and distinctive flavours.', cuisineLink: 'Discover Venetian cuisine', locationBadge: 'Find us', locationTitle: 'In the Historic Rialto District', locationBody: 'San Polo 649, near the bridge and market area. Check the route before setting off through Venice’s calli.', locationLink: 'See location details', directions: 'Open directions' },
-  it: { cuisineBadge: 'Assapora Venezia', cuisineTitle: 'Una Cucina Nata in Laguna', cuisineBody: 'Sarde in saor, baccalà mantecato, bigoli in salsa e risotto di mare raccontano Venezia attraverso ingredienti semplici e sapori riconoscibili.', cuisineLink: 'Scopri la cucina veneziana', locationBadge: 'Dove siamo', locationTitle: 'Nel Cuore Storico di Rialto', locationBody: 'San Polo 649, vicino al ponte e al mercato. Controlla il percorso prima di partire tra le calli veneziane.', locationLink: 'Vedi tutti i dettagli', directions: 'Apri le indicazioni' },
-  fr: { cuisineBadge: 'Goûter Venise', cuisineTitle: 'Une Cuisine Née dans la Lagune', cuisineBody: 'Sarde in saor, baccalà mantecato, bigoli in salsa et risotto aux fruits de mer racontent Venise avec des ingrédients simples et des saveurs uniques.', cuisineLink: 'Découvrir la cuisine vénitienne', locationBadge: 'Nous trouver', locationTitle: 'Dans le Quartier Historique du Rialto', locationBody: 'San Polo 649, près du pont et du marché. Consultez l’itinéraire avant de parcourir les calli.', locationLink: 'Voir les informations', directions: 'Ouvrir l’itinéraire' },
-  de: { cuisineBadge: 'Venedig schmecken', cuisineTitle: 'Eine Küche aus der Lagune', cuisineBody: 'Sarde in saor, Baccalà mantecato, Bigoli in salsa und Meeresfrüchterisotto erzählen Venedig durch klare Zutaten und unverwechselbare Aromen.', cuisineLink: 'Venezianische Küche entdecken', locationBadge: 'Anfahrt', locationTitle: 'Im Historischen Rialtoviertel', locationBody: 'San Polo 649, nahe Brücke und Markt. Prüfen Sie den Weg, bevor Sie durch Venedigs Gassen starten.', locationLink: 'Standort ansehen', directions: 'Route öffnen' },
-  es: { cuisineBadge: 'Saborea Venecia', cuisineTitle: 'Una Cocina Nacida en la Laguna', cuisineBody: 'Sarde in saor, baccalà mantecato, bigoli in salsa y risotto de marisco cuentan Venecia con ingredientes sencillos y sabores propios.', cuisineLink: 'Descubrir la cocina veneciana', locationBadge: 'Cómo llegar', locationTitle: 'En el Barrio Histórico de Rialto', locationBody: 'San Polo 649, cerca del puente y del mercado. Consulta la ruta antes de recorrer las calles de Venecia.', locationLink: 'Ver la ubicación', directions: 'Abrir indicaciones' },
+  hidden: { opacity: 0, y: 18 },
+  visible: (index = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.5, delay: index * 0.06, ease: 'easeOut' } }),
 };
 
 export function Home() {
   const { language } = useLanguage();
   const copy = translations[language];
-  const storyIcons = [Fish, BookOpen, MapPin];
-  const storyItems = copy.whyUs.items.map((item, index) => ({ ...item, icon: storyIcons[index] }));
-  const reviews = reviewCopy[language];
-  const testimonials = reviews.items;
-  const extra = extraCopy[language];
+  const page = pageCopy[language];
+  const reasons = [Fish, UtensilsCrossed, MapPin];
+  const dishes = [dishOne, dishTwo, dishThree];
 
   return (
     <PageTransition>
-      <SEOHead
-        canonical="/"
-        description="Ristorante storico a Venezia dal 1955. Cucina veneziana autentica: pesce fresco della laguna, risotti, paste fatte in casa e pizze artigianali. Prenota il tuo tavolo online – San Polo 649."
-      />
+      <SEOHead canonical="/" description="Ristorante storico a Venezia dal 1955. Cucina veneziana, pesce, pasta e pizza a San Polo 649, vicino a Rialto. Prenota online." />
       <Hero />
       <SocialProof />
 
-      {/* ── Story Section ─────────────────────────────────────────── */}
-      <section id="story-section" className="py-24 bg-white dark:bg-venetian-brown/95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Text */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.8 }}
-            >
-              <span className="inline-block text-[#765700] dark:text-venetian-gold text-sm font-semibold tracking-widest uppercase mb-4">
-                {copy.story.badge}
-              </span>
-              <h2 className="text-4xl sm:text-5xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-6 leading-tight">
-                {copy.story.title}
-              </h2>
-              <div className="w-12 h-0.5 bg-venetian-gold mb-8" />
-              <div className="space-y-5 text-venetian-brown/75 dark:text-venetian-sandstone/75 text-lg leading-relaxed">
-                <p>
-                  {copy.story.body1}
-                </p>
-                <p>
-                  {copy.story.body2}
-                </p>
-              </div>
-              <motion.div
-                className="mt-10"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <Link
-                  to="/our-story"
-                  className="inline-flex items-center gap-2 text-[#765700] dark:text-venetian-gold font-semibold hover:gap-4 transition-all duration-300"
-                >
-                  {copy.story.cta}
-                  <span className="text-lg">→</span>
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            {/* Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.8 }}
-              className="relative"
-            >
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl">
-                <img
-                  src={img2962}
-                  alt="Ristorante Al Gobbo di Rialto - sala"
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-venetian-brown/30 to-transparent" />
-              </div>
-              {/* Floating badge */}
-              <div className="absolute -bottom-6 -left-6 bg-venetian-gold text-venetian-brown rounded-xl px-5 py-3 shadow-xl font-serif text-center">
-                <p className="text-3xl font-bold leading-none">1955</p>
-                <p className="text-xs font-semibold tracking-wide mt-1 text-[#4A3329]">
-                  {sinceLabels[language]}
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Why Us ────────────────────────────────────────────────── */}
-      <section className="py-24 bg-venetian-brown/5 dark:bg-venetian-brown">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.7 }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block text-[#765700] dark:text-venetian-gold text-sm font-semibold tracking-widest uppercase mb-4">
-              {copy.whyUs.badge}
-            </span>
-            <h2 className="text-4xl sm:text-5xl font-serif text-venetian-brown dark:text-venetian-sandstone">
-              {copy.whyUs.title}
-            </h2>
+      <section id="story-section" className="bg-[#f7f3eb] py-20 sm:py-28 dark:bg-venetian-brown">
+        <div className="mx-auto grid max-w-[1480px] gap-12 px-4 sm:px-7 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:px-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={fadeUp} className="flex flex-col justify-between">
+            <div>
+              <p className="editorial-kicker">{copy.story.badge}</p>
+              <h2 className="mt-5 max-w-[11ch] font-serif text-5xl font-semibold leading-[0.86] tracking-[-0.03em] text-venetian-brown sm:text-7xl dark:text-white">{copy.story.title}</h2>
+              <div className="mt-9 max-w-xl space-y-5 text-base leading-7 text-venetian-brown/65 dark:text-white/60"><p>{copy.story.body1}</p><p>{copy.story.body2}</p></div>
+            </div>
+            <Link to="/our-story" className="mt-9 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] text-venetian-terracotta hover:gap-5">{copy.story.cta}<ArrowRight className="h-4 w-4" /></Link>
           </motion.div>
+          <motion.figure initial={{ opacity: 0, x: 18 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative border-l border-venetian-brown/15 pl-4 sm:pl-7 dark:border-white/12">
+            <img src={storyImage} alt="Sala di Al Gobbo di Rialto" className="aspect-[4/5] w-full object-cover" loading="lazy" decoding="async" />
+            <figcaption className="absolute bottom-0 left-4 bg-venetian-gold p-5 text-venetian-brown sm:left-7 sm:p-7"><strong className="block font-serif text-4xl leading-none">1955</strong><span className="mt-1 block text-[0.6rem] font-bold uppercase tracking-[0.18em]">Venezia · San Polo</span></figcaption>
+          </motion.figure>
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {storyItems.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={i}
-                  custom={i}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: '-40px' }}
-                  variants={fadeUp}
-                  className="bg-white dark:bg-venetian-brown/60 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300 group"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-venetian-gold/10 flex items-center justify-center mb-6 group-hover:bg-venetian-gold/20 transition-colors duration-300">
-                    <Icon className="w-6 h-6 text-venetian-gold" />
-                  </div>
-                  <h3 className="text-xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-3">
-                    {item.title}
-                  </h3>
-                  <p className="text-venetian-brown/80 dark:text-venetian-sandstone/85 leading-relaxed">
-                    {item.description}
-                  </p>
-                </motion.div>
-              );
-            })}
+      <section className="border-y border-venetian-brown/15 bg-[#efe6d6] dark:border-white/10 dark:bg-[#211d18]">
+        <div className="mx-auto grid max-w-[1480px] md:grid-cols-3">
+          {copy.whyUs.items.map((item, index) => {
+            const Icon = reasons[index];
+            return (
+              <motion.article key={item.title} custom={index} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="border-b border-venetian-brown/15 p-7 last:border-b-0 md:min-h-72 md:border-b-0 md:border-r md:last:border-r-0 lg:p-10 dark:border-white/10">
+                <span className="text-[0.65rem] font-bold tracking-[0.18em] text-venetian-terracotta">0{index + 1}</span>
+                <Icon className="mt-8 h-7 w-7 text-venetian-brown dark:text-venetian-gold" />
+                <h3 className="mt-5 font-serif text-3xl font-semibold text-venetian-brown dark:text-white">{item.title}</h3>
+                <p className="mt-3 max-w-sm text-sm leading-6 text-venetian-brown/60 dark:text-white/55">{item.description}</p>
+              </motion.article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="bg-[#f7f3eb] py-20 sm:py-28 dark:bg-venetian-brown">
+        <div className="mx-auto max-w-[1480px] px-4 sm:px-7 lg:px-10">
+          <div className="grid gap-7 border-t border-venetian-brown pt-7 lg:grid-cols-[0.85fr_1.15fr] lg:items-end dark:border-white">
+            <div><p className="editorial-kicker">{page.menuKicker}</p><h2 className="mt-4 font-serif text-5xl font-semibold leading-[0.88] text-venetian-brown sm:text-7xl dark:text-white">{page.menuTitle}</h2></div>
+            <div className="lg:justify-self-end"><p className="max-w-2xl text-base leading-7 text-venetian-brown/62 dark:text-white/58">{page.menuBody}</p><Link to="/menu" className="mt-6 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] text-venetian-terracotta hover:gap-5">{page.menuLink}<ArrowRight className="h-4 w-4" /></Link></div>
+          </div>
+          <div className="mt-10 grid gap-2 md:grid-cols-3">
+            {dishes.map((image, index) => <Link key={image} to="/menu" className={`group relative overflow-hidden ${index === 1 ? 'md:mt-12' : ''}`}><img src={image} alt={page.dishes[index]} loading="lazy" decoding="async" className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" /><span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-16 font-serif text-2xl font-semibold text-white">{page.dishes[index]}</span></Link>)}
           </div>
         </div>
       </section>
 
-      <section className="py-24 bg-white dark:bg-venetian-brown/95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
-          <img src={cuisineImage} alt="Venetian seafood dish at Al Gobbo di Rialto" loading="lazy" decoding="async" className="w-full aspect-[4/3] object-cover rounded-2xl shadow-xl" />
-          <div>
-            <span className="inline-block text-[#765700] dark:text-venetian-gold text-sm font-semibold tracking-widest uppercase mb-4">{extra.cuisineBadge}</span>
-            <h2 className="text-4xl sm:text-5xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-6">{extra.cuisineTitle}</h2>
-            <p className="text-lg leading-relaxed text-venetian-brown/80 dark:text-venetian-sandstone/90 mb-8">{extra.cuisineBody}</p>
-            <Link to="/venetian-cuisine" className="inline-flex items-center gap-2 text-[#765700] dark:text-venetian-gold font-semibold hover:gap-4 transition-all">{extra.cuisineLink}<span>→</span></Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Gallery ───────────────────────────────────────────────── */}
       <Gallery />
 
-      {/* ── Testimonials ──────────────────────────────────────────── */}
-      <section className="py-24 bg-venetian-brown/95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.7 }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block text-[#F3D98B] text-sm font-semibold tracking-widest uppercase mb-4">
-              {reviews.badge}
-            </span>
-            <h2 className="text-4xl sm:text-5xl font-serif text-white">
-              {reviews.title}
-            </h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={i}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: '-40px' }}
-                variants={fadeUp}
-                className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-8 flex flex-col"
-              >
-                {/* Stars */}
-                <div className="flex gap-1 mb-5">
-                  {Array.from({ length: t.stars }).map((_, s) => (
-                    <Star key={s} className="w-4 h-4 fill-venetian-gold text-venetian-gold" />
-                  ))}
-                </div>
-                <p className="text-white leading-relaxed text-base flex-1 italic mb-6">
-                  {t.text}
-                </p>
-                <div className="border-t border-white/10 pt-4">
-                  <p className="font-semibold text-white">{t.author}</p>
-                  <p className="text-white text-sm">{t.origin}</p>
-                </div>
-              </motion.div>
-            ))}
+      <section className="bg-venetian-terracotta py-20 text-white sm:py-28">
+        <div className="mx-auto max-w-[1480px] px-4 sm:px-7 lg:px-10">
+          <div className="grid gap-8 border-t border-white/25 pt-7 lg:grid-cols-[0.65fr_1.35fr]">
+            <div><p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-white/62">{page.reviewsKicker}</p><h2 className="mt-4 max-w-[10ch] font-serif text-5xl font-semibold leading-[0.88] sm:text-7xl">{page.reviewsTitle}</h2></div>
+            <div className="grid gap-7 sm:grid-cols-2">
+              {page.reviews.map((review, index) => <motion.blockquote key={review} custom={index} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="border-l border-white/30 pl-6"><div className="flex gap-1">{Array.from({ length: 5 }).map((_, star) => <Star key={star} className="h-4 w-4 fill-venetian-gold text-venetian-gold" />)}</div><p className="mt-6 font-serif text-2xl font-medium leading-8">“{review}”</p><footer className="mt-6 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-white/55">{index === 0 ? 'TheFork' : 'Google · Tripadvisor'}</footer></motion.blockquote>)}
+            </div>
           </div>
-
-          {/* TripAdvisor link */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.5 }}
-            className="text-center mt-10"
-          >
-            <a
-              href="https://www.tripadvisor.it/Restaurant_Review-g187870-d20083361-Reviews-Ristorante_Pizzeria_Al_Gobbo_di_Rialto-Venice_Veneto.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-venetian-sandstone/90 hover:text-white transition-colors text-sm"
-            >
-              {reviews.link}
-              <span>→</span>
-            </a>
-          </motion.div>
+          <a href="https://www.tripadvisor.it/Restaurant_Review-g187870-d20083361-Reviews-Ristorante_Pizzeria_Al_Gobbo_di_Rialto-Venice_Veneto.html" target="_blank" rel="noopener noreferrer" className="mt-10 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] hover:gap-5">{page.reviewsLink}<ArrowRight className="h-4 w-4" /></a>
         </div>
       </section>
 
-      <section className="py-24 bg-white dark:bg-venetian-brown/95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl bg-venetian-sandstone/25 dark:bg-venetian-brown p-8 sm:p-12 grid lg:grid-cols-[1fr_auto] gap-10 items-center">
-            <div>
-              <span className="inline-block text-[#765700] dark:text-venetian-gold text-sm font-semibold tracking-widest uppercase mb-4">{extra.locationBadge}</span>
-              <h2 className="text-4xl sm:text-5xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-5">{extra.locationTitle}</h2>
-              <p className="text-lg text-venetian-brown/80 dark:text-venetian-sandstone/90 max-w-2xl">{extra.locationBody}</p>
-            </div>
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 min-w-56">
-              <Link to="/location" className="rounded-xl bg-venetian-brown dark:bg-venetian-gold px-6 py-3.5 text-center font-semibold text-white dark:text-venetian-brown">{extra.locationLink}</Link>
-              <a href="https://www.google.com/maps/dir/?api=1&destination=Al+Gobbo+di+Rialto,+San+Polo+649,+Venezia" target="_blank" rel="noopener noreferrer" data-track="click_directions" className="inline-flex items-center justify-center gap-2 rounded-xl border border-venetian-brown/20 dark:border-white/20 px-6 py-3.5 font-semibold text-venetian-brown dark:text-venetian-sandstone"><Navigation className="w-4 h-4" />{extra.directions}</a>
-            </div>
-          </div>
+      <section className="bg-[#f7f3eb] py-20 sm:py-28 dark:bg-venetian-brown">
+        <div className="mx-auto grid max-w-[1480px] gap-10 px-4 sm:px-7 lg:grid-cols-[1fr_auto] lg:items-end lg:px-10">
+          <div><p className="editorial-kicker">{page.locationKicker}</p><h2 className="mt-5 max-w-[12ch] font-serif text-5xl font-semibold leading-[0.88] text-venetian-brown sm:text-7xl dark:text-white">{page.locationTitle}</h2><p className="mt-6 max-w-2xl text-base leading-7 text-venetian-brown/62 dark:text-white/58">{page.locationBody}</p><div className="mt-8 flex flex-wrap gap-x-7 gap-y-3 text-[0.65rem] font-bold uppercase tracking-[0.13em] text-venetian-brown/55 dark:text-white/55"><span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-venetian-terracotta" />San Polo 649</span><span className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-venetian-terracotta" />Pranzo · Cena</span></div></div>
+          <div className="flex min-w-64 flex-col gap-3"><Link to="/location" className="editorial-link">{page.locationLink}<ArrowRight className="h-4 w-4" /></Link><a href="https://www.google.com/maps/dir/?api=1&destination=Al+Gobbo+di+Rialto,+San+Polo+649,+Venezia" target="_blank" rel="noopener noreferrer" data-track="click_directions" className="editorial-link-light dark:border-white/25 dark:text-white"><Navigation className="h-4 w-4" />{page.directions}</a></div>
         </div>
       </section>
 
-      {/* ── Final CTA Banner ──────────────────────────────────────── */}
-      <section className="relative py-28 overflow-hidden bg-venetian-sandstone/20 dark:bg-venetian-brown/90">
-        {/* subtle background pattern */}
-        <div
-          className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, #5C4033 1px, transparent 0)',
-            backgroundSize: '28px 28px'
-          }}
-        />
-        <div className="relative max-w-3xl mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="text-4xl sm:text-5xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-4">
-              {copy.ctaBanner.title}
-            </h2>
-            <div className="w-16 h-0.5 bg-venetian-gold mx-auto mb-6" />
-            <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-lg mb-10">
-              {copy.ctaBanner.subtitle}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Link
-                  to="/book"
-                  className="inline-block bg-venetian-gold text-venetian-brown font-bold text-lg px-10 py-4 rounded-xl shadow-lg shadow-venetian-gold/30 hover:bg-venetian-gold/90 transition-colors"
-                >
-                  {copy.ctaBanner.reserve}
-                </Link>
-              </motion.div>
-              <a
-                href="tel:+390415204603"
-                className="inline-flex items-center gap-2 text-venetian-brown/70 dark:text-venetian-sandstone/70 hover:text-venetian-gold transition-colors font-medium"
-              >
-                <Phone className="w-4 h-4" />
-                <span>{copy.ctaBanner.orCall}</span>
-                <span className="font-semibold text-venetian-brown dark:text-venetian-sandstone">+39 041 520 4603</span>
-              </a>
-            </div>
-          </motion.div>
-        </div>
+      <section className="border-t border-white/10 bg-venetian-brown py-20 text-white sm:py-28">
+          <div className="mx-auto max-w-5xl px-4 text-center sm:px-7"><p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-venetian-gold">San Polo · Rialto · Venezia</p><h2 className="mt-5 font-serif text-5xl font-semibold leading-[0.88] sm:text-7xl">{copy.ctaBanner.title}</h2><p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white/58">{copy.ctaBanner.subtitle}</p><div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row"><Link to="/book" className="inline-flex min-h-[52px] items-center justify-center gap-2 bg-venetian-gold px-7 text-xs font-bold uppercase tracking-[0.16em] text-venetian-brown hover:bg-white">{copy.ctaBanner.reserve}<ArrowRight className="h-4 w-4" /></Link><a href="tel:+390415204603" className="inline-flex min-h-[52px] items-center justify-center gap-2 border border-white/25 px-7 text-xs font-bold uppercase tracking-[0.16em] text-white hover:border-white"><Phone className="h-4 w-4" />+39 041 520 4603</a></div></div>
       </section>
     </PageTransition>
   );

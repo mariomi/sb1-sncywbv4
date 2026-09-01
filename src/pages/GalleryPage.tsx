@@ -10,7 +10,7 @@ export function GalleryPage() {
         canonical="/gallery"
         description="Explore the dishes and atmosphere of Ristorante Al Gobbo di Rialto in Venice, near the Rialto district."
       />
-      <main className="pt-20 bg-venetian-brown">
+      <main className="bg-venetian-brown pt-[84px]">
         <Gallery />
       </main>
     </PageTransition>

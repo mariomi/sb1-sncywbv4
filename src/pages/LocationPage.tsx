@@ -14,31 +14,30 @@ export function LocationPage() {
         description="Find Al Gobbo di Rialto at San Polo 649 in Venice, near the Rialto Bridge and market area. Open the map, get directions or call the restaurant."
         availableLanguages={['en']}
       />
-      <main className="min-h-screen bg-venetian-sandstone/15 pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mb-10">
-            <p className="text-venetian-gold uppercase tracking-[0.2em] text-sm font-semibold mb-4">San Polo · Venice</p>
-            <h1 className="font-serif text-4xl sm:text-6xl text-venetian-brown mb-5">Find Al Gobbo di Rialto</h1>
-            <p className="text-lg text-venetian-brown/70 leading-relaxed">
+      <main className="min-h-screen bg-[#f7f3eb] pb-20 pt-[84px] dark:bg-venetian-brown">
+        <div className="mx-auto max-w-[1480px] border-x border-venetian-brown/15 px-4 py-16 sm:px-10 sm:py-24 lg:px-16 dark:border-white/10">
+          <div className="mb-12 grid gap-7 border-t border-venetian-brown pt-7 lg:grid-cols-[0.85fr_1.15fr] lg:items-end dark:border-white">
+            <div><p className="editorial-kicker">San Polo · Venice</p><h1 className="mt-5 max-w-[9ch] font-serif text-6xl font-semibold leading-[0.82] tracking-[-0.04em] text-venetian-brown sm:text-8xl dark:text-white">Find Al Gobbo di Rialto</h1></div>
+            <p className="max-w-2xl text-base leading-7 text-venetian-brown/65 lg:justify-self-end dark:text-white/60">
               We are at San Polo 649, in the historic Rialto district. Open directions before you start walking: Venice rewards curiosity, but its calli can be wonderfully confusing.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-[1.4fr_0.6fr] gap-8">
-            <div className="rounded-2xl overflow-hidden shadow-xl min-h-[460px] bg-white">
+          <div className="grid gap-0 lg:grid-cols-[1.35fr_0.65fr]">
+            <div className="min-h-[520px] overflow-hidden border border-venetian-brown/15 bg-white">
               <iframe
                 title="Map showing Al Gobbo di Rialto in Venice"
                 src="https://www.google.com/maps?q=Al+Gobbo+di+Rialto,+San+Polo+649,+Venezia&output=embed"
                 width="100%"
                 height="100%"
-                style={{ border: 0, minHeight: '460px' }}
+                style={{ border: 0, minHeight: '520px' }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
 
-            <aside className="rounded-2xl bg-venetian-brown text-white p-7 sm:p-8 shadow-xl">
+            <aside className="bg-venetian-brown p-7 text-white sm:p-10">
               <div className="space-y-7">
                 <div className="flex gap-4">
                   <MapPin className="w-6 h-6 text-venetian-gold shrink-0" />
@@ -59,11 +58,11 @@ export function LocationPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   data-track="click_directions"
-                  className="flex items-center justify-center gap-2 rounded-xl bg-venetian-gold px-5 py-3.5 font-bold text-venetian-brown hover:bg-venetian-gold/90"
+                  className="flex min-h-12 items-center justify-center gap-2 bg-venetian-gold px-5 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown hover:bg-white"
                 >
                   <Navigation className="w-4 h-4" /> Get directions
                 </a>
-                <Link to="/book" className="block rounded-xl border border-white/25 px-5 py-3.5 text-center font-semibold hover:bg-white/10">
+                <Link to="/book" className="flex min-h-12 items-center justify-center border border-white/25 px-5 text-xs font-bold uppercase tracking-[0.14em] hover:border-white">
                   Book a table
                 </Link>
               </div>

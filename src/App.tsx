@@ -9,6 +9,7 @@ import { FeatureFlagsProvider } from './lib/featureFlags';
 import { Toaster } from 'react-hot-toast';
 import { CookieConsent } from './components/CookieConsent';
 import { Analytics } from './components/Analytics';
+import { SiteFooter } from './components/SiteFooter';
 
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
 const MenuPage = lazy(() => import('./pages/MenuPage').then(module => ({ default: module.MenuPage })));
@@ -126,13 +127,14 @@ function App() {
         <LanguageProvider>
         <FeatureFlagsProvider>
           <Router>
-            <main className="min-h-screen dark:bg-venetian-brown/95">
+            <div className="min-h-screen dark:bg-venetian-brown">
               <Navbar />
               <Analytics />
-              <AppRoutes />
+              <div id="main-content"><AppRoutes /></div>
+              <SiteFooter />
               <CookieConsent />
               <Toaster position="top-right" />
-            </main>
+            </div>
           </Router>
         </FeatureFlagsProvider>
         </LanguageProvider>

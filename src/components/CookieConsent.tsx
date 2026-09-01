@@ -78,18 +78,18 @@ export function CookieConsent() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="cookie-consent-title"
-          className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-white dark:bg-venetian-brown/95 shadow-lg border-t border-venetian-brown/10 dark:border-venetian-sandstone/10"
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-venetian-brown p-4 text-white shadow-[0_-18px_50px_rgba(17,16,14,0.18)]"
         >
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <Cookie className="w-6 h-6 text-venetian-gold flex-shrink-0 mt-1" />
+              <Cookie className="mt-1 h-6 w-6 flex-shrink-0 text-venetian-gold" />
               <div>
-                <h3 id="cookie-consent-title" className="text-lg font-medium text-venetian-brown dark:text-venetian-sandstone mb-1">
+                <h3 id="cookie-consent-title" className="mb-1 font-serif text-2xl font-semibold text-white">
                   {copy.title}
                 </h3>
-                <p className="text-sm text-venetian-brown/90 dark:text-venetian-sandstone/90">
+                <p className="max-w-3xl text-sm leading-6 text-white/62">
                   {copy.body}{' '}
-                  <Link to="/privacy" className="font-semibold text-venetian-brown dark:text-venetian-sandstone underline decoration-venetian-gold decoration-2 underline-offset-2">
+                  <Link to="/privacy" className="font-semibold text-white underline decoration-venetian-gold decoration-2 underline-offset-2">
                     {copy.privacy}
                   </Link>{' '}
                   {copy.learnMore}
@@ -98,7 +98,7 @@ export function CookieConsent() {
             </div>
             {showPreferences && (
               <div className="w-full sm:w-auto grid grid-cols-2 gap-3 text-sm">
-                <label className="flex items-center gap-2 text-venetian-brown dark:text-venetian-sandstone">
+                <label className="flex items-center gap-2 text-white">
                   <input
                     type="checkbox"
                     checked={analytics}
@@ -107,7 +107,7 @@ export function CookieConsent() {
                   />
                   {copy.analytics}
                 </label>
-                <label className="flex items-center gap-2 text-venetian-brown dark:text-venetian-sandstone">
+                <label className="flex items-center gap-2 text-white">
                   <input
                     type="checkbox"
                     checked={marketing}
@@ -139,7 +139,7 @@ export function CookieConsent() {
               <Button
                 size="sm"
                 onClick={handleAccept}
-                className="bg-venetian-gold text-[#4A3329] font-semibold hover:bg-venetian-gold/90 whitespace-nowrap"
+                className="rounded-none bg-venetian-gold font-semibold text-venetian-brown hover:bg-white whitespace-nowrap"
               >
                 {copy.accept}
               </Button>

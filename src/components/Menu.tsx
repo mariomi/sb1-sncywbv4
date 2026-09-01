@@ -27,7 +27,9 @@ type MenuSection = {
 // ===========================
 // DATI MENU 2026 (aderenti al PDF)
 // ===========================
-const menuData: MenuSection[] = [
+// Shared with the editorial menu while the legacy component remains available.
+// eslint-disable-next-line react-refresh/only-export-components
+export const menuData: MenuSection[] = [
   // Antipasti di Mare
   {
     id: 'antipasti-mare',
@@ -210,7 +212,8 @@ const menuData: MenuSection[] = [
   },
 ];
 
-const categories = [
+// eslint-disable-next-line react-refresh/only-export-components
+export const categories = [
   {
     id: 'mare' as const,
     icon: Fish,

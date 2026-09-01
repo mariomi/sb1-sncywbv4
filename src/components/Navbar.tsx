@@ -1,8 +1,8 @@
-import { Menu, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Logo } from './Logo';
+import { Menu, Phone, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
+import { Logo } from './Logo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { useLanguage } from '../lib/i18n';
@@ -14,13 +14,15 @@ export function Navbar() {
   const { t } = useLanguage();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100);
-    };
-
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 24);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   const navItems = [
     { name: t('nav.menu'), path: '/menu' },
@@ -31,225 +33,86 @@ export function Navbar() {
   ];
 
   return (
-    <motion.div
-      className="fixed top-0 left-0 right-0 z-50"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-    >
-      <div className="px-3 sm:px-6 lg:px-8 pt-4">
-        <nav className="relative mx-auto max-w-7xl">
-          <motion.div
-            className={`relative backdrop-blur-sm rounded-2xl shadow-sm overflow-hidden transition-all duration-500 ${isScrolled
-                ? 'bg-venetian-brown/80 dark:bg-venetian-brown w-12 h-12 mx-auto flex items-center justify-center'
-                : 'bg-gradient-to-b from-venetian-brown/80 to-venetian-brown/70 dark:from-venetian-brown dark:to-venetian-brown/90 w-full'
-              }`}
-            animate={{
-              borderRadius: isScrolled ? '9999px' : '1rem',
-            }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            whileHover={{
-              scale: isScrolled ? 1.05 : 1,
-              transition: { duration: 0.3, ease: "easeOut" }
-            }}
-            onClick={() => isScrolled && setIsMenuOpen(!isMenuOpen)}
-          >
-            {isScrolled ? (
-              <motion.div
-                className="flex items-center justify-center w-full h-full"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 1, ease: "easeInOut" }}
+    <header className={`fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-venetian-brown text-white transition-shadow duration-300 ${isScrolled ? 'shadow-[0_12px_35px_rgba(18,15,12,0.18)]' : ''}`}>
+      <div className={`mx-auto flex max-w-[1480px] items-center justify-between px-4 transition-[height] duration-300 sm:px-7 lg:px-10 ${isScrolled ? 'h-[72px]' : 'h-[84px]'}`}>
+        <Link to="/" className="group flex items-center gap-3" aria-label="Al Gobbo di Rialto home">
+          <span className="grid h-10 w-10 place-items-center border border-venetian-gold/60 transition-colors group-hover:bg-venetian-gold group-hover:text-venetian-brown">
+            <Logo className="text-venetian-gold group-hover:text-venetian-brown" size={24} />
+          </span>
+          <span className="leading-none">
+            <span className="block font-serif text-[1.28rem] font-semibold tracking-[0.01em]">Al Gobbo di Rialto</span>
+            <span className="mt-1.5 block text-[0.57rem] font-bold uppercase tracking-[0.26em] text-venetian-sandstone/65">Venezia · dal 1955</span>
+          </span>
+        </Link>
+
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
+          {navItems.map((item) => {
+            const active = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`relative py-3 text-[0.7rem] font-bold uppercase tracking-[0.14em] transition-colors ${active ? 'text-venetian-gold' : 'text-white/72 hover:text-white'}`}
               >
-                <Logo className="text-venetian-gold" size={24} />
-              </motion.div>
-            ) : (
-              <div className="px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                  <motion.div
-                    className="flex-shrink-0 flex items-center space-x-3"
-                  >
-                    <Link to="/" aria-label="Al Gobbo di Rialto home">
-                      <motion.div
-                        whileHover={{ rotate: 360 }}
-                        transition={{ duration: 1, ease: "easeInOut" }}
-                      >
-                        <Logo className="text-venetian-gold" size={28} />
-                      </motion.div>
-                    </Link>
-                    <div>
-                      <p className="text-base sm:text-lg font-serif text-white whitespace-nowrap">Al Gobbo di Rialto</p>
-                      <p className="text-[10px] text-venetian-sandstone/80 font-medium tracking-wider">VENEZIA • EST. 1955</p>
-                    </div>
-                  </motion.div>
-
-                  <div className="hidden md:flex items-center">
-                    <div className="flex space-x-6 mx-6">
-                      {navItems.map((item) => (
-                        <motion.div
-                          key={item.name}
-                          whileHover={{ y: -2 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 10
-                          }}
-                        >
-                          <Link
-                            to={item.path}
-                            className={`relative text-sm text-venetian-sandstone hover:text-white font-medium tracking-wide transition-colors duration-300 ${location.pathname === item.path ? 'text-white' : ''
-                              }`}
-                          >
-                            {item.name}
-                            <motion.span
-                              className={`absolute inset-x-0 bottom-0 h-0.5 bg-venetian-gold ${location.pathname === item.path ? 'scale-x-100' : 'scale-x-0'
-                                }`}
-                              initial={false}
-                              animate={{
-                                scaleX: location.pathname === item.path ? 1 : 0
-                              }}
-                              transition={{ duration: 0.4, ease: "easeInOut" }}
-                            />
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                      <ThemeToggle />
-                      <LanguageSwitcher />
-                    </div>
-
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="ml-6"
-                    >
-                      <Link to="/book" className="inline-flex h-8 items-center justify-center rounded-lg bg-venetian-gold px-3 text-sm font-semibold text-[#4A3329] shadow-sm transition-colors duration-300 hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                        {t('nav.reserve')}
-                      </Link>
-                    </motion.div>
-                  </div>
-
-                  <motion.div
-                    className="md:hidden"
-                    whileTap={{ scale: 0.9 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <button
-                      onClick={() => setIsMenuOpen(!isMenuOpen)}
-                      className="p-2 rounded-lg text-venetian-sandstone hover:text-white transition-colors duration-300 hover:bg-white/10"
-                      aria-label="Toggle menu"
-                    >
-                      {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                    </button>
-                  </motion.div>
-                </div>
-              </div>
-            )}
-          </motion.div>
+                {item.name}
+                <span className={`absolute inset-x-0 bottom-1 h-px origin-left bg-venetian-gold transition-transform ${active ? 'scale-x-100' : 'scale-x-0'}`} />
+              </Link>
+            );
+          })}
         </nav>
+
+        <div className="hidden items-center gap-3 lg:flex">
+          <ThemeToggle />
+          <LanguageSwitcher />
+          <Link to="/book" className="ml-2 inline-flex min-h-11 items-center border border-venetian-gold bg-venetian-gold px-5 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-venetian-brown transition-colors hover:bg-transparent hover:text-venetian-gold">
+            {t('nav.reserve')}
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          className="grid h-11 w-11 place-items-center border border-white/20 text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold lg:hidden"
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation"
+          aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+        >
+          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
 
       <AnimatePresence>
-        {(isMenuOpen && !isScrolled) && (
+        {isMenuOpen ? (
           <motion.div
+            id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="md:hidden bg-venetian-brown/90 dark:bg-venetian-brown backdrop-blur-sm mx-3 mt-2 rounded-xl overflow-hidden"
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="overflow-hidden border-t border-white/10 bg-venetian-brown lg:hidden"
           >
-            <div className="py-2 px-4 space-y-1">
-              {[...navItems, { name: t('nav.reserve'), path: '/book' }].map((item, index) => (
-                <motion.div
-                  key={item.name}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{
-                    delay: index * 0.1,
-                    duration: 0.4,
-                    ease: "easeOut"
-                  }}
-                >
-                  <Link
-                    to={item.path}
-                    className={`block py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300 ${location.pathname === item.path
-                        ? 'bg-white/10 text-white'
-                        : 'text-venetian-sandstone hover:text-white hover:bg-white/5'
-                      }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                </motion.div>
-              ))}
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{
-                  delay: navItems.length * 0.1,
-                  duration: 0.4,
-                  ease: "easeOut"
-                }}
-                className="pt-2 border-t border-white/10 flex items-center justify-between"
-              >
+            <nav className="mx-auto max-w-[1480px] px-4 pb-6 pt-4 sm:px-7" aria-label="Mobile navigation">
+              <div className="divide-y divide-white/10 border-y border-white/10">
+                {navItems.map((item, index) => (
+                  <motion.div key={item.path} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.04 }}>
+                    <Link to={item.path} className={`flex min-h-12 items-center justify-between py-3 text-sm font-semibold ${location.pathname === item.path ? 'text-venetian-gold' : 'text-white'}`}>
+                      {item.name}<span aria-hidden="true">↗</span>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <a href="tel:+390415204603" className="inline-flex min-h-12 items-center justify-center gap-2 border border-white/20 text-xs font-bold uppercase tracking-[0.12em] text-white"><Phone className="h-4 w-4" />Chiamaci</a>
+                <Link to="/book" className="inline-flex min-h-12 items-center justify-center bg-venetian-gold px-4 text-xs font-bold uppercase tracking-[0.12em] text-venetian-brown">{t('nav.reserve')}</Link>
+              </div>
+              <div className="mt-5 flex items-center justify-between">
                 <LanguageSwitcher />
                 <ThemeToggle />
-              </motion.div>
-            </div>
+              </div>
+            </nav>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
-
-      <AnimatePresence>
-        {isScrolled && isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="fixed top-20 left-1/2 -translate-x-1/2 bg-venetian-brown/90 dark:bg-venetian-brown backdrop-blur-sm rounded-lg shadow-sm overflow-hidden w-[90%] max-w-xs"
-          >
-            <div className="py-2">
-              {[...navItems, { name: t('nav.reserve'), path: '/book' }].map((item, index) => (
-                <motion.div
-                  key={item.name}
-                  initial={{ x: 10, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{
-                    delay: index * 0.1,
-                    duration: 0.4,
-                    ease: "easeOut"
-                  }}
-                >
-                  <Link
-                    to={item.path}
-                    className={`block px-4 py-2 text-sm font-medium text-venetian-sandstone hover:text-white hover:bg-white/5 transition-colors duration-300 ${location.pathname === item.path ? 'text-white bg-white/10' : ''
-                      }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                </motion.div>
-              ))}
-              <motion.div
-                initial={{ x: 10, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{
-                  delay: navItems.length * 0.1,
-                  duration: 0.4,
-                  ease: "easeOut"
-                }}
-                className="px-4 py-2 border-t border-white/10 flex items-center justify-between"
-              >
-                <LanguageSwitcher />
-                <ThemeToggle />
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+    </header>
   );
 }

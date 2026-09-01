@@ -504,10 +504,10 @@ export function ReservePage() {
         availableLanguages={['en', 'it', 'fr', 'de', 'es']}
         description={copy.seoDescription}
       />
-      <div className="min-h-screen bg-venetian-sandstone/20 pt-20 sm:pt-24">
+      <div className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
         {/* Hero Section */}
         <motion.section
-          className="relative h-[28vh] sm:h-[40vh] overflow-hidden"
+          className="relative mx-auto h-[46vh] min-h-[430px] max-w-[1480px] overflow-hidden border-x border-venetian-brown/15 dark:border-white/10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -518,17 +518,18 @@ export function ReservePage() {
               backgroundImage: `url(${img2939})`
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-venetian-brown/70 to-venetian-brown/90" />
-          <div className="relative h-full flex items-center justify-center text-center px-4">
-            <div className="max-w-3xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent" />
+          <div className="relative flex h-full items-end px-5 py-12 sm:px-10 lg:px-16">
+            <div className="max-w-3xl text-left">
+              <p className="mb-5 text-[0.68rem] font-bold uppercase tracking-[0.24em] text-venetian-gold">San Polo · Rialto · Venezia</p>
               <motion.h1
-                className="text-3xl sm:text-5xl lg:text-6xl font-serif text-white mb-2 sm:mb-4"
+                className="max-w-[8ch] font-serif text-6xl font-semibold leading-[0.82] text-white sm:text-8xl"
                 {...fadeIn}
               >
                 {copy.heroTitle}
               </motion.h1>
               <motion.p
-                className="text-base sm:text-xl text-venetian-sandstone"
+                className="mt-5 border-l-2 border-venetian-terracotta pl-5 text-base text-white/72 sm:text-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -540,16 +541,16 @@ export function ReservePage() {
         </motion.section>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-6 sm:-mt-16 relative z-10 pb-16">
-          <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
+        <div className="relative z-10 mx-auto max-w-[1480px] px-4 py-16 sm:px-7 sm:py-24 lg:px-10">
+          <div className="grid gap-10 lg:grid-cols-3 lg:gap-12">
             {/* Reservation Form */}
             <motion.div
-              className="lg:col-span-2 bg-white/95 rounded-2xl shadow-xl p-4 sm:p-8"
+              className="border-t border-venetian-brown pt-7 lg:col-span-2 sm:pt-9 [&_button]:rounded-none [&_input]:rounded-none [&_select]:rounded-none [&_textarea]:rounded-none dark:border-white"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-2xl sm:text-3xl font-serif text-venetian-brown mb-4 sm:mb-6">{copy.detailsTitle}</h2>
+              <h2 className="mb-7 font-serif text-4xl font-semibold text-venetian-brown sm:text-6xl dark:text-white">{copy.detailsTitle}</h2>
               {!onlineReservationsEnabled ? (
                 <div className="p-6 rounded-xl bg-amber-50 border border-amber-200 text-center">
                   <p className="text-venetian-brown font-semibold mb-1">{copy.suspendedTitle}</p>
@@ -855,7 +856,7 @@ export function ReservePage() {
               transition={{ duration: 0.6 }}
             >
               {/* Reservation Policy */}
-              <div className="bg-white/95 rounded-2xl shadow-lg p-4 sm:p-6">
+              <div className="border border-venetian-brown/15 bg-white/45 p-5 sm:p-6">
                 <h3 className="text-xl font-serif text-venetian-brown mb-4 flex items-center">
                   <CalendarClock className="w-5 h-5 mr-2 text-venetian-gold" />
                   {copy.policyTitle}
@@ -871,7 +872,7 @@ export function ReservePage() {
               </div>
 
               {/* Special Notes */}
-              <div className="bg-white/95 rounded-2xl shadow-lg p-4 sm:p-6">
+              <div className="border border-venetian-brown/15 bg-white/45 p-5 sm:p-6">
                 <h3 className="text-lg sm:text-xl font-serif text-venetian-brown mb-3 flex items-center">
                   <AlertCircle className="w-5 h-5 mr-2 text-venetian-gold" />
                   {copy.importantTitle}
@@ -887,7 +888,7 @@ export function ReservePage() {
               </div>
 
               {/* Direct assistance */}
-              <div className="bg-venetian-brown rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+              <div className="bg-venetian-brown p-5 text-white sm:p-6">
                 <h3 className="text-lg sm:text-xl font-serif mb-3 flex items-center">
                   <Phone className="w-5 h-5 mr-2 text-venetian-gold" />
                   {copy.helpTitle}
@@ -912,7 +913,7 @@ export function ReservePage() {
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-3 overflow-hidden"
+                className="mx-3 w-full max-w-lg overflow-hidden bg-white shadow-xl"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="reservation-confirmation-title"
@@ -934,7 +935,7 @@ export function ReservePage() {
                   <p className="text-venetian-brown/70 mb-6">
                     {copy.confirmationThanks} {displayDate} {copy.timeLabel.toLowerCase()} {formData.time.slice(0, 5)}.
                   </p>
-                  <div className="bg-venetian-brown/5 rounded-lg p-4 mb-6">
+                  <div className="mb-6 border border-venetian-brown/15 bg-venetian-brown/[0.03] p-4">
                     <h4 className="font-medium text-venetian-brown mb-2">{copy.confirmationDetails}</h4>
                     <ul className="space-y-2 text-sm text-venetian-brown/70">
                       <li>{copy.nameLabel}: {formData.name}</li>
@@ -952,7 +953,7 @@ export function ReservePage() {
                     <div className="mb-5">
                       <Link
                         to={`/cancella/${cancellationToken}?lang=${language}`}
-                        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border-2 border-red-600 px-5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+                        className="inline-flex min-h-12 w-full items-center justify-center border-2 border-red-600 px-5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
                       >
                         {copy.manageBooking}
                       </Link>

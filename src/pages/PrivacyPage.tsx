@@ -13,13 +13,14 @@ export function PrivacyPage() {
         description="How Al Gobbo di Rialto processes reservation, contact and website analytics data, and how to manage cookie preferences."
         availableLanguages={['en']}
       />
-      <main className="min-h-screen bg-venetian-sandstone/20 pt-24 pb-20">
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white/95 dark:bg-venetian-brown/90 rounded-2xl shadow-xl p-6 sm:p-10">
-            <h1 className="text-4xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-3">Privacy and Cookie Policy</h1>
+      <main className="min-h-screen bg-[#f7f3eb] pb-20 pt-[84px] dark:bg-venetian-brown">
+        <article className="mx-auto max-w-5xl px-4 py-16 sm:px-7 sm:py-24">
+          <div className="border-t border-venetian-brown bg-transparent pt-7 dark:border-white">
+            <p className="editorial-kicker mb-5">Legal · Transparency</p>
+            <h1 className="max-w-[10ch] font-serif text-6xl font-semibold leading-[0.82] text-venetian-brown sm:text-8xl dark:text-white">Privacy and Cookie Policy</h1>
             <p className="text-sm text-venetian-brown/60 dark:text-venetian-sandstone/60 mb-10">Last updated: 31 August 2026</p>
 
-            <div className="space-y-10 text-venetian-brown/75 dark:text-venetian-sandstone/75 leading-relaxed">
+            <div className="mt-14 space-y-0 leading-relaxed text-venetian-brown/70 dark:text-white/65 [&>section]:border-t [&>section]:border-venetian-brown/15 [&>section]:py-8 dark:[&>section]:border-white/12">
               <section>
                 <div className="flex items-center gap-3 mb-4"><Shield className="w-6 h-6 text-venetian-gold" /><h2 className="text-2xl font-serif text-venetian-brown dark:text-venetian-sandstone">Who processes your data</h2></div>
                 <p>Al Gobbo di Rialto, San Polo 649, 30125 Venezia, Italy, processes personal data submitted through this website. For privacy requests, use the website contact form or call <a href="tel:+390415204603" className="text-venetian-gold hover:underline">+39 041 520 4603</a>.</p>
@@ -39,7 +40,7 @@ export function PrivacyPage() {
               <section>
                 <div className="flex items-center gap-3 mb-4"><Cookie className="w-6 h-6 text-venetian-gold" /><h2 className="text-2xl font-serif text-venetian-brown dark:text-venetian-sandstone">Cookies and measurement</h2></div>
                 <p>Essential storage keeps language and consent choices and supports core website functions. With your permission, the site can load Google Analytics, Google Tag Manager, Google Ads measurement and the Meta Pixel. These services may process device, browsing and campaign data under their own terms. Optional tags remain disabled until you consent, and the site does not send your booking name, email, phone number or notes to analytics providers.</p>
-                <button type="button" onClick={openCookieSettings} className="mt-5 rounded-xl border border-venetian-gold px-5 py-2.5 font-semibold text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-gold/10">Review cookie choices</button>
+                <button type="button" onClick={openCookieSettings} className="mt-5 inline-flex min-h-12 items-center justify-center border border-venetian-brown px-5 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown hover:border-venetian-terracotta hover:text-venetian-terracotta dark:border-white dark:text-white">Review cookie choices</button>
               </section>
 
               <section>

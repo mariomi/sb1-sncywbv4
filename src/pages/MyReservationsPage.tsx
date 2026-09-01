@@ -9,36 +9,37 @@ export function MyReservationsPage() {
   return (
     <PageTransition>
       <SEOHead title="Gestisci la prenotazione" canonical="/my-reservations" noindex />
-      <div className="min-h-screen bg-venetian-sandstone/20 pt-24 pb-20">
-        <section className="relative h-[30vh] overflow-hidden">
+      <div className="min-h-screen bg-[#f7f3eb] pb-20 pt-[84px]">
+        <section className="relative mx-auto h-[42vh] min-h-[390px] max-w-[1480px] overflow-hidden">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${img2939})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-venetian-brown/70 to-venetian-brown/95" />
-          <div className="relative h-full flex items-center justify-center text-center px-4">
-            <div>
-              <h1 className="text-4xl sm:text-5xl font-serif text-white mb-3">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent" />
+          <div className="relative flex h-full items-end px-5 py-12 sm:px-10 lg:px-16">
+            <div className="text-left">
+              <p className="mb-5 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-venetian-gold">Il tuo tavolo</p>
+              <h1 className="max-w-[9ch] font-serif text-6xl font-semibold leading-[0.82] text-white sm:text-8xl">
                 Gestisci la prenotazione
               </h1>
-              <p className="text-venetian-sandstone text-lg">
+              <p className="mt-5 border-l-2 border-venetian-terracotta pl-5 text-base text-white/70 sm:text-lg">
                 Un accesso privato, direttamente dalla tua email
               </p>
             </div>
           </div>
         </section>
 
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
+        <div className="relative z-10 mx-auto max-w-3xl px-4 py-16 sm:px-7 sm:py-20">
           <motion.div
-            className="bg-white rounded-2xl shadow-xl p-7 sm:p-10"
+            className="border-t border-venetian-brown bg-transparent pt-7 sm:pt-9"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="w-14 h-14 rounded-full bg-venetian-gold/15 flex items-center justify-center mb-6">
-              <ShieldCheck className="w-7 h-7 text-venetian-gold" />
+            <div className="mb-7 grid h-14 w-14 place-items-center bg-venetian-terracotta text-white">
+              <ShieldCheck className="h-7 w-7" />
             </div>
-            <h2 className="font-serif text-2xl text-venetian-brown mb-3">
+            <h2 className="mb-3 font-serif text-4xl font-semibold text-venetian-brown sm:text-5xl">
               Apri il link nella conferma
             </h2>
             <p className="text-venetian-brown/75 leading-relaxed mb-6">
@@ -48,14 +49,14 @@ export function MyReservationsPage() {
             </p>
 
             <div className="space-y-3 mb-8">
-              <div className="flex items-start gap-3 rounded-xl bg-venetian-sandstone/25 p-4">
-                <Mail className="w-5 h-5 text-venetian-gold mt-0.5 shrink-0" />
+              <div className="flex items-start gap-3 border-t border-venetian-brown/15 py-4">
+                <Mail className="mt-0.5 h-5 w-5 shrink-0 text-venetian-terracotta" />
                 <p className="text-sm text-venetian-brown/75">
                   Controlla anche la cartella spam. L&apos;oggetto contiene la conferma della prenotazione.
                 </p>
               </div>
-              <div className="flex items-start gap-3 rounded-xl bg-venetian-sandstone/25 p-4">
-                <Phone className="w-5 h-5 text-venetian-gold mt-0.5 shrink-0" />
+              <div className="flex items-start gap-3 border-y border-venetian-brown/15 py-4">
+                <Phone className="mt-0.5 h-5 w-5 shrink-0 text-venetian-terracotta" />
                 <p className="text-sm text-venetian-brown/75">
                   Non trovi l&apos;email? Chiamaci al{' '}
                   <a className="font-medium text-venetian-brown hover:text-venetian-gold" href="tel:+390415204603">
@@ -67,7 +68,7 @@ export function MyReservationsPage() {
 
             <Link
               to="/book"
-              className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-venetian-gold px-4 text-sm font-medium text-venetian-brown shadow transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-brown"
+              className="inline-flex min-h-12 w-full items-center justify-center bg-venetian-brown px-5 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-terracotta"
             >
               <CalendarCheck className="w-4 h-4 mr-2" />
               Fai una nuova prenotazione

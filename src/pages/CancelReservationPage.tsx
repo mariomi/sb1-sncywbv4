@@ -63,7 +63,7 @@ const dateLocales: Record<Language, string> = {
   en: 'en-GB', it: 'it-IT', fr: 'fr-FR', de: 'de-DE', es: 'es-ES',
 };
 
-const primaryLinkClass = 'inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-venetian-gold px-5 text-sm font-semibold text-venetian-brown shadow transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-brown';
+const primaryLinkClass = 'inline-flex min-h-12 w-full items-center justify-center bg-venetian-brown px-5 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-terracotta';
 
 export function CancelReservationPage() {
   const { token } = useParams<{ token: string }>();
@@ -131,15 +131,15 @@ export function CancelReservationPage() {
   return (
     <PageTransition>
       <SEOHead title={copy.seoTitle} noindex />
-      <main className="min-h-screen bg-venetian-sandstone/20 px-4 pb-20 pt-24 dark:bg-venetian-brown/95 sm:px-6">
+      <main className="min-h-screen bg-[#f7f3eb] px-4 pb-20 pt-32 dark:bg-venetian-brown sm:px-6">
         <motion.section
-          className="mx-auto max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-venetian-brown/60"
+          className="mx-auto max-w-lg overflow-hidden border border-venetian-brown/15 bg-white/70 dark:border-white/15 dark:bg-[#211d18]"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           aria-live="polite"
         >
-          <header className="border-b-4 border-venetian-gold bg-venetian-brown px-5 py-5 text-center sm:px-7">
+          <header className="border-b border-white/15 bg-venetian-brown px-5 py-7 text-center sm:px-7">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-venetian-gold">{copy.eyebrow}</p>
             <h1 className="mt-1 font-serif text-2xl text-white sm:text-3xl">{copy.title}</h1>
           </header>
@@ -156,7 +156,7 @@ export function CancelReservationPage() {
               <div>
                 <p className="text-center text-sm leading-6 text-venetian-brown/75 dark:text-venetian-sandstone/75">{copy.intro}</p>
 
-                <div className="my-5 rounded-xl border border-venetian-gold/35 bg-venetian-gold/10 p-4">
+                <div className="my-5 border border-venetian-brown/15 bg-white/45 p-4 dark:border-white/15 dark:bg-white/5">
                   <p className="mb-3 text-center font-semibold text-venetian-brown dark:text-venetian-sandstone">{reservation.name}</p>
                   <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
                     <div className="flex items-center gap-2 sm:flex-col sm:text-center">
@@ -177,7 +177,7 @@ export function CancelReservationPage() {
                   </dl>
                 </div>
 
-                <Button className="min-h-12 w-full bg-red-600 px-5 font-semibold text-white hover:bg-red-700" onClick={handleCancel} disabled={state === 'cancelling'}>
+                <Button className="min-h-12 w-full bg-venetian-terracotta px-5 text-xs font-bold uppercase tracking-[0.14em] text-white hover:bg-red-800" onClick={handleCancel} disabled={state === 'cancelling'}>
                   {state === 'cancelling' ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{copy.cancelling}</> : copy.cancel}
                 </Button>
                 <p className="mt-2 text-center text-xs text-venetian-brown/55 dark:text-venetian-sandstone/55">{copy.warning}</p>
@@ -186,7 +186,7 @@ export function CancelReservationPage() {
                   {copy.keep}
                 </Link>
 
-                <div className="mt-5 rounded-xl bg-venetian-sandstone/25 p-4 text-center">
+                <div className="mt-5 border-t border-venetian-brown/15 p-4 text-center dark:border-white/15">
                   <Phone className="mx-auto h-5 w-5 text-venetian-gold" />
                   <p className="mt-2 text-sm text-venetian-brown/70">{copy.changeHelp}</p>
                   <a href="tel:+390415204603" className="mt-1 inline-block font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4">+39 041 520 4603</a>

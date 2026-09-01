@@ -67,10 +67,10 @@ export function ContactPage() {
         availableLanguages={['en']}
         description="Contatta il Ristorante Al Gobbo di Rialto a Venezia. Siamo in Sestiere San Polo 649, vicino al Ponte di Rialto. Tel: +39 041 520 4603. Scrivi un messaggio o vieni a trovarci."
       />
-      <div className="min-h-screen bg-venetian-sandstone/20 pt-20 sm:pt-24">
+      <div className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
         {/* Hero Section */}
         <motion.section
-          className="relative h-[28vh] sm:h-[40vh] overflow-hidden"
+          className="relative mx-auto h-[46vh] min-h-[420px] max-w-[1480px] overflow-hidden border-x border-venetian-brown/15 dark:border-white/10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -81,17 +81,18 @@ export function ContactPage() {
               backgroundImage: `url(${img2947})`
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-venetian-brown/70 to-venetian-brown/90" />
-          <div className="relative h-full flex items-center justify-center text-center px-4">
-            <div className="max-w-3xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent" />
+          <div className="relative flex h-full items-end px-5 py-12 sm:px-10 lg:px-16">
+            <div className="max-w-3xl text-left">
+              <p className="mb-5 text-[0.68rem] font-bold uppercase tracking-[0.24em] text-venetian-gold">San Polo · Rialto</p>
               <motion.h1
-                className="text-3xl sm:text-5xl lg:text-6xl font-serif text-white mb-2 sm:mb-4"
+                className="max-w-[8ch] font-serif text-6xl font-semibold leading-[0.82] text-white sm:text-8xl"
                 {...fadeIn}
               >
                 Contact Us
               </motion.h1>
               <motion.p
-                className="text-base sm:text-xl text-venetian-sandstone"
+                className="mt-5 border-l-2 border-venetian-terracotta pl-5 text-base text-white/70 sm:text-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -103,16 +104,16 @@ export function ContactPage() {
         </motion.section>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-6 sm:-mt-16 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-4 sm:gap-8">
+        <div className="relative z-10 mx-auto max-w-[1480px] px-4 py-20 sm:px-7 sm:py-28 lg:px-10">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
             {/* Contact Form */}
             <motion.div
-              className="bg-white/95 rounded-2xl shadow-xl p-4 sm:p-8"
+              className="border-t border-venetian-brown p-0 pt-7 sm:pt-9 dark:border-white"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-2xl sm:text-3xl font-serif text-venetian-brown mb-4 sm:mb-6">Send us a Message</h2>
+              <h2 className="mb-7 font-serif text-4xl font-semibold text-venetian-brown sm:text-6xl dark:text-white">Send us a Message</h2>
               <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
@@ -124,7 +125,7 @@ export function ContactPage() {
                       id="firstName"
                       value={formData.firstName}
                       onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
+                      className="min-h-12 w-full border border-venetian-brown/20 bg-white/40 px-4 text-base focus:border-venetian-terracotta focus:outline-none focus:ring-1 focus:ring-venetian-terracotta"
                       required
                     />
                   </div>
@@ -137,7 +138,7 @@ export function ContactPage() {
                       id="lastName"
                       value={formData.lastName}
                       onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
+                      className="min-h-12 w-full border border-venetian-brown/20 bg-white/40 px-4 text-base focus:border-venetian-terracotta focus:outline-none focus:ring-1 focus:ring-venetian-terracotta"
                       required
                     />
                   </div>
@@ -151,7 +152,7 @@ export function ContactPage() {
                     id="email"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
+                    className="min-h-12 w-full border border-venetian-brown/20 bg-white/40 px-4 text-base focus:border-venetian-terracotta focus:outline-none focus:ring-1 focus:ring-venetian-terracotta"
                     required
                   />
                 </div>
@@ -163,7 +164,7 @@ export function ContactPage() {
                     id="subject"
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
+                    className="min-h-12 w-full border border-venetian-brown/20 bg-white/40 px-4 text-base focus:border-venetian-terracotta focus:outline-none focus:ring-1 focus:ring-venetian-terracotta"
                   >
                     <option value="reservation">Make a Reservation</option>
                     <option value="event">Private Event Inquiry</option>
@@ -180,7 +181,7 @@ export function ContactPage() {
                     rows={4}
                     value={formData.message}
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
+                    className="w-full border border-venetian-brown/20 bg-white/40 px-4 py-3 text-base focus:border-venetian-terracotta focus:outline-none focus:ring-1 focus:ring-venetian-terracotta"
                     required
                   ></textarea>
                 </div>
@@ -212,7 +213,7 @@ export function ContactPage() {
                 >
                   <Button 
                     type="submit"
-                    className="w-full bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
+                    className="min-h-12 w-full rounded-none bg-venetian-brown text-xs font-bold uppercase tracking-[0.16em] text-white hover:bg-venetian-terracotta"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? 'Sending...' : 'Send Message'}
@@ -223,13 +224,13 @@ export function ContactPage() {
 
             {/* Contact Information */}
             <motion.div
-              className="space-y-4 sm:space-y-8"
+              className="space-y-5 sm:space-y-8"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
               {/* Map */}
-              <div className="bg-white/95 rounded-2xl shadow-xl overflow-hidden">
+              <div className="overflow-hidden border border-venetian-brown/15 bg-white/80">
                 <iframe
                   src="https://www.google.com/maps?q=Al+Gobbo+di+Rialto,+San+Polo+649,+Venezia&output=embed"
                   width="100%"
@@ -263,7 +264,7 @@ export function ContactPage() {
                 ].map((item, index) => (
                   <motion.div
                     key={item.title}
-                    className="bg-white/95 rounded-xl shadow-lg p-4 sm:p-6"
+                    className="border border-venetian-brown/15 bg-white/55 p-4 sm:p-6"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -278,7 +279,7 @@ export function ContactPage() {
 
               {/* Social Links */}
               <motion.div
-                className="bg-white/95 rounded-xl shadow-lg p-6"
+                className="border border-venetian-brown/15 bg-white/55 p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.4 }}
@@ -296,7 +297,7 @@ export function ContactPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={social.label}
-                      className="p-2 rounded-lg bg-venetian-brown/5 text-venetian-brown hover:bg-venetian-gold/10 transition-colors"
+                      className="grid h-11 w-11 place-items-center border border-venetian-brown/15 text-venetian-brown transition-colors hover:border-venetian-terracotta hover:text-venetian-terracotta"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -310,7 +311,7 @@ export function ContactPage() {
 
           {/* Additional Information */}
           <motion.div
-            className="mt-6 sm:mt-12 bg-white/80 rounded-xl p-4 sm:p-6 text-center"
+            className="mt-12 border-t border-venetian-brown/15 p-6 text-center sm:mt-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
