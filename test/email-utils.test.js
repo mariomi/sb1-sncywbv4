@@ -22,6 +22,7 @@ const reservation = {
   guests: 2,
   occasion: 'birthday',
   special_requests: '<script>alert(1)</script>',
+  locale: 'en',
 };
 
 test('email helpers validate opaque identifiers and contact addresses', () => {
@@ -41,7 +42,7 @@ test('reservation and waitlist templates escape customer-controlled HTML', () =>
   const confirmation = buildReservationCustomerEmail(reservation, 'https://www.ristorantealgobbodirialto.it');
   assert.doesNotMatch(confirmation.html, /<script>/);
   assert.match(confirmation.html, /&lt;script&gt;/);
-  assert.match(confirmation.html, /cancella\/92a30657/);
+  assert.match(confirmation.html, /cancella\/92a30657[^\"]*\?lang=en/);
 
   const waitlist = buildWaitlistEmail(reservation, 'https://www.ristorantealgobbodirialto.it');
   assert.doesNotMatch(waitlist.html, /<Mario/);

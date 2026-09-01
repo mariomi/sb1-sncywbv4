@@ -1,225 +1,207 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Users, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { it } from 'date-fns/locale';
+import { Calendar, CheckCircle2, Clock, Loader2, Phone, Users, XCircle } from 'lucide-react';
 import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
 import { getReservationByToken, cancelReservationByToken } from '../lib/api';
 import type { ReservationSummary } from '../lib/api';
+import { useLanguage, type Language } from '../lib/i18n';
 
-const primaryLinkClass = 'inline-flex h-10 items-center justify-center rounded-xl bg-venetian-gold px-4 text-sm font-medium text-venetian-brown shadow transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-brown';
+type PageState = 'loading' | 'found' | 'cancelling' | 'success' | 'already_cancelled' | 'already_completed' | 'not_found' | 'error';
 
-type PageState = 'loading' | 'found' | 'confirming' | 'success' | 'already_cancelled' | 'already_completed' | 'not_found' | 'error';
+type CancellationCopy = {
+  seoTitle: string;
+  eyebrow: string;
+  title: string;
+  loading: string;
+  intro: string;
+  cancel: string;
+  cancelling: string;
+  keep: string;
+  warning: string;
+  changeHelp: string;
+  guest: string;
+  guests: string;
+  dateLabel: string;
+  timeLabel: string;
+  guestsLabel: string;
+  successTitle: string;
+  successText: string;
+  alreadyCancelledTitle: string;
+  alreadyCancelledText: string;
+  completedTitle: string;
+  completedText: string;
+  invalidTitle: string;
+  invalidText: string;
+  errorTitle: string;
+  errorText: string;
+  newBooking: string;
+  home: string;
+};
+
+const cancellationCopy: Record<Language, CancellationCopy> = {
+  en: {
+    seoTitle: 'Cancel booking', eyebrow: 'Al Gobbo di Rialto', title: 'Cancel your booking', loading: 'Loading your booking…', intro: 'Check the details, then tap the button to free the table.', cancel: 'Cancel this booking', cancelling: 'Cancelling…', keep: 'Keep my booking', warning: 'Cancellation cannot be undone.', changeHelp: 'Need to change the time or number of guests? Call us:', guest: 'guest', guests: 'guests', dateLabel: 'Date', timeLabel: 'Time', guestsLabel: 'Guests', successTitle: 'Booking cancelled', successText: 'The table has been released. We hope to welcome you another time.', alreadyCancelledTitle: 'Already cancelled', alreadyCancelledText: 'This booking was already cancelled. No further action is needed.', completedTitle: 'Booking already completed', completedText: 'A past or completed booking can no longer be cancelled.', invalidTitle: 'Link not valid', invalidText: 'This private link is invalid. Call us if you need help.', errorTitle: 'Could not cancel', errorText: 'Please try again or call us and we will help you.', newBooking: 'Book another table', home: 'Return to the website',
+  },
+  it: {
+    seoTitle: 'Cancella prenotazione', eyebrow: 'Al Gobbo di Rialto', title: 'Cancella la prenotazione', loading: 'Carico la prenotazione…', intro: 'Controlla i dati e premi il pulsante per liberare il tavolo.', cancel: 'Cancella questa prenotazione', cancelling: 'Cancellazione in corso…', keep: 'Mantieni la prenotazione', warning: 'La cancellazione non può essere annullata.', changeHelp: 'Vuoi cambiare orario o numero di ospiti? Chiamaci:', guest: 'ospite', guests: 'ospiti', dateLabel: 'Data', timeLabel: 'Ora', guestsLabel: 'Ospiti', successTitle: 'Prenotazione cancellata', successText: 'Il tavolo è stato liberato. Speriamo di accoglierti un’altra volta.', alreadyCancelledTitle: 'Prenotazione già cancellata', alreadyCancelledText: 'Non devi fare altro: questa prenotazione risulta già cancellata.', completedTitle: 'Prenotazione già conclusa', completedText: 'Una prenotazione passata o completata non può più essere cancellata.', invalidTitle: 'Link non valido', invalidText: 'Questo link personale non è valido. Chiamaci se hai bisogno di aiuto.', errorTitle: 'Cancellazione non riuscita', errorText: 'Riprova oppure chiamaci: ti aiutiamo noi.', newBooking: 'Prenota un altro tavolo', home: 'Torna al sito',
+  },
+  fr: {
+    seoTitle: 'Annuler la réservation', eyebrow: 'Al Gobbo di Rialto', title: 'Annuler la réservation', loading: 'Chargement de la réservation…', intro: 'Vérifiez les informations puis appuyez sur le bouton pour libérer la table.', cancel: 'Annuler cette réservation', cancelling: 'Annulation…', keep: 'Garder ma réservation', warning: 'L’annulation est définitive.', changeHelp: 'Vous souhaitez changer l’heure ou le nombre de personnes ? Appelez-nous :', guest: 'personne', guests: 'personnes', dateLabel: 'Date', timeLabel: 'Heure', guestsLabel: 'Personnes', successTitle: 'Réservation annulée', successText: 'La table a été libérée. Nous espérons vous accueillir une prochaine fois.', alreadyCancelledTitle: 'Déjà annulée', alreadyCancelledText: 'Cette réservation a déjà été annulée. Aucune autre action n’est nécessaire.', completedTitle: 'Réservation terminée', completedText: 'Une réservation passée ou terminée ne peut plus être annulée.', invalidTitle: 'Lien non valide', invalidText: 'Ce lien privé n’est pas valide. Appelez-nous si vous avez besoin d’aide.', errorTitle: 'Annulation impossible', errorText: 'Réessayez ou appelez-nous : nous vous aiderons.', newBooking: 'Réserver une autre table', home: 'Retourner au site',
+  },
+  de: {
+    seoTitle: 'Reservierung stornieren', eyebrow: 'Al Gobbo di Rialto', title: 'Reservierung stornieren', loading: 'Reservierung wird geladen…', intro: 'Prüfen Sie die Angaben und tippen Sie dann auf die Schaltfläche, um den Tisch freizugeben.', cancel: 'Diese Reservierung stornieren', cancelling: 'Wird storniert…', keep: 'Reservierung behalten', warning: 'Die Stornierung kann nicht rückgängig gemacht werden.', changeHelp: 'Möchten Sie Uhrzeit oder Gästezahl ändern? Rufen Sie uns an:', guest: 'Gast', guests: 'Gäste', dateLabel: 'Datum', timeLabel: 'Uhrzeit', guestsLabel: 'Gäste', successTitle: 'Reservierung storniert', successText: 'Der Tisch wurde freigegeben. Wir hoffen, Sie ein anderes Mal begrüßen zu dürfen.', alreadyCancelledTitle: 'Bereits storniert', alreadyCancelledText: 'Diese Reservierung wurde bereits storniert. Sie müssen nichts weiter tun.', completedTitle: 'Reservierung abgeschlossen', completedText: 'Eine vergangene oder abgeschlossene Reservierung kann nicht mehr storniert werden.', invalidTitle: 'Link ungültig', invalidText: 'Dieser private Link ist ungültig. Rufen Sie uns an, wenn Sie Hilfe benötigen.', errorTitle: 'Stornierung nicht möglich', errorText: 'Versuchen Sie es erneut oder rufen Sie uns an – wir helfen Ihnen.', newBooking: 'Neuen Tisch reservieren', home: 'Zur Website',
+  },
+  es: {
+    seoTitle: 'Cancelar reserva', eyebrow: 'Al Gobbo di Rialto', title: 'Cancelar la reserva', loading: 'Cargando la reserva…', intro: 'Comprueba los datos y pulsa el botón para liberar la mesa.', cancel: 'Cancelar esta reserva', cancelling: 'Cancelando…', keep: 'Mantener mi reserva', warning: 'La cancelación no se puede deshacer.', changeHelp: '¿Quieres cambiar la hora o el número de personas? Llámanos:', guest: 'persona', guests: 'personas', dateLabel: 'Fecha', timeLabel: 'Hora', guestsLabel: 'Personas', successTitle: 'Reserva cancelada', successText: 'La mesa ha quedado libre. Esperamos recibirte en otra ocasión.', alreadyCancelledTitle: 'Ya está cancelada', alreadyCancelledText: 'Esta reserva ya fue cancelada. No tienes que hacer nada más.', completedTitle: 'Reserva finalizada', completedText: 'Una reserva pasada o finalizada ya no se puede cancelar.', invalidTitle: 'Enlace no válido', invalidText: 'Este enlace privado no es válido. Llámanos si necesitas ayuda.', errorTitle: 'No se pudo cancelar', errorText: 'Inténtalo de nuevo o llámanos: te ayudaremos.', newBooking: 'Reservar otra mesa', home: 'Volver al sitio',
+  },
+};
+
+const dateLocales: Record<Language, string> = {
+  en: 'en-GB', it: 'it-IT', fr: 'fr-FR', de: 'de-DE', es: 'es-ES',
+};
+
+const primaryLinkClass = 'inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-venetian-gold px-5 text-sm font-semibold text-venetian-brown shadow transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-brown';
 
 export function CancelReservationPage() {
   const { token } = useParams<{ token: string }>();
+  const { language } = useLanguage();
+  const copy = cancellationCopy[language];
   const [state, setState] = useState<PageState>('loading');
   const [reservation, setReservation] = useState<ReservationSummary | null>(null);
 
   useEffect(() => {
-    if (!token) { setState('not_found'); return; }
+    if (!token) {
+      setState('not_found');
+      return;
+    }
+
+    let active = true;
     getReservationByToken(token)
-      .then(r => {
-        if (!r) { setState('not_found'); return; }
-        if (r.status === 'cancelled') { setState('already_cancelled'); return; }
-        if (r.status === 'completed') { setState('already_completed'); return; }
-        setReservation(r);
-        setState('found');
+      .then((result) => {
+        if (!active) return;
+        if (!result) setState('not_found');
+        else if (result.status === 'cancelled') setState('already_cancelled');
+        else if (result.status === 'completed' || result.status === 'no_show') setState('already_completed');
+        else {
+          setReservation(result);
+          setState('found');
+        }
       })
-      .catch(() => setState('error'));
+      .catch(() => active && setState('error'));
+
+    return () => {
+      active = false;
+    };
   }, [token]);
 
   const handleCancel = async () => {
-    if (!token) return;
-    setState('confirming');
+    if (!token || state === 'cancelling') return;
+    setState('cancelling');
     try {
       await cancelReservationByToken(token);
       setState('success');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : '';
-      if (msg === 'already_cancelled') setState('already_cancelled');
-      else if (msg === 'already_completed') setState('already_completed');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (message === 'already_cancelled') setState('already_cancelled');
+      else if (message === 'already_completed') setState('already_completed');
       else setState('error');
     }
   };
 
+  const formattedDate = reservation
+    ? new Date(`${reservation.date}T12:00:00Z`).toLocaleDateString(dateLocales[language], {
+        timeZone: 'Europe/Rome', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      })
+    : '';
+
+  const renderResult = (icon: ReactNode, title: string, text: string, action: 'book' | 'home') => (
+    <div className="flex flex-col items-center py-5 text-center" role="status">
+      {icon}
+      <h2 className="mt-4 font-serif text-2xl text-venetian-brown dark:text-venetian-sandstone">{title}</h2>
+      <p className="mt-2 max-w-sm text-sm leading-6 text-venetian-brown/70 dark:text-venetian-sandstone/70">{text}</p>
+      <Link to={action === 'book' ? '/book' : '/'} className={`${primaryLinkClass} mt-6`}>
+        {action === 'book' ? copy.newBooking : copy.home}
+      </Link>
+    </div>
+  );
+
   return (
     <PageTransition>
-      <SEOHead title="Cancella Prenotazione" noindex />
-      <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24 pb-20">
-        <div className="max-w-lg mx-auto px-4 sm:px-6">
-          <motion.div
-            className="bg-white dark:bg-venetian-brown/60 rounded-2xl shadow-xl overflow-hidden"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {/* Header */}
-            <div className="bg-venetian-brown px-6 py-5">
-              <p className="text-venetian-gold text-xs font-medium tracking-[0.2em] uppercase mb-1">
-                Ristorante Al Gobbo di Rialto
-              </p>
-              <h1 className="font-serif text-2xl text-white">Cancellazione Prenotazione</h1>
-            </div>
-            <div className="h-1 bg-venetian-gold" />
+      <SEOHead title={copy.seoTitle} noindex />
+      <main className="min-h-screen bg-venetian-sandstone/20 px-4 pb-20 pt-24 dark:bg-venetian-brown/95 sm:px-6">
+        <motion.section
+          className="mx-auto max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-venetian-brown/60"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          aria-live="polite"
+        >
+          <header className="border-b-4 border-venetian-gold bg-venetian-brown px-5 py-5 text-center sm:px-7">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-venetian-gold">{copy.eyebrow}</p>
+            <h1 className="mt-1 font-serif text-2xl text-white sm:text-3xl">{copy.title}</h1>
+          </header>
 
-            <div className="p-6 sm:p-8">
-              {/* Loading */}
-              {state === 'loading' && (
-                <div className="flex flex-col items-center gap-4 py-8">
-                  <Loader2 className="w-8 h-8 animate-spin text-venetian-gold" />
-                  <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Caricamento prenotazione...</p>
-                </div>
-              )}
+          <div className="p-5 sm:p-7">
+            {state === 'loading' ? (
+              <div className="flex flex-col items-center gap-3 py-10" role="status">
+                <Loader2 className="h-8 w-8 animate-spin text-venetian-gold" />
+                <p className="text-sm text-venetian-brown/70 dark:text-venetian-sandstone/70">{copy.loading}</p>
+              </div>
+            ) : null}
 
-              {/* Found — show details and confirm button */}
-              {(state === 'found' || state === 'confirming') && reservation && (
-                <div className="space-y-6">
-                  <p className="text-venetian-brown dark:text-venetian-sandstone">
-                    Stai per cancellare la seguente prenotazione:
-                  </p>
+            {(state === 'found' || state === 'cancelling') && reservation ? (
+              <div>
+                <p className="text-center text-sm leading-6 text-venetian-brown/75 dark:text-venetian-sandstone/75">{copy.intro}</p>
 
-                  <div className="bg-venetian-sandstone/30 dark:bg-venetian-brown/30 rounded-xl border border-venetian-brown/20 divide-y divide-venetian-brown/10">
-                    <div className="px-4 py-3 flex items-center gap-3">
-                      <Users className="w-4 h-4 text-venetian-gold shrink-0" />
-                      <span className="text-venetian-brown dark:text-venetian-sandstone font-medium">{reservation.name}</span>
+                <div className="my-5 rounded-xl border border-venetian-gold/35 bg-venetian-gold/10 p-4">
+                  <p className="mb-3 text-center font-semibold text-venetian-brown dark:text-venetian-sandstone">{reservation.name}</p>
+                  <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+                    <div className="flex items-center gap-2 sm:flex-col sm:text-center">
+                      <Calendar className="h-5 w-5 shrink-0 text-venetian-gold" />
+                      <dt className="sr-only">{copy.dateLabel}</dt>
+                      <dd className="font-medium text-venetian-brown dark:text-venetian-sandstone">{formattedDate}</dd>
                     </div>
-                    <div className="px-4 py-3 flex items-center gap-3">
-                      <Calendar className="w-4 h-4 text-venetian-gold shrink-0" />
-                      <span className="text-venetian-brown dark:text-venetian-sandstone">
-                        {format(parseISO(reservation.date), 'EEEE d MMMM yyyy', { locale: it })}
-                      </span>
+                    <div className="flex items-center gap-2 sm:flex-col sm:text-center">
+                      <Clock className="h-5 w-5 shrink-0 text-venetian-gold" />
+                      <dt className="sr-only">{copy.timeLabel}</dt>
+                      <dd className="font-medium text-venetian-brown dark:text-venetian-sandstone">{reservation.time.slice(0, 5)}</dd>
                     </div>
-                    <div className="px-4 py-3 flex items-center gap-3">
-                      <Clock className="w-4 h-4 text-venetian-gold shrink-0" />
-                      <span className="text-venetian-brown dark:text-venetian-sandstone">
-                        {reservation.time.slice(0, 5)} — {reservation.guests} {reservation.guests === 1 ? 'ospite' : 'ospiti'}
-                      </span>
+                    <div className="flex items-center gap-2 sm:flex-col sm:text-center">
+                      <Users className="h-5 w-5 shrink-0 text-venetian-gold" />
+                      <dt className="sr-only">{copy.guestsLabel}</dt>
+                      <dd className="font-medium text-venetian-brown dark:text-venetian-sandstone">{reservation.guests} {reservation.guests === 1 ? copy.guest : copy.guests}</dd>
                     </div>
-                  </div>
-
-                  <p className="text-sm text-venetian-brown/60 dark:text-venetian-sandstone/60">
-                    Questa azione è irreversibile. Se vuoi modificare la prenotazione invece di cancellarla,
-                    contattaci al <a href="tel:+390415204603" className="text-venetian-gold hover:underline">+39 041 520 4603</a>.
-                  </p>
-
-                  <div className="flex gap-3">
-                    <Link
-                      to="/book"
-                      aria-disabled={state === 'confirming'}
-                      onClick={event => state === 'confirming' && event.preventDefault()}
-                      className={`inline-flex h-10 flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-900 shadow-sm transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-brown ${state === 'confirming' ? 'pointer-events-none opacity-50' : ''}`}
-                    >
-                      Mantieni prenotazione
-                    </Link>
-                    <Button
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                      onClick={handleCancel}
-                      disabled={state === 'confirming'}
-                    >
-                      {state === 'confirming' ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Cancello...
-                        </span>
-                      ) : (
-                        'Sì, cancella'
-                      )}
-                    </Button>
-                  </div>
+                  </dl>
                 </div>
-              )}
 
-              {/* Success */}
-              {state === 'success' && (
-                <div className="flex flex-col items-center gap-4 py-6 text-center">
-                  <CheckCircle className="w-14 h-14 text-green-500" />
-                  <h2 className="font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">
-                    Prenotazione cancellata
-                  </h2>
-                  <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-sm max-w-sm">
-                    La tua prenotazione è stata cancellata con successo. Speriamo di rivederti presto!
-                  </p>
-                  <Link to="/book" className={`${primaryLinkClass} mt-2`}>
-                    Fai una nuova prenotazione
-                  </Link>
-                </div>
-              )}
+                <Button className="min-h-12 w-full bg-red-600 px-5 font-semibold text-white hover:bg-red-700" onClick={handleCancel} disabled={state === 'cancelling'}>
+                  {state === 'cancelling' ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{copy.cancelling}</> : copy.cancel}
+                </Button>
+                <p className="mt-2 text-center text-xs text-venetian-brown/55 dark:text-venetian-sandstone/55">{copy.warning}</p>
 
-              {/* Already cancelled */}
-              {state === 'already_cancelled' && (
-                <div className="flex flex-col items-center gap-4 py-6 text-center">
-                  <XCircle className="w-14 h-14 text-venetian-brown/40 dark:text-venetian-sandstone/40" />
-                  <h2 className="font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">
-                    Già cancellata
-                  </h2>
-                  <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-sm max-w-sm">
-                    Questa prenotazione risulta già cancellata.
-                  </p>
-                  <Link to="/book" className={`${primaryLinkClass} mt-2`}>
-                    Fai una nuova prenotazione
-                  </Link>
-                </div>
-              )}
+                <Link to="/" className="mt-4 block min-h-11 py-3 text-center text-sm font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4 dark:text-venetian-sandstone">
+                  {copy.keep}
+                </Link>
 
-              {/* Already completed */}
-              {state === 'already_completed' && (
-                <div className="flex flex-col items-center gap-4 py-6 text-center">
-                  <XCircle className="w-14 h-14 text-venetian-brown/40 dark:text-venetian-sandstone/40" />
-                  <h2 className="font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">
-                    Prenotazione completata
-                  </h2>
-                  <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-sm max-w-sm">
-                    Non è possibile cancellare una prenotazione già completata.
-                  </p>
-                  <Link to="/" className={`${primaryLinkClass} mt-2`}>
-                    Torna alla home
-                  </Link>
+                <div className="mt-5 rounded-xl bg-venetian-sandstone/25 p-4 text-center">
+                  <Phone className="mx-auto h-5 w-5 text-venetian-gold" />
+                  <p className="mt-2 text-sm text-venetian-brown/70">{copy.changeHelp}</p>
+                  <a href="tel:+390415204603" className="mt-1 inline-block font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4">+39 041 520 4603</a>
                 </div>
-              )}
+              </div>
+            ) : null}
 
-              {/* Not found */}
-              {state === 'not_found' && (
-                <div className="flex flex-col items-center gap-4 py-6 text-center">
-                  <XCircle className="w-14 h-14 text-red-400" />
-                  <h2 className="font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">
-                    Link non valido
-                  </h2>
-                  <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-sm max-w-sm">
-                    Il link di cancellazione non è valido o è scaduto.
-                    Contattaci al{' '}
-                    <a href="tel:+390415204603" className="text-venetian-gold hover:underline">+39 041 520 4603</a>{' '}
-                    per assistenza.
-                  </p>
-                  <Link to="/" className={`${primaryLinkClass} mt-2`}>
-                    Torna alla home
-                  </Link>
-                </div>
-              )}
-
-              {/* Error */}
-              {state === 'error' && (
-                <div className="flex flex-col items-center gap-4 py-6 text-center">
-                  <XCircle className="w-14 h-14 text-red-400" />
-                  <h2 className="font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">
-                    Errore
-                  </h2>
-                  <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-sm max-w-sm">
-                    Si è verificato un errore. Riprova più tardi o contattaci al{' '}
-                    <a href="tel:+390415204603" className="text-venetian-gold hover:underline">+39 041 520 4603</a>.
-                  </p>
-                  <Link to="/" className={`${primaryLinkClass} mt-2`}>
-                    Torna alla home
-                  </Link>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      </div>
+            {state === 'success' ? renderResult(<CheckCircle2 className="h-16 w-16 text-green-500" />, copy.successTitle, copy.successText, 'book') : null}
+            {state === 'already_cancelled' ? renderResult(<CheckCircle2 className="h-16 w-16 text-green-500" />, copy.alreadyCancelledTitle, copy.alreadyCancelledText, 'book') : null}
+            {state === 'already_completed' ? renderResult(<XCircle className="h-16 w-16 text-venetian-brown/35 dark:text-venetian-sandstone/40" />, copy.completedTitle, copy.completedText, 'home') : null}
+            {state === 'not_found' ? renderResult(<XCircle className="h-16 w-16 text-red-400" />, copy.invalidTitle, copy.invalidText, 'home') : null}
+            {state === 'error' ? renderResult(<XCircle className="h-16 w-16 text-red-400" />, copy.errorTitle, copy.errorText, 'home') : null}
+          </div>
+        </motion.section>
+      </main>
     </PageTransition>
   );
 }
