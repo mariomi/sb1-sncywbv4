@@ -51,6 +51,7 @@ import {
   assignTableToReservation,
   getAvailableTables,
   exportReservationsToCSV,
+  type ReservationStatus,
   type RecurringClosure,
   type Table
 } from '../lib/api';
@@ -60,6 +61,7 @@ import { ManualReservationModal } from '../components/admin/ManualReservationMod
 import { ReservationCalendar } from '../components/admin/ReservationCalendar';
 import { TableManagement } from '../components/admin/TableManagement';
 import { WaitlistPanel } from '../components/admin/WaitlistPanel';
+import { EditReservationModal } from '../components/admin/EditReservationModal';
 
 type Reservation = Database['public']['Tables']['reservations']['Row'];
 type TimeSlot = {
@@ -78,7 +80,18 @@ const statusColors = {
   confirmed: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200',
   cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200',
   completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200',
+  no_show: 'bg-slate-200 text-slate-800 dark:bg-slate-700/60 dark:text-slate-100',
 };
+
+const statusLabels: Record<ReservationStatus, string> = {
+  pending: 'In attesa',
+  confirmed: 'Confermata',
+  cancelled: 'Cancellata',
+  completed: 'Completata',
+  no_show: 'No-show',
+};
+
+const reservationStatuses: ReservationStatus[] = ['pending', 'confirmed', 'completed', 'no_show', 'cancelled'];
 
 
 const daysOfWeek = [
@@ -104,6 +117,7 @@ export function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [showTimeSlotsModal, setShowTimeSlotsModal] = useState(false);
   const [showClosedDatesModal, setShowClosedDatesModal] = useState(false);
   const [editingTimeSlot, setEditingTimeSlot] = useState<TimeSlot | null>(null);
@@ -308,15 +322,15 @@ export function AdminPage() {
     }
   };
 
-  const handleStatusUpdate = async (id: string, status: 'confirmed' | 'cancelled' | 'completed') => {
+  const handleStatusUpdate = async (id: string, status: ReservationStatus) => {
     try {
       await updateReservationStatus(id, status);
       await fetchReservations();
       setSelectedReservation(null);
-      toast.success(`Reservation ${status} successfully`);
+      toast.success(`Prenotazione aggiornata: ${statusLabels[status]}`);
     } catch (error) {
       console.error('Error updating reservation:', error);
-      toast.error('Failed to update reservation');
+      toast.error('Impossibile aggiornare la prenotazione');
     }
   };
 
@@ -337,6 +351,7 @@ export function AdminPage() {
     confirmed: filteredReservations.filter(r => r.status === 'confirmed').length,
     cancelled: filteredReservations.filter(r => r.status === 'cancelled').length,
     completed: filteredReservations.filter(r => r.status === 'completed').length,
+    noShow: filteredReservations.filter(r => r.status === 'no_show').length,
     totalGuests: filteredReservations.reduce((sum, r) => sum + r.guests, 0),
   };
 
@@ -348,7 +363,7 @@ export function AdminPage() {
         <div className="md:flex md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
             <h2 className="text-3xl font-serif text-venetian-brown dark:text-venetian-sandstone sm:truncate">
-              Reservation Management
+              Gestione prenotazioni
             </h2>
           </div>
           <div className="mt-4 flex md:ml-4 md:mt-0 flex-wrap gap-2">
@@ -439,7 +454,7 @@ export function AdminPage() {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-serif text-venetian-brown dark:text-venetian-sandstone">
-                  Date Selection
+                  Seleziona data
                 </h3>
                 <Button
                   size="sm"
@@ -447,7 +462,7 @@ export function AdminPage() {
                   className="text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-brown/5 dark:hover:bg-white/5"
                   onClick={() => setSelectedDate(new Date())}
                 >
-                  Today
+                  Oggi
                 </Button>
               </div>
               <div className="flex items-center justify-between mb-4">
@@ -459,10 +474,10 @@ export function AdminPage() {
                 </button>
                 <span className="font-medium text-venetian-brown dark:text-venetian-sandstone">
                   {isToday(selectedDate) 
-                    ? 'Today'
+                    ? 'Oggi'
                     : isTomorrow(selectedDate)
-                    ? 'Tomorrow'
-                    : format(selectedDate, 'MMMM d, yyyy')}
+                    ? 'Domani'
+                    : format(selectedDate, 'dd/MM/yyyy')}
                 </span>
                 <button
                   onClick={() => setSelectedDate(prev => addDays(prev, 1))}
@@ -474,7 +489,7 @@ export function AdminPage() {
               {closedDates.includes(format(selectedDate, 'yyyy-MM-dd')) && (
                 <div className="mt-2 p-2 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 text-sm rounded-lg flex items-center">
                   <Lock className="w-4 h-4 mr-2" />
-                  This date is closed for reservations
+                  Data chiusa alle prenotazioni
                 </div>
               )}
             </motion.div>
@@ -487,32 +502,36 @@ export function AdminPage() {
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <h3 className="text-lg font-serif text-venetian-brown dark:text-venetian-sandstone mb-4">
-                Today's Overview
+                Riepilogo del giorno
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Total Reservations</span>
+                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Prenotazioni</span>
                   <span className="font-medium text-venetian-brown dark:text-venetian-sandstone">{stats.total}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Total Guests</span>
+                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Ospiti</span>
                   <span className="font-medium text-venetian-brown dark:text-venetian-sandstone">{stats.totalGuests}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Pending</span>
+                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">In attesa</span>
                   <span className="font-medium text-yellow-600 dark:text-yellow-400">{stats.pending}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Confirmed</span>
+                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Confermate</span>
                   <span className="font-medium text-green-600 dark:text-green-400">{stats.confirmed}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Cancelled</span>
+                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Cancellate</span>
                   <span className="font-medium text-red-600 dark:text-red-400">{stats.cancelled}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Completed</span>
+                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">Completate</span>
                   <span className="font-medium text-blue-600 dark:text-blue-400">{stats.completed}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-venetian-brown/70 dark:text-venetian-sandstone/70">No-show</span>
+                  <span className="font-medium text-slate-600 dark:text-slate-300">{stats.noShow}</span>
                 </div>
               </div>
             </motion.div>
@@ -526,7 +545,7 @@ export function AdminPage() {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-serif text-venetian-brown dark:text-venetian-sandstone">
-                  Filters
+                  Filtri
                 </h3>
                 <Button
                   size="sm"
@@ -534,11 +553,11 @@ export function AdminPage() {
                   className="text-venetian-brown dark:text-venetian-sandstone hover:bg-venetian-brown/5 dark:hover:bg-white/5"
                   onClick={() => setStatusFilter([])}
                 >
-                  Clear
+                  Azzera
                 </Button>
               </div>
               <div className="space-y-2">
-                {['pending', 'confirmed', 'cancelled', 'completed'].map((status) => (
+                {reservationStatuses.map((status) => (
                   <button
                     key={status}
                     onClick={() => {
@@ -555,7 +574,7 @@ export function AdminPage() {
                         : 'bg-venetian-brown/5 dark:bg-white/5 text-venetian-brown/70 dark:text-venetian-sandstone/70 hover:bg-venetian-brown/10 dark:hover:bg-white/10'
                     )}
                   >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                    {statusLabels[status]}
                   </button>
                 ))}
               </div>
@@ -612,7 +631,7 @@ export function AdminPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-venetian-brown/40 dark:text-venetian-sandstone/40" size={20} />
                     <input
                       type="text"
-                      placeholder="Search by name, email, or phone..."
+                      placeholder="Cerca per nome, email o telefono…"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 rounded-lg border border-venetian-brown/20 dark:border-venetian-sandstone/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 dark:bg-venetian-brown/10 dark:text-venetian-sandstone"
@@ -625,7 +644,7 @@ export function AdminPage() {
                       onClick={() => fetchReservations()}
                     >
                       <RefreshCcw size={18} className="mr-2" />
-                      Refresh
+                      Aggiorna
                     </Button>
                     <Button
                       variant="outline"
@@ -633,7 +652,7 @@ export function AdminPage() {
                       onClick={() => setStatusFilter([])}
                     >
                       <Filter size={18} className="mr-2" />
-                      Filters
+                      Filtri
                     </Button>
                   </div>
                 </div>
@@ -651,11 +670,11 @@ export function AdminPage() {
               {loading ? (
                 <div className="p-8 text-center text-venetian-brown/70 dark:text-venetian-sandstone/70">
                   <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin" />
-                  Loading reservations...
+                  Caricamento prenotazioni…
                 </div>
               ) : filteredReservations.length === 0 ? (
                 <div className="p-8 text-center text-venetian-brown/70 dark:text-venetian-sandstone/70">
-                  No reservations found for this date.
+                  Nessuna prenotazione trovata per questa data.
                 </div>
               ) : (
                 <div className="divide-y divide-venetian-brown/10 dark:divide-venetian-sandstone/10">
@@ -678,7 +697,7 @@ export function AdminPage() {
                               'px-2 py-0.5 rounded-full text-xs font-medium',
                               statusColors[reservation.status as keyof typeof statusColors]
                             )}>
-                              {reservation.status}
+                              {statusLabels[reservation.status as ReservationStatus] ?? reservation.status}
                             </span>
                             {/* Reminder badge */}
                             {isTomorrow(parseISO(reservation.date)) && (
@@ -733,7 +752,7 @@ export function AdminPage() {
                                   handleStatusUpdate(reservation.id, 'confirmed');
                                 }}
                               >
-                                Confirm
+                                Conferma
                               </Button>
                               <Button
                                 size="sm"
@@ -744,7 +763,7 @@ export function AdminPage() {
                                   handleStatusUpdate(reservation.id, 'cancelled');
                                 }}
                               >
-                                Cancel
+                                Cancella
                               </Button>
                             </>
                           )}
@@ -757,7 +776,7 @@ export function AdminPage() {
                                 handleStatusUpdate(reservation.id, 'completed');
                               }}
                             >
-                              Complete
+                              Completa
                             </Button>
                           )}
                         </div>
@@ -1415,45 +1434,45 @@ export function AdminPage() {
             >
               <div className="p-6">
                 <h3 className="text-2xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-4">
-                  Reservation Details
+                  Dettagli prenotazione
                 </h3>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
-                        Guest Name
+                        Cliente
                       </label>
                       <p className="text-venetian-brown dark:text-venetian-sandstone">{selectedReservation.name}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
-                        Status
+                        Stato
                       </label>
                       <span className={cn(
                         'inline-block px-2 py-1 rounded-full text-xs font-medium',
                         statusColors[selectedReservation.status as keyof typeof statusColors]
                       )}>
-                        {selectedReservation.status}
+                        {statusLabels[selectedReservation.status as ReservationStatus] ?? selectedReservation.status}
                       </span>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
-                        Date & Time
+                        Data e orario
                       </label>
                       <p className="text-venetian-brown dark:text-venetian-sandstone">
-                        {format(parseISO(selectedReservation.date), 'MMMM d, yyyy')} at{' '}
+                        {format(parseISO(selectedReservation.date), 'dd/MM/yyyy')} alle{' '}
                         {selectedReservation.time.slice(0, 5)}
                       </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
-                        Number of Guests
+                        Numero ospiti
                       </label>
                       <p className="text-venetian-brown dark:text-venetian-sandstone">{selectedReservation.guests}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
-                        Phone
+                        Telefono
                       </label>
                       <p className="text-venetian-brown dark:text-venetian-sandstone">{selectedReservation.phone}</p>
                     </div>
@@ -1467,7 +1486,7 @@ export function AdminPage() {
                   {selectedReservation.occasion && (
                     <div>
                       <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
-                        Occasion
+                        Occasione
                       </label>
                       <p className="text-venetian-brown dark:text-venetian-sandstone">{selectedReservation.occasion}</p>
                     </div>
@@ -1475,7 +1494,7 @@ export function AdminPage() {
                   {selectedReservation.special_requests && (
                     <div>
                       <label className="block text-sm font-medium text-venetian-brown/70 dark:text-venetian-sandstone/70 mb-1">
-                        Special Requests
+                        Richieste speciali
                       </label>
                       <p className="text-venetian-brown dark:text-venetian-sandstone">{selectedReservation.special_requests}</p>
                     </div>
@@ -1529,12 +1548,22 @@ export function AdminPage() {
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4 bg-venetian-brown/5 dark:bg-white/5 flex justify-end gap-2">
+              <div className="px-6 py-4 bg-venetian-brown/5 dark:bg-white/5 flex flex-wrap justify-end gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setSelectedReservation(null)}
                 >
-                  Close
+                  Chiudi
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditingReservation(selectedReservation);
+                    setSelectedReservation(null);
+                  }}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Modifica
                 </Button>
                 {selectedReservation.status === 'pending' && (
                   <>
@@ -1542,14 +1571,14 @@ export function AdminPage() {
                       className="bg-green-500 hover:bg-green-600 text-white"
                       onClick={() => handleStatusUpdate(selectedReservation.id, 'confirmed')}
                     >
-                      Confirm Reservation
+                      Conferma
                     </Button>
                     <Button
                       variant="outline"
                       className="border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                       onClick={() => handleStatusUpdate(selectedReservation.id, 'cancelled')}
                     >
-                      Cancel Reservation
+                      Cancella
                     </Button>
                   </>
                 )}
@@ -1558,7 +1587,16 @@ export function AdminPage() {
                     className="bg-blue-500 hover:bg-blue-600 text-white"
                     onClick={() => handleStatusUpdate(selectedReservation.id, 'completed')}
                   >
-                    Mark as Completed
+                    Segna completata
+                  </Button>
+                )}
+                {selectedReservation.status === 'confirmed' && (
+                  <Button
+                    variant="outline"
+                    className="border-slate-500 text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/40"
+                    onClick={() => handleStatusUpdate(selectedReservation.id, 'no_show')}
+                  >
+                    Segna no-show
                   </Button>
                 )}
               </div>
@@ -1566,6 +1604,15 @@ export function AdminPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <EditReservationModal
+        reservation={editingReservation}
+        onClose={() => setEditingReservation(null)}
+        onSaved={async () => {
+          setEditingReservation(null);
+          await fetchReservations();
+        }}
+      />
     </div>
   );
 }

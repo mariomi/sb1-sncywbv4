@@ -20,10 +20,10 @@ export function LoginPage() {
 
     try {
       await signIn(email, password);
-      toast.success('Welcome back!');
+      toast.success('Accesso effettuato');
       navigate('/admin/dashboard');
     } catch (error) {
-      toast.error('Invalid email or password');
+      toast.error('Email o password non corretti');
       console.error('Login error:', error);
     } finally {
       setIsLoading(false);
@@ -42,10 +42,10 @@ export function LoginPage() {
         >
           <div className="text-center mb-8">
             <h1 className="text-3xl font-serif text-venetian-brown mb-2">
-              Admin Login
+              Accesso amministrazione
             </h1>
             <p className="text-venetian-brown/70">
-              Please sign in to access the admin dashboard
+              Inserisci le credenziali per gestire prenotazioni e tavoli
             </p>
           </div>
 
@@ -65,7 +65,7 @@ export function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
                 required
-                placeholder="admin@ristorantealgobbodirialto.com"
+                placeholder="admin@ristorantealgobbodirialto.it"
               />
             </div>
 
@@ -97,7 +97,7 @@ export function LoginPage() {
                 className="w-full bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? 'Accesso in corso…' : 'Accedi'}
               </Button>
             </motion.div>
           </form>

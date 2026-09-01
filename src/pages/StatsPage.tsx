@@ -19,6 +19,7 @@ const COLORS = {
   pending:   '#D4AF37',
   cancelled: '#9E4638',
   completed: '#708D81',
+  no_show: '#64748B',
 };
 
 type Period = 'week' | 'month' | '3months' | 'year';
@@ -82,11 +83,13 @@ export function StatsPage() {
   // KPIs
   const total     = reservations.length;
   const guests    = reservations.reduce((s, r) => s + r.guests, 0);
-  const active    = reservations.filter(r => r.status !== 'cancelled');
+  const active    = reservations.filter(r => r.status !== 'cancelled' && r.status !== 'no_show');
   const confirmed = reservations.filter(r => r.status === 'confirmed' || r.status === 'completed').length;
   const cancelled = reservations.filter(r => r.status === 'cancelled').length;
+  const noShows   = reservations.filter(r => r.status === 'no_show').length;
   const confirmRate = total > 0 ? Math.round((confirmed / total) * 100) : 0;
-  const noShowRate  = total > 0 ? Math.round((cancelled / total) * 100) : 0;
+  const cancellationRate = total > 0 ? Math.round((cancelled / total) * 100) : 0;
+  const noShowRate = total > 0 ? Math.round((noShows / total) * 100) : 0;
 
   let adSpend = 0;
   let paidClicks = 0;
@@ -117,7 +120,7 @@ export function StatsPage() {
   // Chart 1: reservations per day
   const byDay: Record<string, Record<string, number>> = {};
   for (const r of reservations) {
-    if (!byDay[r.date]) byDay[r.date] = { confirmed: 0, pending: 0, cancelled: 0, completed: 0 };
+    if (!byDay[r.date]) byDay[r.date] = { confirmed: 0, pending: 0, cancelled: 0, completed: 0, no_show: 0 };
     byDay[r.date][r.status] = (byDay[r.date][r.status] ?? 0) + 1;
   }
   const dailyData = Object.entries(byDay)
@@ -217,7 +220,7 @@ export function StatsPage() {
         ) : (
           <div className="space-y-8">
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <KpiCard label="Totale prenotazioni" value={total} />
               <KpiCard label="Ospiti totali" value={guests} />
               <KpiCard
@@ -228,9 +231,15 @@ export function StatsPage() {
               />
               <KpiCard
                 label="Tasso cancellazione"
-                value={`${noShowRate}%`}
+                value={`${cancellationRate}%`}
                 sub={`${cancelled} di ${total}`}
                 color="text-red-600 dark:text-red-400"
+              />
+              <KpiCard
+                label="Tasso no-show"
+                value={`${noShowRate}%`}
+                sub={`${noShows} di ${total}`}
+                color="text-slate-600 dark:text-slate-300"
               />
             </div>
 
@@ -257,7 +266,7 @@ export function StatsPage() {
                   <h2 className="font-serif text-lg text-venetian-brown dark:text-venetian-sandstone">Prenotazioni per canale</h2>
                   <p className="text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50 mt-1">Attribuzione last-touch da UTM e click ID, senza dati personali inviati alle piattaforme.</p>
                 </div>
-                <span className="text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50">Escluse le cancellazioni</span>
+                <span className="text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50">Escluse cancellazioni e no-show</span>
               </div>
               {channelData.length === 0 ? (
                 <p className="text-center py-8 text-venetian-brown/50 dark:text-venetian-sandstone/50 text-sm">Nessun dato nel periodo selezionato</p>
@@ -302,6 +311,7 @@ export function StatsPage() {
                     <Bar dataKey="pending"   name="In attesa"  stackId="a" fill={COLORS.pending}   />
                     <Bar dataKey="cancelled" name="Cancellata" stackId="a" fill={COLORS.cancelled} />
                     <Bar dataKey="completed" name="Completata" stackId="a" fill={COLORS.completed} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="no_show" name="No-show" stackId="a" fill={COLORS.no_show} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}

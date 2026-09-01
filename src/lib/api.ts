@@ -8,6 +8,22 @@ import { reservationChannel } from './reservationAttribution';
 
 export type Table = Database['public']['Tables']['tables']['Row'];
 export type WaitlistEntry = Database['public']['Tables']['waitlist']['Row'];
+export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
+
+export type ReservationUpdateData = Pick<
+  Database['public']['Tables']['reservations']['Update'],
+  | 'name'
+  | 'email'
+  | 'phone'
+  | 'date'
+  | 'time'
+  | 'guests'
+  | 'occasion'
+  | 'special_requests'
+  | 'admin_notes'
+  | 'source'
+  | 'status'
+>;
 
 export type ManualReservationData = {
   date: string;
@@ -185,7 +201,7 @@ export async function getReservations(date: string) {
   }
 }
 
-export async function updateReservationStatus(id: string, status: 'confirmed' | 'cancelled' | 'completed') {
+export async function updateReservationStatus(id: string, status: ReservationStatus) {
   try {
     const { data: updatedReservation, error } = await supabase
       .from('reservations')
@@ -578,22 +594,33 @@ export async function notifyWaitlistEntry(
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Admin session required');
 
-    const apiBase = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-    const response = await fetch(`${apiBase}/send-waitlist-notification`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ waitlist_id: id }),
+    const { data, error } = await supabase.functions.invoke('send-waitlist-notification', {
+      body: { waitlist_id: id },
     });
 
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null);
-      throw new Error(payload?.error || 'Failed to notify waitlist entry');
-    }
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
   } catch (error) {
     console.error('Error notifying waitlist entry:', error);
+    throw error;
+  }
+}
+
+export async function updateReservationDetails(id: string, data: ReservationUpdateData) {
+  try {
+    const { data: updatedReservation, error } = await supabase
+      .from('reservations')
+      .update(data)
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    if (!updatedReservation) throw new Error('Reservation not found');
+
+    return updatedReservation;
+  } catch (error) {
+    console.error('Error updating reservation details:', error);
     throw error;
   }
 }
