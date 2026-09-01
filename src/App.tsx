@@ -1,17 +1,17 @@
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigationType, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
-import { AnimatePresence } from 'framer-motion';
-import { AuthProvider, useAuth } from './components/AuthProvider';
+import { AnimatePresence, MotionConfig } from 'framer-motion';
 import { LanguageProvider } from './components/LanguageProvider';
 import { ThemeProvider } from './lib/ThemeProvider';
-import { FeatureFlagsProvider } from './lib/featureFlags';
 import { Toaster } from 'react-hot-toast';
 import { CookieConsent } from './components/CookieConsent';
 import { Analytics } from './components/Analytics';
 import { SiteFooter } from './components/SiteFooter';
+import { Home } from './pages/Home';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
+import { useLanguage, type Language } from './lib/i18n';
 
-const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
 const MenuPage = lazy(() => import('./pages/MenuPage').then(module => ({ default: module.MenuPage })));
 const AboutPage = lazy(() => import('./pages/AboutPage').then(module => ({ default: module.AboutPage })));
 const ContactPage = lazy(() => import('./pages/ContactPage').then(module => ({ default: module.ContactPage })));
@@ -31,35 +31,64 @@ const RestaurantNearRialtoPage = lazy(() => import('./pages/IntentLandingPage').
 const VenetianRestaurantPage = lazy(() => import('./pages/IntentLandingPage').then(module => ({ default: module.VenetianRestaurantPage })));
 const SeafoodRestaurantPage = lazy(() => import('./pages/IntentLandingPage').then(module => ({ default: module.SeafoodRestaurantPage })));
 const VenetianCuisinePage = lazy(() => import('./pages/VenetianCuisinePage').then(module => ({ default: module.VenetianCuisinePage })));
+const AdminProviders = lazy(() => import('./components/AdminProviders').then(module => ({ default: module.AdminProviders })));
+const ProtectedRoute = lazy(() => import('./components/AdminProviders').then(module => ({ default: module.ProtectedRoute })));
+const ReserveProviders = lazy(() => import('./components/ReserveProviders').then(module => ({ default: module.ReserveProviders })));
+
+const loadingCopy: Record<Language, string> = {
+  it: 'Caricamento…', en: 'Loading…', fr: 'Chargement…', de: 'Wird geladen…', es: 'Cargando…',
+};
 
 function RouteFallback() {
+  const { language } = useLanguage();
   return (
-    <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24 flex items-center justify-center">
-      <div className="text-venetian-brown dark:text-venetian-sandstone">Caricamento…</div>
+    <div className="flex min-h-screen items-center justify-center bg-venetian-sandstone/20 pt-24 dark:bg-venetian-brown/95" role="status" aria-live="polite">
+      <div className="text-venetian-brown dark:text-venetian-sandstone">{loadingCopy[language]}</div>
     </div>
   );
-}
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin, loading } = useAuth();
-  const location = useLocation();
-
-  if (loading) {
-    return <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/90 pt-24 flex items-center justify-center">
-      <div className="text-venetian-brown dark:text-venetian-sandstone">Loading...</div>
-    </div>;
-  }
-
-  if (!user || !isAdmin) {
-    return <Navigate to="/admin" state={{ from: location }} replace />;
-  }
-
-  return <>{children}</>;
 }
 
 function LegacyRedirect({ to }: { to: string }) {
   const { search } = useLocation();
   return <Navigate to={{ pathname: to, search }} replace />;
+}
+
+function RouteLifecycle() {
+  const { pathname, hash } = useLocation();
+  const navigationType = useNavigationType();
+
+  useEffect(() => {
+    if (navigationType === 'POP' && pathname !== '/' && !hash) return;
+
+    if (!hash) window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    const frame = window.requestAnimationFrame(() => {
+      const hashTarget = hash ? document.getElementById(hash.slice(1)) : null;
+      const focusTarget = hashTarget ?? document.getElementById('main-content');
+      focusTarget?.focus({ preventScroll: true });
+      hashTarget?.scrollIntoView({ block: 'start' });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [hash, navigationType, pathname]);
+
+  return null;
+}
+
+const skipCopy: Record<Language, string> = {
+  it: 'Vai al contenuto',
+  en: 'Skip to content',
+  fr: 'Aller au contenu',
+  de: 'Zum Inhalt springen',
+  es: 'Ir al contenido',
+};
+
+function SkipLink() {
+  const { language } = useLanguage();
+  return (
+    <a href="#main-content" className="sr-only z-[100] bg-white px-5 py-3 text-sm font-bold text-venetian-brown shadow-xl focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+      {skipCopy[language]}
+    </a>
+  );
 }
 
 function AppRoutes() {
@@ -120,26 +149,47 @@ function AppRoutes() {
   );
 }
 
+function AppShell() {
+  const { pathname } = useLocation();
+
+  return (
+    <div className="min-h-screen dark:bg-venetian-brown">
+      <RouteLifecycle />
+      <SkipLink />
+      <Navbar />
+      <Analytics />
+      <div id="main-content" tabIndex={-1} className="outline-none"><AppErrorBoundary key={pathname}><AppRoutes /></AppErrorBoundary></div>
+      <SiteFooter />
+      <CookieConsent />
+      <Toaster position="top-right" />
+    </div>
+  );
+}
+
+function ScopedAppShell() {
+  const { pathname } = useLocation();
+  const shell = <AppShell />;
+
+  if (pathname.startsWith('/admin')) {
+    return <Suspense fallback={<RouteFallback />}><AdminProviders>{shell}</AdminProviders></Suspense>;
+  }
+
+  if (pathname === '/book' || pathname.startsWith('/cancella/')) {
+    return <Suspense fallback={<RouteFallback />}><ReserveProviders>{shell}</ReserveProviders></Suspense>;
+  }
+
+  return shell;
+}
+
 function App() {
   return (
-    <AuthProvider>
+    <MotionConfig reducedMotion="user">
       <ThemeProvider>
         <LanguageProvider>
-        <FeatureFlagsProvider>
-          <Router>
-            <div className="min-h-screen dark:bg-venetian-brown">
-              <Navbar />
-              <Analytics />
-              <div id="main-content"><AppRoutes /></div>
-              <SiteFooter />
-              <CookieConsent />
-              <Toaster position="top-right" />
-            </div>
-          </Router>
-        </FeatureFlagsProvider>
+          <Router><ScopedAppShell /></Router>
         </LanguageProvider>
       </ThemeProvider>
-    </AuthProvider>
+    </MotionConfig>
   );
 }
 

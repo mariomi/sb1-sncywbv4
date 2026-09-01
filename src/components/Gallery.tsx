@@ -83,7 +83,7 @@ export default function Gallery() {
           <div className="mb-10 grid gap-6 border-t border-white/15 pt-7 lg:grid-cols-[0.7fr_1.3fr] lg:items-end">
             <div>
               <p className="editorial-kicker !text-venetian-gold">Dentro Al Gobbo</p>
-              <h2 id="gallery-title" className="mt-4 font-serif text-5xl font-semibold leading-[0.88] sm:text-7xl">{t('gallery.title')}</h2>
+              <h1 id="gallery-title" className="mt-4 font-serif text-5xl font-semibold leading-[0.88] sm:text-7xl">{t('gallery.title')}</h1>
             </div>
             <p className="max-w-2xl text-base leading-7 text-white/62 lg:justify-self-end">{t('gallery.subtitle')}</p>
           </div>

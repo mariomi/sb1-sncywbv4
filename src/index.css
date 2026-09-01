@@ -10,6 +10,7 @@
   }
 
   html {
+    position: relative;
     scroll-behavior: smooth;
     background: #f7f3eb;
   }
@@ -17,7 +18,7 @@
   body {
     min-width: 320px;
     margin: 0;
-    overflow-x: hidden;
+    overflow-x: clip;
     background:
       linear-gradient(rgba(25, 22, 18, 0.025) 1px, transparent 1px),
       #f7f3eb;
@@ -42,6 +43,38 @@
     color: #fffaf0;
     background: #b44732;
   }
+
+  :focus-visible {
+    outline: 3px solid #8f3423;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px #f2d48f;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  #home-scroll-intro {
+    height: 460svh;
+  }
+
+  #reservation-portal h2 {
+    font-size: clamp(2.6rem, 9vw, 4.8rem);
+    line-height: 0.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @layer components {
@@ -55,6 +88,36 @@
 
   .editorial-link-light {
     @apply inline-flex min-h-12 items-center justify-center gap-2 border border-venetian-brown/25 bg-transparent px-6 text-xs font-bold uppercase tracking-[0.16em] text-venetian-brown transition-colors hover:border-venetian-terracotta hover:text-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-terracotta focus-visible:ring-offset-2;
+  }
+
+  .booking-label {
+    @apply mb-1.5 block text-sm font-semibold text-venetian-brown/80;
+  }
+
+  .booking-field {
+    @apply w-full border border-venetian-brown/20 bg-white/70 px-4 py-3 text-base text-venetian-brown placeholder:text-venetian-brown/45 focus:border-venetian-gold focus:outline-none focus:ring-1 focus:ring-venetian-gold;
+  }
+
+  .booking-panel {
+    @apply border border-venetian-brown/15 bg-white/55;
+  }
+
+  .dark .booking-label {
+    @apply text-white/80;
+  }
+
+  .dark .booking-field {
+    @apply border-white/20 bg-white/10 text-white placeholder:text-white/45;
+    color-scheme: dark;
+  }
+
+  .dark .booking-field option {
+    color: #ffffff;
+    background: #191612;
+  }
+
+  .dark .booking-panel {
+    @apply border-white/15 bg-white/[0.06];
   }
 }
 

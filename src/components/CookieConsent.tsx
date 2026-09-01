@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './Button';
 import { Cookie } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { readConsent, saveConsent } from '../lib/analytics';
 import { useLanguage, type Language } from '../lib/i18n';
 
@@ -26,6 +26,7 @@ const consentCopy: Record<Language, {
 };
 
 export function CookieConsent() {
+  const { pathname } = useLocation();
   const { language } = useLanguage();
   const copy = consentCopy[language];
   const [showConsent, setShowConsent] = useState(false);
@@ -68,6 +69,10 @@ export function CookieConsent() {
     setShowConsent(false);
   };
 
+  // The home page is a single cinematic entrance and does not start optional
+  // tracking without consent. Present choices as soon as the visitor continues.
+  if (pathname === '/') return null;
+
   return (
     <AnimatePresence>
       {showConsent && (
@@ -75,8 +80,7 @@ export function CookieConsent() {
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 100 }}
-          role="dialog"
-          aria-modal="true"
+          role="region"
           aria-labelledby="cookie-consent-title"
           className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-venetian-brown p-4 text-white shadow-[0_-18px_50px_rgba(17,16,14,0.18)]"
         >

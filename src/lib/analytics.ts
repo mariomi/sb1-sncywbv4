@@ -50,6 +50,15 @@ const UTM_KEYS = [
 
 let initializedSignature = '';
 
+export function isSensitiveAnalyticsRoute(path: string) {
+  const pathname = path.split(/[?#]/, 1)[0] || '/';
+  return /^\/cancella(?:\/|$)/i.test(pathname);
+}
+
+function isCurrentRouteSensitive() {
+  return typeof window !== 'undefined' && isSensitiveAnalyticsRoute(window.location.pathname);
+}
+
 function trackingWindow() {
   return window as TrackingWindow;
 }
@@ -124,6 +133,7 @@ export function saveConsent(preferences: Pick<ConsentPreferences, 'analytics' | 
 }
 
 export function captureAttribution() {
+  if (isCurrentRouteSensitive()) return;
   const consent = readConsent();
   if (!consent?.analytics) return;
 
@@ -185,6 +195,7 @@ export function captureAttribution() {
 }
 
 export function getAttribution(): Record<string, unknown> {
+  if (isCurrentRouteSensitive()) return {};
   if (!readConsent()?.analytics) return {};
   try {
     const raw = sessionStorage.getItem(ATTRIBUTION_KEY);
@@ -195,6 +206,7 @@ export function getAttribution(): Record<string, unknown> {
 }
 
 export function initializeTracking(consent = readConsent()) {
+  if (isCurrentRouteSensitive()) return;
   if (!consent) return;
   const signature = `${consent.analytics}:${consent.marketing}`;
   if (initializedSignature === signature) return;
@@ -205,6 +217,10 @@ export function initializeTracking(consent = readConsent()) {
   const adsId = import.meta.env.VITE_GOOGLE_ADS_ID?.trim();
   const metaPixelId = import.meta.env.VITE_META_PIXEL_ID?.trim();
   const target = ensureGoogleLayer();
+
+  // A visitor can change their mind after the Meta script has loaded. Keep
+  // the pixel's own consent state aligned with the preference we persist.
+  if (target.fbq) target.fbq('consent', consent.marketing ? 'grant' : 'revoke');
 
   target.gtag?.('consent', 'update', {
     analytics_storage: consent.analytics ? 'granted' : 'denied',
@@ -223,12 +239,16 @@ export function initializeTracking(consent = readConsent()) {
   if (consent.marketing && adsId) {
     loadGoogleTag(adsId).gtag?.('config', adsId);
   }
-  if (consent.marketing && metaPixelId) loadMetaPixel(metaPixelId);
+  if (consent.marketing && metaPixelId) {
+    loadMetaPixel(metaPixelId);
+    target.fbq?.('consent', 'grant');
+  }
 
   if (consent.analytics) captureAttribution();
 }
 
 export function trackPageView(path: string) {
+  if (isCurrentRouteSensitive() || isSensitiveAnalyticsRoute(path)) return;
   const consent = readConsent();
   if (!consent?.analytics) return;
 
@@ -245,6 +265,7 @@ export function trackPageView(path: string) {
 }
 
 export function trackEvent(event: MarketingEvent, properties: EventProperties = {}) {
+  if (isCurrentRouteSensitive()) return;
   const consent = readConsent();
   if (!consent?.analytics && !consent?.marketing) return;
 

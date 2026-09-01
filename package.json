@@ -8,8 +8,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test",
+    "test": "node --test && npm run test:analytics",
+    "test:analytics": "tsx --test test/analytics.test.ts",
     "images:optimize": "node scripts/optimize-images.mjs",
+    "images:intro": "node scripts/generate-intro-images.mjs",
     "preview": "vite preview",
     "create-admin": "tsx src/scripts/createAdmin.ts"
   },

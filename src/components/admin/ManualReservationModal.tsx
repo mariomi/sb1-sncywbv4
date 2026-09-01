@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2 } from 'lucide-react';
 import { Button } from '../Button';
@@ -46,20 +46,50 @@ export function ManualReservationModal({ isOpen, onClose, onSuccess }: Props) {
   const [timeSlots, setTimeSlots] = useState<TimeSlotOption[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [saving, setSaving] = useState(false);
+  const slotsRequestIdRef = useRef(0);
 
   useEffect(() => {
-    if (form.date) {
-      setLoadingSlots(true);
-      setForm(prev => ({ ...prev, time: '' }));
-      getAvailableTimeSlots(form.date)
-        .then(slots => setTimeSlots(slots))
-        .catch(err => {
-          console.error(err);
-          toast.error('Errore nel caricare gli orari');
-        })
-        .finally(() => setLoadingSlots(false));
+    const requestId = ++slotsRequestIdRef.current;
+    setTimeSlots([]);
+
+    if (!isOpen || !form.date) {
+      setLoadingSlots(false);
+      return;
     }
-  }, [form.date]);
+
+    setLoadingSlots(true);
+    void getAvailableTimeSlots(form.date)
+      .then(slots => {
+        if (requestId === slotsRequestIdRef.current) {
+          setTimeSlots(slots);
+        }
+      })
+      .catch(error => {
+        if (requestId === slotsRequestIdRef.current) {
+          console.error(error);
+          toast.error('Errore nel caricare gli orari');
+        }
+      })
+      .finally(() => {
+        if (requestId === slotsRequestIdRef.current) {
+          setLoadingSlots(false);
+        }
+      });
+
+    return () => {
+      if (slotsRequestIdRef.current === requestId) {
+        slotsRequestIdRef.current += 1;
+      }
+    };
+  }, [form.date, isOpen]);
+
+  const handleDateChange = (date: string) => {
+    // Invalidate the in-flight request immediately, before React runs the next effect.
+    slotsRequestIdRef.current += 1;
+    setTimeSlots([]);
+    setLoadingSlots(Boolean(date));
+    setForm(prev => ({ ...prev, date, time: '' }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,7 +233,7 @@ export function ManualReservationModal({ isOpen, onClose, onSuccess }: Props) {
                     min={today}
                     max={maxDate}
                     value={form.date}
-                    onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))}
+                    onChange={e => handleDateChange(e.target.value)}
                     className={inputClass}
                   />
                 </div>
