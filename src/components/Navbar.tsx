@@ -27,13 +27,13 @@ export function Navbar() {
   const navItems = [
     { name: t('nav.menu'), path: '/menu' },
     { name: t('nav.about'), path: '/our-story' },
-    { name: t('nav.gallery'), path: '/gallery' },
     { name: t('nav.location'), path: '/location' },
-    { name: t('nav.contact'), path: '/contact' },
   ];
 
+  const isHomeOverlay = location.pathname === '/' && !isScrolled && !isMenuOpen;
+
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-venetian-brown text-white transition-shadow duration-300 ${isScrolled ? 'shadow-[0_12px_35px_rgba(18,15,12,0.18)]' : ''}`}>
+    <header className={`fixed inset-x-0 top-0 z-50 border-b text-white transition-all duration-500 ${isHomeOverlay ? 'border-white/14 bg-transparent' : 'border-white/10 bg-venetian-brown/96 shadow-[0_12px_35px_rgba(18,15,12,0.18)] backdrop-blur-lg'}`}>
       <div className={`mx-auto flex max-w-[1480px] items-center justify-between px-4 transition-[height] duration-300 sm:px-7 lg:px-10 ${isScrolled ? 'h-[72px]' : 'h-[84px]'}`}>
         <Link to="/" className="group flex items-center gap-3" aria-label="Al Gobbo di Rialto home">
           <span className="grid h-10 w-10 place-items-center border border-venetian-gold/60 transition-colors group-hover:bg-venetian-gold group-hover:text-venetian-brown">
@@ -45,14 +45,14 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-9 lg:flex" aria-label="Main navigation">
           {navItems.map((item) => {
             const active = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative py-3 text-[0.7rem] font-bold uppercase tracking-[0.14em] transition-colors ${active ? 'text-venetian-gold' : 'text-white/72 hover:text-white'}`}
+                className={`relative py-3 text-[0.66rem] font-bold uppercase tracking-[0.17em] transition-colors ${active ? 'text-venetian-gold' : 'text-white/76 hover:text-white'}`}
               >
                 {item.name}
                 <span className={`absolute inset-x-0 bottom-1 h-px origin-left bg-venetian-gold transition-transform ${active ? 'scale-x-100' : 'scale-x-0'}`} />

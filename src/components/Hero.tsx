@@ -1,61 +1,111 @@
-import { ArrowDownRight, ArrowRight, MapPin } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useLanguage, type Language } from '../lib/i18n';
 import heroImage from '../Img/G1/IMG_2922.webp';
 
-const heroDetails: Record<Language, { location: string; open: string; note: string }> = {
-  en: { location: 'San Polo 649 · Rialto', open: 'Lunch & dinner', note: 'Venetian kitchen · seafood · pizza' },
-  it: { location: 'San Polo 649 · Rialto', open: 'Pranzo e cena', note: 'Cucina veneziana · pesce · pizza' },
-  fr: { location: 'San Polo 649 · Rialto', open: 'Déjeuner et dîner', note: 'Cuisine vénitienne · poisson · pizza' },
-  de: { location: 'San Polo 649 · Rialto', open: 'Mittag- & Abendessen', note: 'Venezianische Küche · Fisch · Pizza' },
-  es: { location: 'San Polo 649 · Rialto', open: 'Almuerzo y cena', note: 'Cocina veneciana · pescado · pizza' },
+const heroCopy: Record<Language, {
+  eyebrow: string;
+  title: string;
+  body: string;
+  enter: string;
+  reserve: string;
+  place: string;
+  hours: string;
+  cuisine: string;
+}> = {
+  it: {
+    eyebrow: 'San Polo 649 · a due passi da Rialto',
+    title: 'Fuori, Rialto. Dentro, un’altra Venezia.',
+    body: 'Una porta, il profumo della cucina, un giardino nascosto. Dal 1955 accogliamo Venezia a tavola.',
+    enter: 'Entra nella storia',
+    reserve: 'Prenota il tuo tavolo',
+    place: 'Venezia · San Polo',
+    hours: 'Pranzo e cena',
+    cuisine: 'Laguna · terra · pizza',
+  },
+  en: {
+    eyebrow: 'San Polo 649 · steps from Rialto',
+    title: 'Outside, Rialto. Inside, another Venice.',
+    body: 'A doorway, the aroma of the kitchen, a hidden garden. Since 1955, we have welcomed Venice to the table.',
+    enter: 'Step inside',
+    reserve: 'Reserve your table',
+    place: 'Venice · San Polo',
+    hours: 'Lunch and dinner',
+    cuisine: 'Lagoon · land · pizza',
+  },
+  fr: {
+    eyebrow: 'San Polo 649 · à deux pas du Rialto',
+    title: 'Dehors, le Rialto. Dedans, une autre Venise.',
+    body: 'Une porte, les parfums de la cuisine, un jardin caché. Depuis 1955, nous accueillons Venise à table.',
+    enter: 'Entrez dans l’histoire',
+    reserve: 'Réserver votre table',
+    place: 'Venise · San Polo',
+    hours: 'Déjeuner et dîner',
+    cuisine: 'Lagune · terre · pizza',
+  },
+  de: {
+    eyebrow: 'San Polo 649 · wenige Schritte vom Rialto',
+    title: 'Draußen Rialto. Drinnen ein anderes Venedig.',
+    body: 'Eine Tür, der Duft aus der Küche, ein versteckter Garten. Seit 1955 heißen wir Venedig am Tisch willkommen.',
+    enter: 'Treten Sie ein',
+    reserve: 'Tisch reservieren',
+    place: 'Venedig · San Polo',
+    hours: 'Mittag- und Abendessen',
+    cuisine: 'Lagune · Land · Pizza',
+  },
+  es: {
+    eyebrow: 'San Polo 649 · a un paso de Rialto',
+    title: 'Fuera, Rialto. Dentro, otra Venecia.',
+    body: 'Una puerta, el aroma de la cocina, un jardín escondido. Desde 1955 recibimos a Venecia en la mesa.',
+    enter: 'Entra en la historia',
+    reserve: 'Reserva tu mesa',
+    place: 'Venecia · San Polo',
+    hours: 'Almuerzo y cena',
+    cuisine: 'Laguna · tierra · pizza',
+  },
 };
 
 export function Hero() {
-  const { language, t } = useLanguage();
-  const details = heroDetails[language];
+  const { language } = useLanguage();
+  const copy = heroCopy[language];
+  const enterStory = () => document.getElementById('story-section')?.scrollIntoView({ behavior: 'smooth' });
 
   return (
-    <section className="relative overflow-hidden bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown" aria-labelledby="home-title">
-      <div className="mx-auto grid min-h-[calc(100svh-84px)] max-w-[1480px] lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="relative flex items-center border-x border-venetian-brown/15 px-5 py-16 sm:px-10 lg:px-14 xl:px-20 dark:border-white/10">
-          <div className="pointer-events-none absolute right-5 top-8 select-none font-serif text-[8rem] font-semibold leading-none text-venetian-brown/[0.035] sm:text-[12rem] lg:right-10 lg:top-12 dark:text-white/[0.035]">55</div>
-          <motion.div initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="relative z-10 max-w-[680px]">
-            <p className="editorial-kicker mb-7">{t('hero.tagline')}</p>
-            <h1 id="home-title" className="max-w-[11ch] font-serif text-[clamp(3.8rem,8.4vw,8.2rem)] font-semibold leading-[0.77] tracking-[-0.045em] text-venetian-brown dark:text-white">
-              {t('hero.title')}
-            </h1>
-            <p className="mt-8 max-w-lg border-l-2 border-venetian-terracotta pl-5 text-base leading-7 text-venetian-brown/70 sm:text-lg dark:text-venetian-sandstone/75">
-              {t('hero.subtitle')}
-            </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link to="/book" className="editorial-link">
-                {t('hero.reserveButton')}<ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link to="/menu" className="editorial-link-light dark:border-white/25 dark:text-white">
-                {t('hero.viewMenu')}
-              </Link>
-            </div>
-            <div className="mt-12 grid gap-4 border-t border-venetian-brown/15 pt-5 text-[0.67rem] font-bold uppercase tracking-[0.13em] text-venetian-brown/60 sm:grid-cols-2 dark:border-white/15 dark:text-white/55">
-              <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-venetian-terracotta" />{details.location}</span>
-              <span>{details.open}</span>
-            </div>
-          </motion.div>
-        </div>
+    <section className="relative min-h-[100svh] overflow-hidden bg-venetian-brown text-white" aria-labelledby="home-title">
+      <motion.img
+        src={heroImage}
+        alt="Il giardino interno del Ristorante Al Gobbo di Rialto"
+        className="absolute inset-0 h-full w-full object-cover"
+        initial={{ scale: 1.06 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 2.2, ease: 'easeOut' }}
+        fetchPriority="high"
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(16,14,12,0.88)_0%,rgba(16,14,12,0.56)_44%,rgba(16,14,12,0.12)_76%),linear-gradient(0deg,rgba(16,14,12,0.74)_0%,transparent_48%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_26%,transparent_0%,rgba(16,14,12,0.22)_58%,rgba(16,14,12,0.48)_100%)]" />
 
-        <motion.div initial={{ opacity: 0, scale: 1.025 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, ease: 'easeOut' }} className="relative min-h-[62svh] overflow-hidden lg:min-h-full">
-          <img src={heroImage} alt="Il giardino interno del Ristorante Al Gobbo di Rialto" className="absolute inset-0 h-full w-full object-cover" fetchPriority="high" />
-          <div className="absolute inset-0 bg-gradient-to-t from-venetian-brown/55 via-transparent to-black/10" />
-          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 text-white sm:p-8">
-            <p className="max-w-xs text-[0.66rem] font-bold uppercase leading-5 tracking-[0.18em] text-white/75">{details.note}</p>
-            <button type="button" onClick={() => document.getElementById('story-section')?.scrollIntoView({ behavior: 'smooth' })} className="grid h-14 w-14 shrink-0 place-items-center border border-white/45 bg-black/10 backdrop-blur-sm transition-colors hover:bg-white hover:text-venetian-brown" aria-label={t('hero.scrollHint')}>
-              <ArrowDownRight className="h-5 w-5" />
-            </button>
+      <div className="relative mx-auto flex min-h-[100svh] max-w-[1480px] flex-col justify-end px-5 pb-32 pt-32 sm:px-8 sm:pb-36 lg:px-12 xl:px-16">
+        <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.15, ease: 'easeOut' }} className="max-w-5xl">
+          <p className="mb-6 text-[0.65rem] font-bold uppercase tracking-[0.24em] text-venetian-gold sm:mb-8">{copy.eyebrow}</p>
+          <h1 id="home-title" className="max-w-[12ch] font-serif text-[clamp(3.8rem,8.8vw,8.8rem)] font-semibold leading-[0.78] tracking-[-0.05em] text-white">{copy.title}</h1>
+          <div className="mt-8 flex max-w-3xl flex-col gap-7 border-l border-white/35 pl-5 sm:mt-10 sm:pl-7 lg:flex-row lg:items-end lg:justify-between">
+            <p className="max-w-xl text-base leading-7 text-white/72 sm:text-lg">{copy.body}</p>
+            <Link to="/book" className="inline-flex min-h-12 shrink-0 items-center gap-3 self-start border-b border-venetian-gold pb-2 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:text-venetian-gold lg:self-auto">{copy.reserve}<ArrowUpRight className="h-4 w-4" /></Link>
           </div>
-          <div className="absolute left-0 top-0 bg-venetian-terracotta px-4 py-3 text-[0.62rem] font-bold uppercase tracking-[0.2em] text-white sm:px-5">Venezia autentica</div>
         </motion.div>
+
+        <div className="absolute bottom-0 left-0 right-0 border-t border-white/18 bg-black/20 backdrop-blur-md">
+          <div className="mx-auto grid max-w-[1480px] grid-cols-[1fr_auto] items-stretch px-5 sm:px-8 lg:grid-cols-[1fr_1fr_1fr_auto] lg:px-12 xl:px-16">
+            <span className="flex min-h-20 items-center gap-3 border-r border-white/15 pr-5 text-[0.6rem] font-bold uppercase tracking-[0.15em] text-white/72"><MapPin className="h-4 w-4 text-venetian-gold" />{copy.place}</span>
+            <span className="hidden min-h-20 items-center border-r border-white/15 px-7 text-[0.6rem] font-bold uppercase tracking-[0.15em] text-white/72 lg:flex">{copy.hours}</span>
+            <span className="hidden min-h-20 items-center px-7 text-[0.6rem] font-bold uppercase tracking-[0.15em] text-white/72 lg:flex">{copy.cuisine}</span>
+            <button type="button" onClick={enterStory} className="group flex min-h-20 items-center gap-3 pl-5 text-[0.6rem] font-bold uppercase tracking-[0.15em] text-white" aria-label={copy.enter}>{copy.enter}<span className="grid h-10 w-10 place-items-center bg-venetian-gold text-venetian-brown transition-transform group-hover:translate-y-1"><ArrowDown className="h-4 w-4" /></span></button>
+          </div>
+        </div>
       </div>
+
+      <span className="pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 [writing-mode:vertical-rl] text-[0.58rem] font-bold uppercase tracking-[0.28em] text-white/46 lg:block">Al Gobbo di Rialto · dal 1955</span>
     </section>
   );
 }
