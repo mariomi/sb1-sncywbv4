@@ -84,7 +84,9 @@ function detailsBox({ date, time, guests, occasion, specialRequests }) {
 
 export function buildReservationCustomerEmail(reservation, siteUrl) {
   const safeName = escapeHtml(reservation.name)
-  const manageUrl = `${siteUrl.replace(/\/$/, '')}/cancella/${reservation.cancellation_token}`
+  const supportedLocales = new Set(['en', 'it', 'fr', 'de', 'es'])
+  const locale = supportedLocales.has(reservation.locale) ? reservation.locale : 'it'
+  const manageUrl = `${siteUrl.replace(/\/$/, '')}/cancella/${reservation.cancellation_token}?lang=${locale}`
   const dateLabel = formatReservationDate(reservation.date)
   const timeLabel = formatReservationTime(reservation.time)
   const content = `

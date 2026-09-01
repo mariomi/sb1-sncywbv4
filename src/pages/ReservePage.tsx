@@ -5,7 +5,7 @@ import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAvailableTimeSlots, createReservation, getClosedDates, joinWaitlist } from '../lib/api';
 import { useFeatureFlag } from '../lib/featureFlags';
 import type { ReservationFormData } from '../lib/validators';
@@ -107,6 +107,8 @@ type ReservationCopy = {
   timeLabel: string;
   emailSent: string;
   emailMissing: string;
+  manageBooking: string;
+  manageBookingHint: string;
   returnHome: string;
   errors: {
     privacy: string;
@@ -134,7 +136,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     policyTitle: 'Reservation Policy', policyItems: ['Reservations can be made up to 3 months in advance', 'For last-minute requests, call us if online times are unavailable', 'Large group bookings (9+ guests) require direct contact'],
     importantTitle: 'Important Information', importantItems: ['Use the private link in your confirmation email to cancel', 'For same-day changes, please call +39 041 520 4603', 'Tell us about allergies or dietary requirements before ordering'],
     helpTitle: 'Need help booking?', helpBody: 'Call the restaurant for groups of nine or more, same-day questions or accessibility needs.',
-    confirmationTitle: 'Reservation Confirmed!', confirmationThanks: 'Thank you for choosing Al Gobbo di Rialto. We look forward to welcoming you on', confirmationDetails: 'Reservation Details', nameLabel: 'Name', dateLabel: 'Date', timeLabel: 'Time', emailSent: 'A confirmation email has been sent to', emailMissing: 'Your table is reserved, but the email could not be delivered. Please call us if you need to change or cancel it.', returnHome: 'Return to Home',
+    confirmationTitle: 'Reservation Confirmed!', confirmationThanks: 'Thank you for choosing Al Gobbo di Rialto. We look forward to welcoming you on', confirmationDetails: 'Reservation Details', nameLabel: 'Name', dateLabel: 'Date', timeLabel: 'Time', emailSent: 'A confirmation email has been sent to', emailMissing: 'Your table is reserved, but the email could not be delivered. Please call us if you need to change or cancel it.', manageBooking: 'Manage or cancel booking', manageBookingHint: 'Save this private link in case you need it later.', returnHome: 'Return to Home',
     errors: { privacy: 'Please accept the privacy policy to continue', unavailableDate: 'This date is not available for reservations', closedDates: 'Failed to load closed dates', slots: 'Failed to load available time slots', unexpected: 'An unexpected error occurred. Please try again later.', waitlistContact: 'Enter your name, email and phone number before joining the waitlist', waitlist: 'Could not join the waitlist. Please try again.' },
   },
   it: {
@@ -151,7 +153,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     policyTitle: 'Politica di Prenotazione', policyItems: ['Puoi prenotare fino a 3 mesi in anticipo', 'Per richieste all’ultimo momento chiamaci se non trovi orari online', 'Per gruppi di 9 o più persone è necessario contattarci direttamente'],
     importantTitle: 'Informazioni Importanti', importantItems: ['Per cancellare usa il link personale ricevuto via email', 'Per modifiche in giornata chiama il +39 041 520 4603', 'Segnalaci allergie o esigenze alimentari prima di ordinare'],
     helpTitle: 'Serve aiuto?', helpBody: 'Chiamaci per gruppi di almeno nove persone, richieste in giornata o esigenze di accessibilità.',
-    confirmationTitle: 'Prenotazione Confermata!', confirmationThanks: 'Grazie per aver scelto Al Gobbo di Rialto. Ti aspettiamo il', confirmationDetails: 'Dettagli della Prenotazione', nameLabel: 'Nome', dateLabel: 'Data', timeLabel: 'Ora', emailSent: 'Abbiamo inviato un’email di conferma a', emailMissing: 'Il tavolo è prenotato, ma non è stato possibile consegnare l’email. Chiamaci per modifiche o cancellazioni.', returnHome: 'Torna alla Home',
+    confirmationTitle: 'Prenotazione Confermata!', confirmationThanks: 'Grazie per aver scelto Al Gobbo di Rialto. Ti aspettiamo il', confirmationDetails: 'Dettagli della Prenotazione', nameLabel: 'Nome', dateLabel: 'Data', timeLabel: 'Ora', emailSent: 'Abbiamo inviato un’email di conferma a', emailMissing: 'Il tavolo è prenotato, ma non è stato possibile consegnare l’email. Chiamaci per modifiche o cancellazioni.', manageBooking: 'Gestisci o cancella', manageBookingHint: 'Salva questo link personale se ti servirà più tardi.', returnHome: 'Torna alla Home',
     errors: { privacy: 'Accetta la privacy policy per continuare', unavailableDate: 'Questa data non è disponibile', closedDates: 'Impossibile caricare i giorni di chiusura', slots: 'Impossibile caricare gli orari disponibili', unexpected: 'Si è verificato un errore. Riprova più tardi.', waitlistContact: 'Inserisci nome, email e telefono prima di iscriverti alla lista d’attesa', waitlist: 'Impossibile iscriversi alla lista d’attesa. Riprova.' },
   },
   fr: {
@@ -168,7 +170,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     policyTitle: 'Conditions de Réservation', policyItems: ['Réservation possible jusqu’à 3 mois à l’avance', 'Pour une demande de dernière minute, appelez-nous si aucun horaire n’est disponible', 'Les groupes de 9 personnes ou plus doivent nous contacter'],
     importantTitle: 'Informations Importantes', importantItems: ['Utilisez le lien personnel reçu par e-mail pour annuler', 'Pour une modification le jour même, appelez le +39 041 520 4603', 'Signalez toute allergie ou exigence alimentaire avant de commander'],
     helpTitle: 'Besoin d’aide ?', helpBody: 'Appelez-nous pour les groupes de neuf personnes ou plus, les demandes du jour ou l’accessibilité.',
-    confirmationTitle: 'Réservation Confirmée !', confirmationThanks: 'Merci d’avoir choisi Al Gobbo di Rialto. Nous vous accueillerons le', confirmationDetails: 'Détails de la Réservation', nameLabel: 'Nom', dateLabel: 'Date', timeLabel: 'Heure', emailSent: 'Un e-mail de confirmation a été envoyé à', emailMissing: 'Votre table est réservée, mais l’e-mail n’a pas pu être remis. Appelez-nous pour toute modification ou annulation.', returnHome: 'Retour à l’Accueil',
+    confirmationTitle: 'Réservation Confirmée !', confirmationThanks: 'Merci d’avoir choisi Al Gobbo di Rialto. Nous vous accueillerons le', confirmationDetails: 'Détails de la Réservation', nameLabel: 'Nom', dateLabel: 'Date', timeLabel: 'Heure', emailSent: 'Un e-mail de confirmation a été envoyé à', emailMissing: 'Votre table est réservée, mais l’e-mail n’a pas pu être remis. Appelez-nous pour toute modification ou annulation.', manageBooking: 'Gérer ou annuler', manageBookingHint: 'Conservez ce lien privé si vous en avez besoin plus tard.', returnHome: 'Retour à l’Accueil',
     errors: { privacy: 'Veuillez accepter la politique de confidentialité', unavailableDate: 'Cette date n’est pas disponible', closedDates: 'Impossible de charger les jours de fermeture', slots: 'Impossible de charger les horaires', unexpected: 'Une erreur est survenue. Réessayez plus tard.', waitlistContact: 'Saisissez votre nom, e-mail et téléphone avant de rejoindre la liste d’attente', waitlist: 'Impossible de rejoindre la liste d’attente. Réessayez.' },
   },
   de: {
@@ -185,7 +187,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     policyTitle: 'Reservierungsbedingungen', policyItems: ['Reservierungen sind bis zu 3 Monate im Voraus möglich', 'Rufen Sie uns kurzfristig an, wenn online keine Uhrzeit verfügbar ist', 'Gruppen ab 9 Personen müssen uns direkt kontaktieren'],
     importantTitle: 'Wichtige Informationen', importantItems: ['Zum Stornieren den persönlichen Link aus der E-Mail verwenden', 'Für Änderungen am selben Tag: +39 041 520 4603', 'Bitte Allergien oder Ernährungswünsche vor der Bestellung mitteilen'],
     helpTitle: 'Hilfe bei der Reservierung?', helpBody: 'Rufen Sie uns bei Gruppen ab neun Personen, kurzfristigen Fragen oder Barrierefreiheitsbedarf an.',
-    confirmationTitle: 'Reservierung Bestätigt!', confirmationThanks: 'Vielen Dank, dass Sie Al Gobbo di Rialto gewählt haben. Wir erwarten Sie am', confirmationDetails: 'Reservierungsdetails', nameLabel: 'Name', dateLabel: 'Datum', timeLabel: 'Uhrzeit', emailSent: 'Eine Bestätigungs-E-Mail wurde gesendet an', emailMissing: 'Ihr Tisch ist reserviert, aber die E-Mail konnte nicht zugestellt werden. Bitte rufen Sie uns für Änderungen oder Stornierungen an.', returnHome: 'Zur Startseite',
+    confirmationTitle: 'Reservierung Bestätigt!', confirmationThanks: 'Vielen Dank, dass Sie Al Gobbo di Rialto gewählt haben. Wir erwarten Sie am', confirmationDetails: 'Reservierungsdetails', nameLabel: 'Name', dateLabel: 'Datum', timeLabel: 'Uhrzeit', emailSent: 'Eine Bestätigungs-E-Mail wurde gesendet an', emailMissing: 'Ihr Tisch ist reserviert, aber die E-Mail konnte nicht zugestellt werden. Bitte rufen Sie uns für Änderungen oder Stornierungen an.', manageBooking: 'Verwalten oder stornieren', manageBookingHint: 'Speichern Sie diesen privaten Link für später.', returnHome: 'Zur Startseite',
     errors: { privacy: 'Bitte akzeptieren Sie die Datenschutzerklärung', unavailableDate: 'Dieses Datum ist nicht verfügbar', closedDates: 'Schließtage konnten nicht geladen werden', slots: 'Verfügbare Uhrzeiten konnten nicht geladen werden', unexpected: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.', waitlistContact: 'Geben Sie Name, E-Mail und Telefonnummer ein, bevor Sie sich auf die Warteliste setzen', waitlist: 'Die Warteliste konnte nicht aktualisiert werden. Bitte erneut versuchen.' },
   },
   es: {
@@ -202,7 +204,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     policyTitle: 'Política de Reservas', policyItems: ['Puedes reservar con hasta 3 meses de antelación', 'Para peticiones de última hora, llámanos si no hay horarios online', 'Los grupos de 9 o más personas deben contactar directamente'],
     importantTitle: 'Información Importante', importantItems: ['Usa el enlace personal del correo de confirmación para cancelar', 'Para cambios el mismo día, llama al +39 041 520 4603', 'Informa de alergias o necesidades alimentarias antes de pedir'],
     helpTitle: '¿Necesitas ayuda?', helpBody: 'Llámanos para grupos de nueve o más personas, dudas del mismo día o necesidades de accesibilidad.',
-    confirmationTitle: '¡Reserva Confirmada!', confirmationThanks: 'Gracias por elegir Al Gobbo di Rialto. Te esperamos el', confirmationDetails: 'Datos de la Reserva', nameLabel: 'Nombre', dateLabel: 'Fecha', timeLabel: 'Hora', emailSent: 'Hemos enviado un correo de confirmación a', emailMissing: 'Tu mesa está reservada, pero no se pudo entregar el correo. Llámanos para cambios o cancelaciones.', returnHome: 'Volver al Inicio',
+    confirmationTitle: '¡Reserva Confirmada!', confirmationThanks: 'Gracias por elegir Al Gobbo di Rialto. Te esperamos el', confirmationDetails: 'Datos de la Reserva', nameLabel: 'Nombre', dateLabel: 'Fecha', timeLabel: 'Hora', emailSent: 'Hemos enviado un correo de confirmación a', emailMissing: 'Tu mesa está reservada, pero no se pudo entregar el correo. Llámanos para cambios o cancelaciones.', manageBooking: 'Gestionar o cancelar', manageBookingHint: 'Guarda este enlace privado por si lo necesitas más tarde.', returnHome: 'Volver al Inicio',
     errors: { privacy: 'Acepta la política de privacidad para continuar', unavailableDate: 'Esta fecha no está disponible', closedDates: 'No se pudieron cargar los días de cierre', slots: 'No se pudieron cargar los horarios', unexpected: 'Se produjo un error. Inténtalo más tarde.', waitlistContact: 'Introduce nombre, correo y teléfono antes de unirte a la lista de espera', waitlist: 'No se pudo completar la inscripción. Inténtalo de nuevo.' },
   },
 };
@@ -252,6 +254,7 @@ export function ReservePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
+  const [cancellationToken, setCancellationToken] = useState('');
   const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(false);
   const [closedDates, setClosedDates] = useState<string[]>([]);
   const [closedDatesLoaded, setClosedDatesLoaded] = useState(false);
@@ -418,6 +421,7 @@ export function ReservePage() {
 
       const reservation = await createReservation(reservationData, language);
       setConfirmationEmailSent(reservation.confirmation_email_sent);
+      setCancellationToken(reservation.cancellation_token);
       trackEvent('booking_completed', {
         reservation_id: reservation.id,
         guests: formData.guests,
@@ -944,13 +948,21 @@ export function ReservePage() {
                       ? `${copy.emailSent} ${formData.email}.`
                       : copy.emailMissing}
                   </p>
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
+                  {cancellationToken ? (
+                    <div className="mb-5">
+                      <Link
+                        to={`/cancella/${cancellationToken}?lang=${language}`}
+                        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border-2 border-red-600 px-5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+                      >
+                        {copy.manageBooking}
+                      </Link>
+                      <p className="mt-2 text-xs text-venetian-brown/60">{copy.manageBookingHint}</p>
+                    </div>
+                  ) : null}
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
                       onClick={handleConfirmationClose}
-                      className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
+                      className="min-h-12 w-full bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
                     >
                       {copy.returnHome}
                     </Button>

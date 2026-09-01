@@ -29,6 +29,7 @@ type ReservationEmailRecord = {
   guests: number
   occasion: string | null
   special_requests: string | null
+  locale: string
   cancellation_token: string
   confirmation_sent_at: string | null
 }
@@ -88,7 +89,7 @@ Deno.serve(async (request) => {
       .eq('id', body.reservation_id)
       .eq('cancellation_token', body.cancellation_token)
       .is('confirmation_sent_at', null)
-      .select('id,name,email,phone,date,time,guests,occasion,special_requests,cancellation_token,confirmation_sent_at')
+      .select('id,name,email,phone,date,time,guests,occasion,special_requests,locale,cancellation_token,confirmation_sent_at')
       .maybeSingle()
     if (error) throw error
     claimed = data
