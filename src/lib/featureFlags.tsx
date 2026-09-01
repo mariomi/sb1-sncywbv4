@@ -57,11 +57,14 @@ export function FeatureFlagsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Hooks and provider intentionally share this small module.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFeatureFlag(key: string, defaultValue = true): boolean {
   const { flags } = useContext(FeatureFlagsContext);
   return key in flags ? flags[key] : defaultValue;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFeatureFlags() {
   return useContext(FeatureFlagsContext);
 }

@@ -4,9 +4,9 @@ import type { User } from '@supabase/supabase-js';
 
 type AuthContextType = {
   user: User | null;
+  isAdmin: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -33,13 +33,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-  };
-
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
+    if (data.user.app_metadata?.role !== 'admin') {
+      await supabase.auth.signOut();
+      throw new Error('Account not authorized for administration');
+    }
+    setUser(data.user);
   };
 
   const signOut = async () => {
@@ -48,12 +48,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider
+      value={{ user, isAdmin: user?.app_metadata?.role === 'admin', loading, signIn, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
+// Hook and provider intentionally share this small module.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

@@ -298,11 +298,12 @@
         <textarea id="requests" placeholder="Allergie, seggiolone, tavolo finestra…"></textarea>
       </div>
 
-      <p style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
-        Confermando accetti la nostra
-        <a href="https://ristorantealgobbodirialto.it/privacy" target="_blank" style="color:var(--gold);">privacy policy</a>.
-        Il tavolo è riservato per 15 minuti.
-      </p>
+      <div class="field">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:12px;color:var(--muted);">
+          <input type="checkbox" id="privacy" required style="width:auto;margin-top:2px;accent-color:var(--gold);" />
+          <span>Ho letto e accetto la <a href="https://www.ristorantealgobbodirialto.it/privacy" target="_blank" rel="noopener noreferrer" style="color:var(--brown);text-decoration:underline;">privacy policy</a>. *</span>
+        </label>
+      </div>
 
       <button type="submit" class="submit-btn" id="submit-btn">
         Prenota ora
@@ -315,12 +316,12 @@
     <div class="success-icon">✓</div>
     <h2>Prenotazione ricevuta!</h2>
     <p id="success-detail"></p>
-    <p style="margin-top:8px;font-size:12px;color:var(--muted);">Riceverai una email di conferma a breve.</p>
+    <p id="email-status" style="margin-top:8px;font-size:12px;color:var(--muted);"></p>
     <button class="new-btn" onclick="resetForm()">Nuova prenotazione</button>
   </div>
 
   <div class="footer">
-    Ristorante Al Gobbo di Rialto · Campo San Polo 649, Venezia<br/>
+    Ristorante Al Gobbo di Rialto · Sestiere San Polo 649, Venezia<br/>
     <a href="tel:+390415204603">+39 041 520 4603</a>
   </div>
 </div>
@@ -336,16 +337,14 @@
   let loadingSlots = false;
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
-  function sb(path, options = {}) {
-    const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  function sbRpc(functionName, body) {
+    const url = `${SUPABASE_URL}/rest/v1/rpc/${functionName}`;
     const headers = {
       'apikey': SUPABASE_ANON_KEY,
       'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
       'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-      ...options.headers
     };
-    return fetch(url, { ...options, headers });
+    return fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
   }
 
   function showMsg(text, type = 'error') {
@@ -381,9 +380,9 @@
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     document.getElementById('date').min = `${yyyy}-${mm}-${dd}`;
-    // Max = 6 months ahead
+    // Max = 3 months ahead, aligned with the public booking policy.
     const max = new Date(today);
-    max.setMonth(max.getMonth() + 6);
+    max.setMonth(max.getMonth() + 3);
     document.getElementById('date').max = max.toISOString().split('T')[0];
   })();
 
@@ -403,29 +402,10 @@
     container.innerHTML = '<p style="font-size:13px;color:var(--muted);"><span class="spinner"></span>Caricamento orari…</p>';
 
     try {
-      // Check closed dates
-      const closedRes = await sb(`closed_dates?date=eq.${date}&select=date`);
-      const closed = await closedRes.json();
-      if (closed.length > 0) {
-        container.innerHTML = '<p style="font-size:13px;color:var(--red);">Il ristorante è chiuso in questa data.</p>';
-        return;
-      }
-
-      // Check recurring closures for day of week
-      const dayOfWeek = new Date(date + 'T00:00:00').getDay();
-      const recRes = await sb(`recurring_closures?day_of_week=eq.${dayOfWeek}&active=eq.true&select=start_time,end_time`);
-      const recClosures = await recRes.json();
-
-      // Get all active time slots
-      const slotsRes = await sb('time_slots?is_active=eq.true&select=*&order=time');
-      const allSlots = await slotsRes.json();
-
-      // Get existing reservations for the date
-      const resRes = await sb(`reservations?date=eq.${date}&status=in.(pending,confirmed)&select=time,guests`);
-      const existingReservations = await resRes.json();
-
-      // Build slot availability
-      const html = buildSlotsHtml(allSlots, existingReservations, recClosures, guests);
+      const slotsRes = await sbRpc('get_public_availability', { p_date: date });
+      if (!slotsRes.ok) throw new Error('Availability request failed');
+      const slots = await slotsRes.json();
+      const html = buildSlotsHtml(slots, guests);
       container.innerHTML = html;
 
       // Add click handlers
@@ -443,25 +423,19 @@
     }
   }
 
-  function buildSlotsHtml(slots, reservations, recClosures, guests) {
+  function buildSlotsHtml(slots, guests) {
     const lunchSlots  = slots.filter(s => s.is_lunch);
     const dinnerSlots = slots.filter(s => !s.is_lunch);
 
     function renderGroup(groupSlots, label) {
       if (groupSlots.length === 0) return '';
       const btns = groupSlots.map(slot => {
-        const isRecurringClosed = recClosures.some(rc =>
-          slot.time >= rc.start_time && slot.time <= rc.end_time
-        );
-        const taken = reservations
-          .filter(r => r.time === slot.time)
-          .reduce((s, r) => s + r.guests, 0);
-        const remaining = slot.max_capacity - taken;
-        const available = !isRecurringClosed && remaining >= guests;
-        const timeLabel = slot.time.slice(0, 5);
+        const remaining = slot.remaining_capacity;
+        const available = slot.available && remaining >= guests;
+        const timeLabel = slot.slot_time.slice(0, 5);
 
         return `<button type="button" class="slot-btn${available ? '' : ' full'}"
-          data-time="${slot.time}"
+          data-time="${slot.slot_time}"
           ${available ? '' : 'disabled'}
           title="${available ? `${remaining} posti disponibili` : 'Non disponibile'}"
         >${timeLabel}</button>`;
@@ -492,6 +466,7 @@
     const occasion = document.getElementById('occasion').value;
     const requests = document.getElementById('requests').value.trim();
     const marketing = document.getElementById('marketing').checked;
+    const privacy = document.getElementById('privacy').checked;
 
     // Validate
     if (!date)          return showMsg('Seleziona una data.');
@@ -501,73 +476,55 @@
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
                         return showMsg('Inserisci un\'email valida.');
     if (!phone)         return showMsg('Inserisci il tuo numero di telefono.');
+    if (!privacy)       return showMsg('Accetta la privacy policy per continuare.');
 
     setLoading(true);
 
     try {
-      // Check for duplicate
-      const dupRes = await sb(
-        `reservations?date=eq.${date}&time=eq.${selectedTime}&email=eq.${encodeURIComponent(email)}&select=id`,
-        { headers: { 'Prefer': 'return=minimal' } }
-      );
-      const dup = await dupRes.json();
-      if (dup.length > 0) {
-        showMsg('Hai già una prenotazione per questa data e orario.');
-        setLoading(false);
-        return;
-      }
-
-      // Insert reservation
-      const insertRes = await sb('reservations', {
-        method: 'POST',
-        body: JSON.stringify({
-          date,
-          time: selectedTime,
-          guests,
-          name,
-          email,
-          phone,
-          occasion: occasion || null,
-          special_requests: requests || null,
-          marketing_consent: marketing,
-          status: 'pending',
-          source: 'online'
-        }),
-        headers: { 'Prefer': 'return=representation' }
+      const insertRes = await sbRpc('create_public_reservation', {
+        p_date: date,
+        p_time: selectedTime,
+        p_guests: guests,
+        p_name: name,
+        p_email: email,
+        p_phone: phone,
+        p_occasion: occasion || null,
+        p_special_requests: requests || null,
+        p_marketing_consent: marketing,
+        p_locale: 'it',
+        p_attribution: { source: 'embedded_widget' }
       });
 
       if (!insertRes.ok) {
         const errData = await insertRes.json();
-        // Duplicate constraint
-        if (errData.code === '23505') {
-          showMsg('Hai già una prenotazione per questa data e orario.');
-          setLoading(false);
-          return;
-        }
-        throw new Error(errData.message || 'Errore nella prenotazione');
+        throw new Error(errData.message || 'Prenotazione non disponibile');
       }
 
       const [reservation] = await insertRes.json();
 
-      // Send confirmation email (non-blocking)
-      fetch(`${EMAIL_API}/send-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name, email, phone, date,
-          time: selectedTime, guests,
-          occasion, special_requests: requests,
-          marketing_consent: marketing,
-          cancellation_token: reservation.cancellation_token,
-          reservation_id: reservation.id
-        })
-      }).catch(err => console.warn('Email non inviata (non critico):', err));
+      let emailSent = false;
+      try {
+        const emailRes = await fetch(`${EMAIL_API}/send-reservation-confirmation`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reservation_id: reservation.reservation_id,
+            cancellation_token: reservation.cancellation_token
+          })
+        });
+        emailSent = emailRes.ok;
+      } catch {
+        emailSent = false;
+      }
 
       // Show success
       const dateLabel = formatDateIt(date);
       const timeLabel = selectedTime.slice(0, 5);
       document.getElementById('success-detail').textContent =
         `${name} · ${dateLabel} · ore ${timeLabel} · ${guests} ${guests === 1 ? 'ospite' : 'ospiti'}`;
+      document.getElementById('email-status').textContent = emailSent
+        ? `Email di conferma inviata a ${email}.`
+        : 'La prenotazione è confermata, ma l’email non è stata consegnata. Chiamaci se devi modificarla.';
       document.getElementById('form-screen').style.display = 'none';
       document.getElementById('success-screen').style.display = 'block';
 

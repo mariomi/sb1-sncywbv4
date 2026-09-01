@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Fish, Wheat, Pizza, Loader2, Menu as MenuIcon } from 'lucide-react';
+import { Fish, Wheat, Pizza, Menu as MenuIcon } from 'lucide-react';
 
 import { cn } from '../lib/utils';
+import { useLanguage } from '../lib/i18n';
 
 type MenuItem = {
   name: string;
@@ -212,40 +213,37 @@ const menuData: MenuSection[] = [
 const categories = [
   {
     id: 'mare' as const,
-    name: 'Mare',
     icon: Fish,
     subcategories: [
-      { id: 'antipasti', name: 'Antipasti' },
-      { id: 'primi', name: 'Primi' },
-      { id: 'secondi', name: 'Secondi' },
+      { id: 'antipasti' },
+      { id: 'primi' },
+      { id: 'secondi' },
     ],
   },
   {
     id: 'terra' as const,
-    name: 'Terra',
     icon: Wheat,
     subcategories: [
-      { id: 'antipasti', name: 'Antipasti' },
-      { id: 'primi', name: 'Primi' },
-      { id: 'secondi', name: 'Secondi' },
+      { id: 'antipasti' },
+      { id: 'primi' },
+      { id: 'secondi' },
     ],
   },
   {
     id: 'pizza' as const,
-    name: 'Pizza',
     icon: Pizza,
     subcategories: [
-      { id: 'classic', name: 'Classiche' },
-      { id: 'special', name: 'Speciali' },
-      { id: 'calzoni', name: 'Calzoni' },
+      { id: 'classic' },
+      { id: 'special' },
+      { id: 'calzoni' },
     ],
   },
 ];
 
 const RestaurantMenu2026 = () => {
+  const { language, t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState<'mare' | 'terra' | 'pizza'>('mare');
   const [activeSubcategory, setActiveSubcategory] = useState<string>('antipasti');
-  const [isLoading, setIsLoading] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
 
@@ -260,17 +258,15 @@ const RestaurantMenu2026 = () => {
     section => section.category === activeCategory && section.subcategory === activeSubcategory
   );
 
-  const handleCategoryChange = async (id: 'mare' | 'terra' | 'pizza') => {
-    setIsLoading(true);
+  const handleCategoryChange = (id: 'mare' | 'terra' | 'pizza') => {
     setActiveCategory(id);
-    setActiveSubcategory(categories.find(c => c.id === id)?.subcategories[0].id || '');
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setIsLoading(false);
+    setActiveSubcategory(categories.find(c => c.id === id)?.subcategories[0]?.id || '');
     setShowMobileNav(false);
   };
 
   return (
     <div className="min-h-screen bg-venetian-sandstone/20">
+      <h1 className="sr-only">{t('menu.title')}</h1>
       {/* Toggle Mobile */}
       <motion.button
         className="md:hidden fixed top-24 right-4 z-50 p-3 rounded-full bg-venetian-brown/80 text-white shadow-lg"
@@ -296,7 +292,7 @@ const RestaurantMenu2026 = () => {
             >
               <h3 className="text-lg font-serif text-venetian-brown mb-4">Categorie</h3>
               <div className="space-y-2">
-                {categories.map(({ id, name, icon: Icon }) => (
+                {categories.map(({ id, icon: Icon }) => (
                   <button
                     key={id}
                     onClick={() => handleCategoryChange(id)}
@@ -308,7 +304,7 @@ const RestaurantMenu2026 = () => {
                     )}
                   >
                     <Icon size={18} />
-                    <span>{name}</span>
+                    <span>{t(`menu.categories.${id}`)}</span>
                   </button>
                 ))}
               </div>
@@ -329,7 +325,7 @@ const RestaurantMenu2026 = () => {
                         : "bg-venetian-brown/5 text-venetian-brown/70"
                     )}
                   >
-                    {sub.name}
+                    {t(`menu.subcategories.${sub.id}`)}
                   </button>
                 ))}
               </div>
@@ -350,7 +346,7 @@ const RestaurantMenu2026 = () => {
             animate={{ x: isScrolled ? 0 : -100, opacity: isScrolled ? 1 : 0 }}
             transition={{ duration: 0.5 }}
           >
-            {categories.map(({ id, name, icon: Icon }) => (
+            {categories.map(({ id, icon: Icon }) => (
               <motion.button
                 key={id}
                 onClick={() => handleCategoryChange(id)}
@@ -366,7 +362,7 @@ const RestaurantMenu2026 = () => {
                   <Icon size={18} />
                 </motion.div>
                 <span className="absolute left-12 bg-venetian-brown/90 text-white px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap text-xs font-medium tracking-wide">
-                  {name}
+                  {t(`menu.categories.${id}`)}
                 </span>
               </motion.button>
             ))}
@@ -390,9 +386,9 @@ const RestaurantMenu2026 = () => {
                 )}
                 whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
               >
-                <span className="text-xs font-medium tracking-wider uppercase">{sub.name.slice(0, 2)}</span>
+                <span className="text-xs font-medium tracking-wider uppercase">{t(`menu.subcategories.${sub.id}`).slice(0, 2)}</span>
                 <span className="absolute right-10 bg-venetian-brown/90 text-white px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap text-xs font-medium tracking-wide">
-                  {sub.name}
+                  {t(`menu.subcategories.${sub.id}`)}
                 </span>
               </motion.button>
             ))}
@@ -412,7 +408,7 @@ const RestaurantMenu2026 = () => {
               >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex justify-center space-x-4">
-                    {categories.map(({ id, name, icon: Icon }) => (
+                    {categories.map(({ id, icon: Icon }) => (
                       <motion.button
                         key={id}
                         onClick={() => handleCategoryChange(id)}
@@ -427,7 +423,7 @@ const RestaurantMenu2026 = () => {
                         <motion.div animate={{ rotate: activeCategory === id ? 360 : 0 }} transition={{ duration: 0.5 }}>
                           <Icon size={16} />
                         </motion.div>
-                        <span className="font-medium text-sm tracking-wide">{name}</span>
+                        <span className="font-medium text-sm tracking-wide">{t(`menu.categories.${id}`)}</span>
                       </motion.button>
                     ))}
                   </div>
@@ -453,7 +449,7 @@ const RestaurantMenu2026 = () => {
                         )}
                         whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                       >
-                        {sub.name}
+                          {t(`menu.subcategories.${sub.id}`)}
                       </motion.button>
                     ))}
                   </div>
@@ -463,24 +459,6 @@ const RestaurantMenu2026 = () => {
           </motion.div>
         </div>
       </motion.div>
-
-      {/* Overlay loading */}
-      <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center bg-venetian-brown/20 backdrop-blur-sm z-50"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="rounded-full p-3 bg-venetian-gold/20 backdrop-blur-md"
-            >
-              <Loader2 className="w-8 h-8 text-venetian-gold" />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Contenuti */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
@@ -556,12 +534,11 @@ const RestaurantMenu2026 = () => {
 
         {/* Allergen / Note finali */}
         <div className="mt-20 p-8 bg-white/80 rounded-2xl shadow-md">
-          <h3 className="text-lg font-serif text-venetian-brown mb-3">
-            Allergeni e informazioni
-          </h3>
+          <h3 className="text-lg font-serif text-venetian-brown mb-3">{t('menu.allergens.title')}</h3>
           <p className="text-base text-venetian-brown/70 leading-relaxed">
-            Comunica allo staff eventuali allergie o intolleranze. In base alla stagione
-            alcuni prodotti potrebbero essere surgelati.
+            {t('menu.allergens.note')} {language === 'it'
+              ? 'Il menu, i prezzi e la disponibilità possono cambiare; alcuni prodotti potrebbero essere surgelati in base alla stagione.'
+              : 'Menu items, prices and availability may change; some products may be frozen depending on the season.'}
           </p>
         </div>
       </div>

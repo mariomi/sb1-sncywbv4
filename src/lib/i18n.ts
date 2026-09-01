@@ -1,12 +1,14 @@
 import { createContext, useContext } from 'react';
 
-export type Language = 'en' | 'it';
+export type Language = 'en' | 'it' | 'fr' | 'de' | 'es';
 
-export const translations = {
+const baseTranslations = {
   en: {
     nav: {
       menu: 'Menu',
       about: 'About',
+      gallery: 'Gallery',
+      location: 'Location',
       contact: 'Contact',
       reserve: 'Reserve',
       myReservations: 'My Reservations'
@@ -97,6 +99,7 @@ export const translations = {
       }
     },
     menu: {
+      title: 'Our Menu',
       categories: {
         mare: 'Seafood',
         terra: 'Land',
@@ -132,6 +135,8 @@ export const translations = {
     nav: {
       menu: 'Menu',
       about: 'Chi Siamo',
+      gallery: 'Galleria',
+      location: 'Dove siamo',
       contact: 'Contatti',
       reserve: 'Prenota',
       myReservations: 'Le Mie Prenotazioni'
@@ -222,6 +227,7 @@ export const translations = {
       }
     },
     menu: {
+      title: 'Il Nostro Menu',
       categories: {
         mare: 'Pesce',
         terra: 'Terra',
@@ -253,6 +259,196 @@ export const translations = {
       }
     }
   }
+};
+
+export const translations = {
+  ...baseTranslations,
+  fr: {
+    ...baseTranslations.en,
+    nav: {
+      menu: 'Menu',
+      about: 'Notre histoire',
+      gallery: 'Galerie',
+      location: 'Nous trouver',
+      contact: 'Contact',
+      reserve: 'Réserver',
+      myReservations: 'Gérer ma réservation',
+    },
+    hero: {
+      tagline: 'Depuis 1955 · San Polo, Venise',
+      title: 'Venise s’invite\nà votre table',
+      subtitle: 'Trois générations de passion vénitienne. Poissons et fruits de mer, pâtes et recettes traditionnelles — à quelques pas du Rialto.',
+      reserveButton: 'Réserver une table',
+      viewMenu: 'Découvrir le menu',
+      scrollHint: 'Découvrir notre histoire',
+    },
+    story: {
+      badge: 'Notre histoire',
+      title: 'Une adresse vénitienne fidèle à ses racines',
+      body1: 'Depuis 1955, Al Gobbo di Rialto accueille ses hôtes à San Polo 649, tout près du pont et du marché du Rialto. Trois générations ont transmis le même sens de l’hospitalité et le goût de la cuisine vénitienne.',
+      body2: 'La ville évolue, notre cuisine reste attachée aux produits, aux gestes simples et aux saveurs de la lagune.',
+      cta: 'Découvrir notre histoire',
+    },
+    whyUs: {
+      badge: 'Pourquoi Al Gobbo',
+      title: 'Une table qui raconte Venise',
+      items: [
+        { title: 'Près du marché du Rialto', description: 'Une adresse à San Polo, au cœur du quartier historique du Rialto.' },
+        { title: 'Recettes vénitiennes', description: 'Sarde in saor, bigoli in salsa et baccalà mantecato parmi les spécialités de la maison.' },
+        { title: 'Trois générations', description: 'Une hospitalité familiale et une histoire qui commence en 1955.' },
+      ],
+    },
+    ctaBanner: {
+      title: 'Votre table à Venise vous attend',
+      subtitle: 'Déjeuner et dîner, tous les jours sauf le mardi. Réservez en ligne en une minute.',
+      reserve: 'Réserver',
+      orCall: 'ou appelez-nous',
+    },
+    gallery: {
+      title: 'Les saveurs de Venise en images',
+      subtitle: 'Découvrez nos plats, nos ingrédients et l’atmosphère d’Al Gobbo di Rialto.',
+      groups: {
+        dishes: { title: 'Plats signature', description: 'Les spécialités vénitiennes de la maison' },
+        ingredients: { title: 'Ingrédients', description: 'Des produits choisis avec attention' },
+        ambiance: { title: 'Le restaurant', description: 'Une atmosphère chaleureuse à San Polo' },
+        desserts: { title: 'Desserts', description: 'Une touche sucrée pour terminer' },
+      },
+    },
+    menu: {
+      title: 'Notre Carte',
+      categories: { mare: 'Poissons et fruits de mer', terra: 'Viandes et légumes', pizza: 'Pizza' },
+      subcategories: { antipasti: 'Entrées', primi: 'Pâtes et risottos', secondi: 'Plats', classic: 'Pizzas classiques', special: 'Pizzas spéciales', calzoni: 'Calzoni', contorni: 'Accompagnements' },
+      allergens: {
+        title: 'Informations sur les allergènes',
+        note: 'Signalez toute allergie ou exigence alimentaire à notre équipe.',
+        list: { gluten: 'Gluten', milk: 'Lait', eggs: 'Œufs', fish: 'Poisson', shellfish: 'Crustacés', molluscs: 'Mollusques', nuts: 'Fruits à coque', celery: 'Céleri', sulfites: 'Sulfites' },
+      },
+    },
+  },
+  de: {
+    ...baseTranslations.en,
+    nav: {
+      menu: 'Speisekarte',
+      about: 'Unsere Geschichte',
+      gallery: 'Galerie',
+      location: 'Anfahrt',
+      contact: 'Kontakt',
+      reserve: 'Reservieren',
+      myReservations: 'Reservierung verwalten',
+    },
+    hero: {
+      tagline: 'Seit 1955 · San Polo, Venedig',
+      title: 'Venedig kommt\nauf den Tisch',
+      subtitle: 'Drei Generationen venezianischer Leidenschaft. Fisch und Meeresfrüchte, Pasta und traditionelle Rezepte — nur wenige Schritte vom Rialto entfernt.',
+      reserveButton: 'Tisch reservieren',
+      viewMenu: 'Speisekarte ansehen',
+      scrollHint: 'Unsere Geschichte entdecken',
+    },
+    story: {
+      badge: 'Unsere Geschichte',
+      title: 'Eine venezianische Adresse mit festen Wurzeln',
+      body1: 'Seit 1955 empfängt Al Gobbo di Rialto seine Gäste in San Polo 649, nahe der Rialtobrücke und dem Markt. Drei Generationen teilen dieselbe Gastfreundschaft und Liebe zur venezianischen Küche.',
+      body2: 'Venedig verändert sich, doch unsere Küche bleibt den Zutaten, ehrlichem Handwerk und den Aromen der Lagune treu.',
+      cta: 'Unsere Geschichte entdecken',
+    },
+    whyUs: {
+      badge: 'Warum Al Gobbo',
+      title: 'Ein Tisch, der von Venedig erzählt',
+      items: [
+        { title: 'Nahe dem Rialtomarkt', description: 'Mitten in San Polo, im historischen Rialtoviertel.' },
+        { title: 'Venezianische Rezepte', description: 'Sarde in saor, Bigoli in salsa und Baccalà mantecato gehören zu unseren Spezialitäten.' },
+        { title: 'Drei Generationen', description: 'Familiäre Gastfreundschaft und eine Geschichte, die 1955 begann.' },
+      ],
+    },
+    ctaBanner: {
+      title: 'Ihr Tisch in Venedig wartet',
+      subtitle: 'Mittag- und Abendessen, täglich außer Dienstag. Online in einer Minute reservieren.',
+      reserve: 'Jetzt reservieren',
+      orCall: 'oder anrufen',
+    },
+    gallery: {
+      title: 'Venedigs Aromen in Bildern',
+      subtitle: 'Entdecken Sie unsere Gerichte, Zutaten und die Atmosphäre im Al Gobbo di Rialto.',
+      groups: {
+        dishes: { title: 'Spezialitäten', description: 'Beliebte venezianische Gerichte' },
+        ingredients: { title: 'Zutaten', description: 'Sorgfältig ausgewählte Produkte' },
+        ambiance: { title: 'Restaurant', description: 'Herzliche Atmosphäre in San Polo' },
+        desserts: { title: 'Desserts', description: 'Ein süßer Abschluss' },
+      },
+    },
+    menu: {
+      title: 'Unsere Speisekarte',
+      categories: { mare: 'Fisch und Meeresfrüchte', terra: 'Fleisch und Gemüse', pizza: 'Pizza' },
+      subcategories: { antipasti: 'Vorspeisen', primi: 'Pasta und Risotto', secondi: 'Hauptgerichte', classic: 'Klassische Pizzen', special: 'Spezialpizzen', calzoni: 'Calzoni', contorni: 'Beilagen' },
+      allergens: {
+        title: 'Allergeninformationen',
+        note: 'Bitte informieren Sie unser Team über Allergien oder besondere Ernährungswünsche.',
+        list: { gluten: 'Gluten', milk: 'Milch', eggs: 'Eier', fish: 'Fisch', shellfish: 'Krebstiere', molluscs: 'Weichtiere', nuts: 'Schalenfrüchte', celery: 'Sellerie', sulfites: 'Sulfite' },
+      },
+    },
+  },
+  es: {
+    ...baseTranslations.en,
+    nav: {
+      menu: 'Carta',
+      about: 'Nuestra historia',
+      gallery: 'Galería',
+      location: 'Cómo llegar',
+      contact: 'Contacto',
+      reserve: 'Reservar',
+      myReservations: 'Gestionar reserva',
+    },
+    hero: {
+      tagline: 'Desde 1955 · San Polo, Venecia',
+      title: 'Venecia se sienta\na la mesa',
+      subtitle: 'Tres generaciones de pasión veneciana. Pescado y marisco, pasta y recetas tradicionales — a pocos pasos de Rialto.',
+      reserveButton: 'Reservar una mesa',
+      viewMenu: 'Ver la carta',
+      scrollHint: 'Descubrir nuestra historia',
+    },
+    story: {
+      badge: 'Nuestra historia',
+      title: 'Un rincón veneciano fiel a sus raíces',
+      body1: 'Desde 1955, Al Gobbo di Rialto recibe a sus clientes en San Polo 649, cerca del puente y del mercado de Rialto. Tres generaciones comparten la misma hospitalidad y pasión por la cocina veneciana.',
+      body2: 'Venecia cambia, pero nuestra cocina sigue fiel al producto, al trabajo honesto y a los sabores de la laguna.',
+      cta: 'Descubrir nuestra historia',
+    },
+    whyUs: {
+      badge: 'Por qué Al Gobbo',
+      title: 'Una mesa que cuenta Venecia',
+      items: [
+        { title: 'Cerca del mercado de Rialto', description: 'En San Polo, en pleno barrio histórico de Rialto.' },
+        { title: 'Recetas venecianas', description: 'Sarde in saor, bigoli in salsa y baccalà mantecato entre nuestras especialidades.' },
+        { title: 'Tres generaciones', description: 'Hospitalidad familiar y una historia que comenzó en 1955.' },
+      ],
+    },
+    ctaBanner: {
+      title: 'Tu mesa en Venecia te espera',
+      subtitle: 'Comida y cena, todos los días excepto el martes. Reserva online en un minuto.',
+      reserve: 'Reservar ahora',
+      orCall: 'o llámanos',
+    },
+    gallery: {
+      title: 'Los sabores de Venecia en imágenes',
+      subtitle: 'Descubre nuestros platos, ingredientes y el ambiente de Al Gobbo di Rialto.',
+      groups: {
+        dishes: { title: 'Platos destacados', description: 'Especialidades venecianas de la casa' },
+        ingredients: { title: 'Ingredientes', description: 'Productos elegidos con cuidado' },
+        ambiance: { title: 'El restaurante', description: 'Un ambiente acogedor en San Polo' },
+        desserts: { title: 'Postres', description: 'El final más dulce' },
+      },
+    },
+    menu: {
+      title: 'Nuestra Carta',
+      categories: { mare: 'Pescado y marisco', terra: 'Carnes y verduras', pizza: 'Pizza' },
+      subcategories: { antipasti: 'Entrantes', primi: 'Pasta y risotto', secondi: 'Platos principales', classic: 'Pizzas clásicas', special: 'Pizzas especiales', calzoni: 'Calzoni', contorni: 'Guarniciones' },
+      allergens: {
+        title: 'Información sobre alérgenos',
+        note: 'Informa a nuestro equipo sobre cualquier alergia o necesidad alimentaria.',
+        list: { gluten: 'Gluten', milk: 'Leche', eggs: 'Huevos', fish: 'Pescado', shellfish: 'Crustáceos', molluscs: 'Moluscos', nuts: 'Frutos secos', celery: 'Apio', sulfites: 'Sulfitos' },
+      },
+    },
+  },
 };
 
 type LanguageContextType = {

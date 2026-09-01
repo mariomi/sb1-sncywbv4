@@ -1,95 +1,87 @@
-# Ristorante Al Gobbo
+# Al Gobbo di Rialto
 
-Un'applicazione web completa per la gestione del "Ristorante Al Gobbo di Rialto", che include un sistema di prenotazione, visualizzazione del menu, e un pannello di amministrazione.
+Sito e sistema di acquisizione/prenotazione per il ristorante Al Gobbo di
+Rialto a Venezia. Il progetto include sito pubblico multilingua, landing SEO,
+prenotazione e waitlist, tracciamento conversioni, pannello amministrativo e
+comunicazioni email.
 
-## 🚀 Funzionalità
+## Stack
 
-### Lato Pubblico
-*   **Home, Menu, Chi Siamo, Contatti**: Pagine informative con design reattivo.
-*   **Prenotazioni**: Sistema di prenotazione tavoli con selezione di data, ora e numero di ospiti in tempo reale.
-*   **Multilingua**: Supporto per diverse lingue.
-*   **Temi**: Supporto per modalità chiara e scura.
+- React 18, Vite, TypeScript, Tailwind CSS e Framer Motion
+- Supabase Database/Auth con RLS e RPC pubbliche validate
+- Express + Resend per le conferme email
+- Supabase Edge Functions per i promemoria programmati
 
-### Pannello Amministrazione (Protetto)
-*   **Dashboard**: Panoramica delle prenotazioni e statistiche.
-*   **Gestione Prenotazioni**: Visualizza, approva o cancella le prenotazioni.
-*   **Gestione Menu**: Modifica i piatti e le categorie del menu.
-*   **Orari e Chiusure**: Gestione degli slot orari e delle chiusure straordinarie.
-*   **Messaggi**: Visualizzazione dei messaggi inviati tramite il modulo di contatto.
+## Configurazione locale
 
-## 🛠 Tech Stack
+Requisiti: Node.js 22 o successivo, npm e accesso al progetto Supabase.
 
-*   **Frontend**: React, Vite, TypeScript, Tailwind CSS, Framer Motion.
-*   **Routing**: React Router DOM.
-*   **Database & Auth**: Supabase.
-*   **Backend (Email Service)**: Express.js (Node.js) con Integrazione Resend.
-*   **Icons**: Lucide React.
-*   **Utils**: Date-fns, Zod, React Hot Toast.
-
-## 📋 Prerequisiti
-
-*   Node.js (v18 o superiore raccomandato)
-*   npm o yarn
-*   Account Supabase (per database e autenticazione)
-*   Account Resend (per l'invio di email)
-
-## ⚙️ Installazione e Setup
-
-1.  **Clona il repository:**
-    ```bash
-    git clone <repository-url>
-    cd sb1-sncywbv4
-    ```
-
-2.  **Installa le dipendenze:**
-    ```bash
-    npm install
-    ```
-
-3.  **Configura le Variabili d'Ambiente:**
-    Crea un file `.env` nella root del progetto basato sulle seguenti variabili richieste:
-
-    ```env
-    VITE_SUPABASE_URL=la_tua_url_supabase
-    VITE_SUPABASE_ANON_KEY=la_tua_chiave_anon_supabase
-    VITE_RESEND_API_KEY=la_tua_chiave_api_resend
-    ```
-
-4.  **Configurazione Backend (Email):**
-    Il file `server.js` gestisce l'invio delle email.
-    *   **Nota Importante**: Attualmente, il file `src/lib/notifications.ts` punta a un URL di produzione (`https://sb1-sncywbv4.onrender.com/send-email`). Per lo sviluppo locale, dovrai modificare questo URL per puntare a `http://localhost:3000/send-email` o configurare il tuo ambiente di conseguenza.
-
-## 🏃‍♂️ Avvio del Progetto
-
-Il progetto richiede l'avvio sia del frontend (Vite) che del server backend (Express) per le email.
-
-1.  **Avvia il Server Backend (per le email):**
-    ```bash
-    node server.js
-    ```
-    Il server partirà sulla porta 3000 (o quella definita in `PORT`).
-
-2.  **Avvia il Frontend (in un nuovo terminale):**
-    ```bash
-    npm run dev
-    ```
-    Il frontend sarà accessibile solitamente su `http://localhost:5173`.
-
-## 📂 Struttura del Progetto
-
-*   `src/components`: Componenti UI riutilizzabili (Navbar, Forms, ecc.).
-*   `src/pages`: Pagine principali dell'applicazione.
-*   `src/lib`: Logica di business, configurazione Supabase, API client.
-    *   `api.ts`: Funzioni per interagire con il database.
-    *   `notifications.ts`: Logica per l'invio di email.
-*   `server.js`: Server Express semplice per gestire l'invio sicuro di email tramite Resend.
-*   `supabase/`: Configurazioni o migrazioni relative a Supabase.
-
-## 🔐 Creazione Admin
-
-Per creare un primo utente amministratore, puoi utilizzare lo script fornito:
-
-```bash
-npm run create-admin
+```powershell
+npm install
+Copy-Item .env.example .env
 ```
-Assicurati di controllare `src/scripts/createAdmin.ts` per configurare le credenziali desiderate o passare i parametri necessari.
+
+Compilare `.env` con i valori del proprio ambiente. Le sole variabili esposte
+al browser sono quelle con prefisso `VITE_`. `RESEND_API_KEY` e
+`SUPABASE_SERVICE_ROLE_KEY` sono segreti server-side e non devono mai usare quel
+prefisso né essere committati.
+
+Avvio locale:
+
+```powershell
+# Terminale 1: frontend
+npm run dev
+
+# Terminale 2: API email attendibile
+node server.js
+```
+
+Per lo sviluppo locale impostare `VITE_API_BASE_URL=http://localhost:3000`.
+
+## Controlli di qualità
+
+```powershell
+npm run typecheck
+npm run lint
+npm test
+npm run build
+npm audit --omit=dev --audit-level=high
+```
+
+## Sicurezza e dati
+
+Il browser non legge direttamente prenotazioni, waitlist o messaggi di
+contatto. I visitatori usano funzioni RPC validate per disponibilità,
+prenotazione, waitlist, contatto e cancellazione tramite token. L’accesso
+amministrativo richiede un utente autenticato con ruolo `admin` in
+`app_metadata`.
+
+Il file `.env` è ignorato e deve restare fuori da Git. Se un segreto è mai
+apparso nella cronologia del repository, va revocato e sostituito: cancellare il
+file in un commit successivo non è sufficiente.
+
+## Promemoria e produzione
+
+Le procedure per segreti, deploy delle Edge Functions, pianificazioni UTC/Roma
+e verifica operativa sono in [docs/OPERATIONS.md](docs/OPERATIONS.md).
+
+La configurazione di Google Business Profile, Google Ads, Meta/Instagram,
+tracking UTM e dashboard marketing è descritta in
+[docs/MARKETING_PLAYBOOK.md](docs/MARKETING_PLAYBOOK.md).
+
+La separazione degli account cliente, i ruoli di Netawebs, la verifica
+inserzionista, il modello di pagamento e il flusso di onboarding sono definiti
+in [docs/NETAWEBS_AGENCY_MODEL.md](docs/NETAWEBS_AGENCY_MODEL.md).
+
+## Comandi disponibili
+
+| Comando | Scopo |
+| --- | --- |
+| `npm run dev` | Avvia Vite in sviluppo |
+| `npm run build` | Crea la build di produzione |
+| `npm run preview` | Mostra localmente la build |
+| `npm run typecheck` | Controlla TypeScript |
+| `npm run lint` | Esegue ESLint |
+| `npm test` | Esegue test di sicurezza e fuso orario |
+| `npm run images:optimize` | Ottimizza le immagini del sito |
+| `npm run create-admin` | Crea il primo amministratore |

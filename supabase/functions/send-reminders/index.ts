@@ -1,156 +1,190 @@
-// Deno runtime — runs on Supabase Edge Functions
-// Schedule via Supabase Dashboard → Edge Functions → Schedules
-// Cron: "0 8 * * *" (every day at 08:00 UTC = 10:00 Italian time)
+// Day-before reservation reminder.
+// Schedule at both 07:00 and 08:00 UTC. The Rome-hour guard below makes the
+// function run at 09:00 Europe/Rome across daylight-saving changes.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.4'
+import {
+  escapeHtml,
+  getRomeDateTimeParts,
+  getTomorrowDateInRome,
+  jsonResponse,
+  secretsMatch,
+} from '../_shared/reminder-utils.js'
 
-const RESEND_KEY   = Deno.env.get('VITE_RESEND_API_KEY')!
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SERVICE_KEY  = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const SITE_URL     = Deno.env.get('SITE_URL') ?? 'https://www.ristorantealgobbodirialto.it'
+const RESEND_KEY = Deno.env.get('RESEND_API_KEY')
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+const CRON_SECRET = Deno.env.get('REMINDER_CRON_SECRET')
+const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://www.ristorantealgobbodirialto.it').replace(/\/$/, '')
+const SEND_HOUR_IN_ROME = 9
 
-Deno.serve(async () => {
-  const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
+Deno.serve(async (request) => {
+  if (request.method !== 'POST') {
+    return jsonResponse({ error: 'Method not allowed' }, 405)
+  }
 
-  // Find tomorrow's reservations not yet reminded, status pending or confirmed
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowStr = tomorrow.toISOString().split('T')[0]
+  if (!secretsMatch(request.headers.get('x-reminder-secret'), CRON_SECRET)) {
+    return jsonResponse({ error: 'Unauthorized' }, 401)
+  }
 
+  const missingConfiguration = [
+    ['RESEND_API_KEY', RESEND_KEY],
+    ['SUPABASE_URL', SUPABASE_URL],
+    ['SUPABASE_SERVICE_ROLE_KEY', SERVICE_KEY],
+    ['REMINDER_CRON_SECRET', CRON_SECRET],
+  ].filter(([, value]) => !value).map(([name]) => name)
+
+  if (missingConfiguration.length > 0) {
+    console.error('Missing reminder configuration:', missingConfiguration.join(', '))
+    return jsonResponse({ error: 'Reminder service is not configured' }, 503)
+  }
+
+  const payload = await request.json().catch(() => ({})) as { force?: boolean }
+  const now = new Date()
+  const romeNow = getRomeDateTimeParts(now)
+
+  if (!payload.force && romeNow.hour !== SEND_HOUR_IN_ROME) {
+    return jsonResponse({
+      skipped: true,
+      reason: 'outside_send_window',
+      romeTime: romeNow.time,
+    })
+  }
+
+  const supabase = createClient(SUPABASE_URL!, SERVICE_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+
+  const { data: reminderFlag, error: flagError } = await supabase
+    .from('feature_flags')
+    .select('enabled')
+    .eq('key', 'reminder_emails')
+    .maybeSingle()
+
+  if (flagError) {
+    console.error('Could not read reminder feature flag:', flagError)
+    return jsonResponse({ error: 'Could not read reminder settings' }, 500)
+  }
+  if (reminderFlag?.enabled === false) {
+    return jsonResponse({ skipped: true, reason: 'feature_disabled' })
+  }
+
+  const tomorrow = getTomorrowDateInRome(now)
   const { data: reservations, error } = await supabase
     .from('reservations')
-    .select('*')
-    .eq('date', tomorrowStr)
+    .select('id,name,email,date,time,guests,cancellation_token')
+    .eq('date', tomorrow)
     .in('status', ['pending', 'confirmed'])
     .is('reminder_sent_at', null)
 
   if (error) {
-    console.error('❌ Query error:', error)
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+    console.error('Could not load day-before reminders:', error)
+    return jsonResponse({ error: 'Could not load reminders' }, 500)
   }
 
-  console.log(`📧 Found ${reservations?.length ?? 0} reservations to remind`)
+  let sent = 0
+  let failed = 0
 
-  let sent = 0, failed = 0
-
-  for (const r of reservations ?? []) {
+  for (const reservation of reservations ?? []) {
     try {
-      const cancelUrl  = `${SITE_URL}/cancella/${r.cancellation_token}`
-      const confirmUrl = `${SITE_URL}/reserve`
-
-      const fDate = new Date(r.date + 'T00:00:00').toLocaleDateString('it-IT', {
-        weekday: 'long', day: 'numeric', month: 'long'
+      const formattedDate = new Date(`${reservation.date}T12:00:00Z`).toLocaleDateString('it-IT', {
+        timeZone: 'Europe/Rome',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
       })
-      const fTime = r.time.slice(0, 5)
+      const formattedTime = reservation.time.slice(0, 5)
+      const cancellationUrl = `${SITE_URL}/cancella/${reservation.cancellation_token}`
+      const body = {
+        from: 'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
+        to: reservation.email,
+        subject: `Promemoria: domani alle ${formattedTime} — Al Gobbo di Rialto`,
+        html: buildReminderHtml({
+          name: reservation.name,
+          formattedDate,
+          formattedTime,
+          guests: reservation.guests,
+          cancellationUrl,
+        }),
+      }
 
-      const html = buildReminderHtml({ ...r, fDate, fTime, cancelUrl, confirmUrl })
-
-      const res = await fetch('https://api.resend.com/emails', {
+      const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${RESEND_KEY}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${RESEND_KEY}`,
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `reservation-day-before/${reservation.id}/${reservation.date}`,
         },
-        body: JSON.stringify({
-          from: 'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
-          to: r.email,
-          subject: `⏰ Reminder: domani alle ${fTime} — Al Gobbo di Rialto`,
-          html
-        })
+        body: JSON.stringify(body),
       })
 
-      if (!res.ok) throw new Error(`Resend error: ${res.status}`)
+      if (!response.ok) {
+        throw new Error(`Resend returned HTTP ${response.status}`)
+      }
 
-      // Mark as sent
-      await supabase
+      const { error: updateError } = await supabase
         .from('reservations')
         .update({ reminder_sent_at: new Date().toISOString() })
-        .eq('id', r.id)
+        .eq('id', reservation.id)
+        .is('reminder_sent_at', null)
 
-      sent++
-    } catch (err) {
-      console.error(`❌ Failed for reservation ${r.id}:`, err)
-      failed++
+      if (updateError) throw updateError
+      sent += 1
+    } catch (sendError) {
+      console.error(`Day-before reminder failed for reservation ${reservation.id}:`, sendError)
+      failed += 1
     }
   }
 
-  return new Response(JSON.stringify({ sent, failed }), {
-    headers: { 'Content-Type': 'application/json' }
-  })
+  return jsonResponse(
+    { date: tomorrow, eligible: reservations?.length ?? 0, sent, failed },
+    failed > 0 ? 502 : 200,
+  )
 })
 
-function buildReminderHtml(r: {
-  name: string, fDate: string, fTime: string, guests: number,
-  occasion?: string | null, special_requests?: string | null,
-  cancelUrl: string, confirmUrl: string
+function buildReminderHtml({
+  name,
+  formattedDate,
+  formattedTime,
+  guests,
+  cancellationUrl,
+}: {
+  name: string
+  formattedDate: string
+  formattedTime: string
+  guests: number
+  cancellationUrl: string
 }) {
-  const brown = '#5C4033'
-  const gold  = '#D4AF37'
-  const sand  = '#fdf6ee'
+  const firstName = escapeHtml(name.trim().split(/\s+/)[0] || 'ospite')
+  const safeDate = escapeHtml(formattedDate)
+  const safeTime = escapeHtml(formattedTime)
+  const safeCancellationUrl = escapeHtml(cancellationUrl)
 
-  return `<!DOCTYPE html>
+  return `<!doctype html>
 <html lang="it">
-<head><meta charset="UTF-8"/></head>
-<body style="margin:0;padding:0;background:#f0e8d5;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0e8d5;">
-    <tr><td align="center" style="padding:32px 16px;">
-      <table width="560" cellpadding="0" cellspacing="0"
-             style="max-width:560px;width:100%;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 16px rgba(92,64,51,0.10);">
-        <!-- Header -->
-        <tr><td style="background:${brown};padding:24px 28px;">
-          <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${gold};">Promemoria Prenotazione</p>
-          <h2 style="margin:6px 0 0;font-size:20px;color:#fff;font-family:Georgia,serif;">⏰ A domani, ${r.name.split(' ')[0]}!</h2>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;background:#f0e8d5;font-family:Arial,sans-serif;color:#5c4033">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:32px 16px">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:10px;overflow:hidden">
+        <tr><td style="background:#5c4033;padding:24px 28px;color:#fff">
+          <p style="margin:0;color:#d4af37;font-size:11px;letter-spacing:3px;text-transform:uppercase">Promemoria prenotazione</p>
+          <h1 style="margin:6px 0 0;font:20px Georgia,serif">A domani, ${firstName}!</h1>
         </td></tr>
-        <tr><td style="height:3px;background:${gold};"></td></tr>
-        <!-- Body -->
-        <tr><td style="padding:28px 32px;">
-          <p style="margin:0 0 20px;font-size:15px;color:${brown};line-height:1.6;">
-            Ti ricordiamo la tua prenotazione di <strong>domani</strong> al Ristorante Al Gobbo di Rialto.
-          </p>
-          <table width="100%" style="background:${sand};border-radius:8px;border:1px solid #e0c99a;">
-            <tr><td style="padding:16px 20px;border-bottom:1px solid #e0c99a;">
-              <p style="margin:0;font-size:11px;color:#9e8272;letter-spacing:2px;text-transform:uppercase;">Dettagli</p>
-            </td></tr>
-            <tr><td style="padding:12px 20px;border-bottom:1px solid #e8d5b0;">
-              <p style="margin:0;font-size:13px;color:#9e8272;">📅 Data</p>
-              <p style="margin:4px 0 0;font-size:16px;font-weight:700;color:${brown};text-transform:capitalize;">${r.fDate}</p>
-            </td></tr>
-            <tr><td style="padding:12px 20px;border-bottom:1px solid #e8d5b0;">
-              <p style="margin:0;font-size:13px;color:#9e8272;">🕐 Orario</p>
-              <p style="margin:4px 0 0;font-size:16px;font-weight:700;color:${brown};">${r.fTime}</p>
-            </td></tr>
-            <tr><td style="padding:12px 20px;">
-              <p style="margin:0;font-size:13px;color:#9e8272;">👥 Ospiti</p>
-              <p style="margin:4px 0 0;font-size:16px;font-weight:700;color:${brown};">${r.guests} ${r.guests === 1 ? 'persona' : 'persone'}</p>
-            </td></tr>
+        <tr><td style="height:3px;background:#d4af37"></td></tr>
+        <tr><td style="padding:28px 32px">
+          <p style="margin:0 0 20px;line-height:1.6">Ti ricordiamo la tua prenotazione di domani al Ristorante Al Gobbo di Rialto.</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fdf6ee;border:1px solid #e0c99a;border-radius:8px">
+            <tr><td style="padding:12px 20px;border-bottom:1px solid #e8d5b0"><strong>Data:</strong> ${safeDate}</td></tr>
+            <tr><td style="padding:12px 20px;border-bottom:1px solid #e8d5b0"><strong>Orario:</strong> ${safeTime}</td></tr>
+            <tr><td style="padding:12px 20px"><strong>Ospiti:</strong> ${guests}</td></tr>
           </table>
-          <!-- CTA buttons -->
-          <table width="100%" style="margin-top:24px;">
-            <tr>
-              <td style="padding-right:8px;">
-                <a href="${r.cancelUrl}"
-                   style="display:block;text-align:center;padding:12px;background:#fff;border:2px solid #e0c99a;border-radius:8px;color:#9e8272;text-decoration:none;font-size:14px;font-weight:500;">
-                  ❌ Cancella prenotazione
-                </a>
-              </td>
-              <td style="padding-left:8px;">
-                <a href="${r.confirmUrl}"
-                   style="display:block;text-align:center;padding:12px;background:${gold};border:2px solid ${gold};border-radius:8px;color:${brown};text-decoration:none;font-size:14px;font-weight:700;">
-                  ✅ Tutto confermato
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:20px 0 0;font-size:12px;color:#9e8272;text-align:center;">
-            Il tavolo viene mantenuto 15 minuti dopo l'orario. Per modifiche: +39 041 520 4603
+          <p style="margin:24px 0 0;text-align:center">
+            <a href="${safeCancellationUrl}" style="display:inline-block;padding:12px 18px;border:2px solid #e0c99a;border-radius:8px;color:#7a342b;text-decoration:none">Cancella prenotazione</a>
           </p>
+          <p style="margin:20px 0 0;font-size:13px;line-height:1.6;text-align:center;color:#6b5244">Per modifiche, ritardi o esigenze di accessibilità: <a href="tel:+390415204603" style="color:#7a342b">+39 041 520 4603</a></p>
         </td></tr>
-        <!-- Footer -->
-        <tr><td style="padding:16px 24px;background:${sand};border-top:1px solid #e8d5b0;">
-          <p style="margin:0;font-size:11px;color:#9e8272;text-align:center;">
-            Ristorante Al Gobbo di Rialto — Sestiere San Polo 649, Venezia
-          </p>
-        </td></tr>
+        <tr><td style="padding:16px 24px;background:#fdf6ee;text-align:center;font-size:11px;color:#806b60">Ristorante Al Gobbo di Rialto — Sestiere San Polo 649, Venezia</td></tr>
       </table>
     </td></tr>
   </table>

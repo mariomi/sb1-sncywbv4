@@ -9,8 +9,10 @@ import { ChevronLeft, Download, Loader2 } from 'lucide-react';
 import { format, subDays, subMonths, startOfYear, parseISO } from 'date-fns';
 import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
-import { getReservationsForStats, exportReservationsToCSV } from '../lib/api';
-import type { Reservation } from '../lib/api';
+import { MarketingMetricsPanel, MARKETING_CHANNELS } from '../components/admin/MarketingMetricsPanel';
+import { getMarketingCampaignMetrics, getReservationsForStats, exportReservationsToCSV } from '../lib/api';
+import type { MarketingCampaignMetric, Reservation } from '../lib/api';
+import { reservationChannel } from '../lib/reservationAttribution';
 
 const COLORS = {
   confirmed: '#5C4033',
@@ -20,6 +22,12 @@ const COLORS = {
 };
 
 type Period = 'week' | 'month' | '3months' | 'year';
+
+const PAID_METRIC_CHANNELS = new Set(
+  MARKETING_CHANNELS.filter(channel => channel.paid).map(channel => channel.value)
+);
+const PAID_BOOKING_CHANNELS = new Set(['Google Ads', 'Meta Ads', 'Instagram Ads', 'TikTok Ads']);
+const eur = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
 
 function getPeriodDates(period: Period): { start: string; end: string; label: string } {
   const today = new Date();
@@ -49,14 +57,19 @@ function KpiCard({ label, value, sub, color }: { label: string; value: string | 
 export function StatsPage() {
   const [period, setPeriod] = useState<Period>('month');
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [marketingMetrics, setMarketingMetrics] = useState<MarketingCampaignMetric[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const { start, end } = getPeriodDates(period);
-      const data = await getReservationsForStats(start, end);
-      setReservations(data);
+      const [reservationData, metricData] = await Promise.all([
+        getReservationsForStats(start, end),
+        getMarketingCampaignMetrics(start, end),
+      ]);
+      setReservations(reservationData);
+      setMarketingMetrics(metricData);
     } catch (e) {
       console.error(e);
     } finally {
@@ -74,6 +87,32 @@ export function StatsPage() {
   const cancelled = reservations.filter(r => r.status === 'cancelled').length;
   const confirmRate = total > 0 ? Math.round((confirmed / total) * 100) : 0;
   const noShowRate  = total > 0 ? Math.round((cancelled / total) * 100) : 0;
+
+  let adSpend = 0;
+  let paidClicks = 0;
+  let impressions = 0;
+  let clicks = 0;
+  let sessions = 0;
+  let attributedRevenue = 0;
+  let paidRevenue = 0;
+  for (const metric of marketingMetrics) {
+    impressions += metric.impressions;
+    clicks += metric.clicks;
+    sessions += metric.sessions;
+    attributedRevenue += metric.revenue_eur;
+    if (PAID_METRIC_CHANNELS.has(metric.channel)) {
+      adSpend += metric.spend_eur;
+      paidClicks += metric.clicks;
+      paidRevenue += metric.revenue_eur;
+    }
+  }
+  const paidBookings = active.filter(reservation => PAID_BOOKING_CHANNELS.has(reservationChannel(reservation))).length;
+  const webBookings = active.filter(reservation => (reservation.source ?? 'online') === 'online').length;
+  const ctr = impressions > 0 ? (clicks / impressions) * 100 : null;
+  const cpc = paidClicks > 0 ? adSpend / paidClicks : null;
+  const costPerBooking = paidBookings > 0 ? adSpend / paidBookings : null;
+  const websiteConversionRate = sessions > 0 ? (webBookings / sessions) * 100 : null;
+  const roas = adSpend > 0 ? paidRevenue / adSpend : null;
 
   // Chart 1: reservations per day
   const byDay: Record<string, Record<string, number>> = {};
@@ -107,6 +146,19 @@ export function StatsPage() {
   }
   const pieData = Object.entries(occasionCounts).map(([name, value]) => ({ name, value }));
   const PIE_COLORS = ['#5C4033', '#D4AF37', '#9E4638', '#708D81', '#A3865B'];
+
+  const channelTotals = new Map<string, { bookings: number; guests: number }>();
+  for (const reservation of active) {
+    const channel = reservationChannel(reservation);
+    const current = channelTotals.get(channel) || { bookings: 0, guests: 0 };
+    current.bookings += 1;
+    current.guests += reservation.guests;
+    channelTotals.set(channel, current);
+  }
+  const channelData = [...channelTotals.entries()]
+    .map(([channel, values]) => ({ channel, ...values }))
+    .sort((a, b) => b.bookings - a.bookings);
+  const maxChannelBookings = Math.max(0, ...channelData.map(item => item.bookings));
 
   // Table: by day of week
   const DOW_LABELS = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
@@ -181,6 +233,54 @@ export function StatsPage() {
                 color="text-red-600 dark:text-red-400"
               />
             </div>
+
+            <div>
+              <div className="mb-4">
+                <h2 className="font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">Funnel marketing</h2>
+                <p className="mt-1 text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50">
+                  Dati campagna aggregati e prenotazioni attribuite nel periodo selezionato.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+                <KpiCard label="Spesa advertising" value={eur.format(adSpend)} sub="Google, Meta e TikTok Ads" />
+                <KpiCard label="Impression" value={impressions.toLocaleString('it-IT')} sub={ctr === null ? 'CTR non disponibile' : `CTR ${ctr.toFixed(1)}%`} />
+                <KpiCard label="Clic a pagamento" value={paidClicks.toLocaleString('it-IT')} sub={cpc === null ? 'CPC non disponibile' : `CPC ${eur.format(cpc)}`} />
+                <KpiCard label="Sessioni" value={sessions.toLocaleString('it-IT')} sub={websiteConversionRate === null ? 'Conversione non disponibile' : `Conversione ${websiteConversionRate.toFixed(1)}%`} />
+                <KpiCard label="Prenotazioni Ads" value={paidBookings} sub={costPerBooking === null ? 'Costo/prenotazione non disponibile' : `Costo/pren. ${eur.format(costPerBooking)}`} />
+                <KpiCard label="Ricavi registrati" value={eur.format(attributedRevenue)} sub={roas === null ? 'ROAS Ads non disponibile' : `ROAS Ads ${roas.toFixed(2)}×`} />
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-venetian-brown/50 rounded-xl shadow p-6">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-5">
+                <div>
+                  <h2 className="font-serif text-lg text-venetian-brown dark:text-venetian-sandstone">Prenotazioni per canale</h2>
+                  <p className="text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50 mt-1">Attribuzione last-touch da UTM e click ID, senza dati personali inviati alle piattaforme.</p>
+                </div>
+                <span className="text-xs text-venetian-brown/50 dark:text-venetian-sandstone/50">Escluse le cancellazioni</span>
+              </div>
+              {channelData.length === 0 ? (
+                <p className="text-center py-8 text-venetian-brown/50 dark:text-venetian-sandstone/50 text-sm">Nessun dato nel periodo selezionato</p>
+              ) : (
+                <div className="space-y-3">
+                  {channelData.map(item => (
+                    <div key={item.channel} className="grid grid-cols-[minmax(7rem,0.8fr)_minmax(7rem,2fr)_auto] items-center gap-3">
+                      <span className="text-sm text-venetian-brown/75 dark:text-venetian-sandstone/75 truncate" title={item.channel}>{item.channel}</span>
+                      <div className="h-2.5 rounded-full bg-venetian-brown/10 dark:bg-white/10 overflow-hidden">
+                        <div className="h-full rounded-full bg-venetian-gold" style={{ width: `${maxChannelBookings ? (item.bookings / maxChannelBookings) * 100 : 0}%` }} />
+                      </div>
+                      <span className="text-xs text-right text-venetian-brown/60 dark:text-venetian-sandstone/60 whitespace-nowrap">{item.bookings} pren. · {item.guests} ospiti</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <MarketingMetricsPanel
+              metrics={marketingMetrics}
+              defaultDate={getPeriodDates(period).end}
+              onChanged={loadData}
+            />
 
             {/* Chart 1: Daily bar chart */}
             <div className="bg-white dark:bg-venetian-brown/50 rounded-xl shadow p-6">

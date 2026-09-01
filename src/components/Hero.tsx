@@ -1,5 +1,4 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from './Button';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../lib/i18n';
@@ -108,13 +107,8 @@ export function Hero() {
             whileTap={{ scale: 0.95 }}
             className="w-full sm:w-auto"
           >
-            <Link to="/reserve" className="block">
-              <Button
-                size="lg"
-                className="w-full sm:w-auto bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90 shadow-lg shadow-venetian-gold/30 font-semibold px-8"
-              >
-                {t('hero.reserveButton')}
-              </Button>
+            <Link to="/book" className="inline-flex h-12 w-full sm:w-auto items-center justify-center rounded-xl bg-venetian-gold px-8 text-sm font-semibold text-[#4A3329] shadow-lg shadow-venetian-gold/30 transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              {t('hero.reserveButton')}
             </Link>
           </motion.div>
           <motion.div
@@ -122,14 +116,8 @@ export function Hero() {
             whileTap={{ scale: 0.95 }}
             className="w-full sm:w-auto"
           >
-            <Link to="/menu" className="block">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto border-2 border-venetian-sandstone/70 text-venetian-sandstone hover:bg-venetian-sandstone/10 px-8"
-              >
-                {t('hero.viewMenu')}
-              </Button>
+            <Link to="/menu" className="inline-flex h-12 w-full sm:w-auto items-center justify-center rounded-xl border-2 border-white/80 bg-venetian-brown/35 px-8 text-sm font-semibold text-white transition-colors hover:bg-venetian-brown/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              {t('hero.viewMenu')}
             </Link>
           </motion.div>
         </motion.div>

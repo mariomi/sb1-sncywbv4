@@ -1,0 +1,1 @@
+-- This production migration intentionally contained no schema changes.

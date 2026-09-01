@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Loader2, Bell, Users, Clock } from 'lucide-react';
 import { Button } from '../Button';
 import { cn } from '../../lib/utils';
@@ -31,11 +31,7 @@ export function WaitlistPanel({ date, time }: Props) {
   const [loading, setLoading] = useState(true);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadEntries();
-  }, [date, time]);
-
-  const loadEntries = async () => {
+  const loadEntries = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getWaitlistForSlot(date, time);
@@ -45,12 +41,16 @@ export function WaitlistPanel({ date, time }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [date, time]);
+
+  useEffect(() => {
+    loadEntries();
+  }, [loadEntries]);
 
   const handleNotify = async (entry: WaitlistEntry) => {
     setNotifyingId(entry.id);
     try {
-      await notifyWaitlistEntry(entry.id, entry);
+      await notifyWaitlistEntry(entry.id);
       toast.success(`Notifica inviata a ${entry.name}`);
       await loadEntries();
     } catch (error) {

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, Users, UtensilsCrossed, ChefHat, Wine, CalendarClock, AlertCircle, CheckCircle2, Loader2, Lock } from 'lucide-react';
+import { Calendar, Clock, Users, UtensilsCrossed, ChefHat, Phone, CalendarClock, AlertCircle, CheckCircle2, Loader2, Lock } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
 import { format } from 'date-fns';
@@ -10,7 +10,9 @@ import { getAvailableTimeSlots, createReservation, getClosedDates, joinWaitlist 
 import { useFeatureFlag } from '../lib/featureFlags';
 import type { ReservationFormData } from '../lib/validators';
 import { PageTransition } from '../components/PageTransition';
-import img2939 from '../Img/G1/IMG_2939.JPEG';
+import { useLanguage, type Language } from '../lib/i18n';
+import { trackEvent } from '../lib/analytics';
+import img2939 from '../Img/G1/IMG_2939.webp';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -54,8 +56,165 @@ const PHONE_PREFIXES = [
   { code: 'other', flag: '🌍', label: 'Altro / Other...' },
 ];
 
+type ReservationCopy = {
+  seoTitle: string;
+  seoDescription: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  detailsTitle: string;
+  suspendedTitle: string;
+  suspendedText: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  countryCode: string;
+  customPrefix: string;
+  phoneNumber: string;
+  guestsLabel: string;
+  guest: string;
+  guests: string;
+  date: string;
+  availableTimes: string;
+  noTimes: string;
+  waitlistFull: string;
+  waitlistPrompt: string;
+  waitlistJoining: string;
+  waitlistJoin: string;
+  waitlistSuccess: string;
+  waitlistContact: string;
+  occasion: string;
+  chooseOccasion: string;
+  occasions: Record<'birthday' | 'anniversary' | 'business' | 'date' | 'other', string>;
+  requests: string;
+  requestsPlaceholder: string;
+  privacyPrefix: string;
+  privacyLink: string;
+  privacySuffix: string;
+  marketing: string;
+  processing: string;
+  confirm: string;
+  policyTitle: string;
+  policyItems: string[];
+  importantTitle: string;
+  importantItems: string[];
+  helpTitle: string;
+  helpBody: string;
+  confirmationTitle: string;
+  confirmationThanks: string;
+  confirmationDetails: string;
+  nameLabel: string;
+  dateLabel: string;
+  timeLabel: string;
+  emailSent: string;
+  emailMissing: string;
+  returnHome: string;
+  errors: {
+    privacy: string;
+    unavailableDate: string;
+    closedDates: string;
+    slots: string;
+    unexpected: string;
+    waitlistContact: string;
+    waitlist: string;
+  };
+};
+
+const reservationCopy: Record<Language, ReservationCopy> = {
+  en: {
+    seoTitle: 'Book a Table', seoDescription: 'Book your table at Al Gobbo di Rialto in Venice. Live availability for lunch and dinner.',
+    heroTitle: 'Make a Reservation', heroSubtitle: 'Join us for an unforgettable dining experience', detailsTitle: 'Reservation Details',
+    suspendedTitle: 'Online reservations are temporarily paused', suspendedText: 'Please call us to reserve your table:',
+    fullName: 'Full Name', email: 'Email', phone: 'Phone Number', countryCode: 'Select country code *', customPrefix: '+00 custom prefix', phoneNumber: 'Number',
+    guestsLabel: 'Number of Guests', guest: 'Guest', guests: 'Guests', date: 'Date', availableTimes: 'Available Time Slots', noTimes: 'No available time slots for this date',
+    waitlistFull: 'This time is fully booked.', waitlistPrompt: 'Join the waitlist and we will contact you if a table becomes available.', waitlistJoining: 'Joining...', waitlistJoin: 'Yes, join the waitlist', waitlistSuccess: 'You are on the waitlist!', waitlistContact: 'We will contact you if a table becomes available for',
+    occasion: 'Occasion (Optional)', chooseOccasion: 'Select an occasion', occasions: { birthday: 'Birthday', anniversary: 'Anniversary', business: 'Business Dinner', date: 'Date Night', other: 'Other Special Occasion' },
+    requests: 'Special Requests (Optional)', requestsPlaceholder: 'Dietary restrictions, allergies, seating preferences...',
+    privacyPrefix: 'I have read and agree to the', privacyLink: 'Privacy Policy', privacySuffix: '. I understand how my personal data will be processed. *',
+    marketing: 'I would like to receive marketing communications about special offers, events and news. I can unsubscribe at any time.', processing: 'Processing...', confirm: 'Confirm Reservation',
+    policyTitle: 'Reservation Policy', policyItems: ['Reservations can be made up to 3 months in advance', 'For last-minute requests, call us if online times are unavailable', 'Large group bookings (9+ guests) require direct contact'],
+    importantTitle: 'Important Information', importantItems: ['Use the private link in your confirmation email to cancel', 'For same-day changes, please call +39 041 520 4603', 'Tell us about allergies or dietary requirements before ordering'],
+    helpTitle: 'Need help booking?', helpBody: 'Call the restaurant for groups of nine or more, same-day questions or accessibility needs.',
+    confirmationTitle: 'Reservation Confirmed!', confirmationThanks: 'Thank you for choosing Al Gobbo di Rialto. We look forward to welcoming you on', confirmationDetails: 'Reservation Details', nameLabel: 'Name', dateLabel: 'Date', timeLabel: 'Time', emailSent: 'A confirmation email has been sent to', emailMissing: 'Your table is reserved, but the email could not be delivered. Please call us if you need to change or cancel it.', returnHome: 'Return to Home',
+    errors: { privacy: 'Please accept the privacy policy to continue', unavailableDate: 'This date is not available for reservations', closedDates: 'Failed to load closed dates', slots: 'Failed to load available time slots', unexpected: 'An unexpected error occurred. Please try again later.', waitlistContact: 'Enter your name, email and phone number before joining the waitlist', waitlist: 'Could not join the waitlist. Please try again.' },
+  },
+  it: {
+    seoTitle: 'Prenota un Tavolo', seoDescription: 'Prenota il tuo tavolo da Al Gobbo di Rialto a Venezia. Disponibilità in tempo reale per pranzo e cena.',
+    heroTitle: 'Prenota un Tavolo', heroSubtitle: 'Vivi un’autentica esperienza veneziana', detailsTitle: 'Dettagli della Prenotazione',
+    suspendedTitle: 'Prenotazioni online temporaneamente sospese', suspendedText: 'Chiamaci per prenotare il tuo tavolo:',
+    fullName: 'Nome e Cognome', email: 'Email', phone: 'Numero di Telefono', countryCode: 'Seleziona il prefisso *', customPrefix: '+00 prefisso', phoneNumber: 'Numero',
+    guestsLabel: 'Numero di Ospiti', guest: 'Ospite', guests: 'Ospiti', date: 'Data', availableTimes: 'Orari Disponibili', noTimes: 'Nessun orario disponibile per questa data',
+    waitlistFull: 'Questo orario è esaurito.', waitlistPrompt: 'Iscriviti alla lista d’attesa: ti contatteremo se si libera un tavolo.', waitlistJoining: 'Iscrizione...', waitlistJoin: 'Sì, iscrivimi alla lista', waitlistSuccess: 'Sei in lista d’attesa!', waitlistContact: 'Ti contatteremo se si libera un tavolo per',
+    occasion: 'Occasione (Facoltativa)', chooseOccasion: 'Seleziona un’occasione', occasions: { birthday: 'Compleanno', anniversary: 'Anniversario', business: 'Cena di Lavoro', date: 'Cena Romantica', other: 'Altra Occasione Speciale' },
+    requests: 'Richieste Speciali (Facoltative)', requestsPlaceholder: 'Intolleranze, allergie, preferenze per il tavolo...',
+    privacyPrefix: 'Ho letto e accetto la', privacyLink: 'Privacy Policy', privacySuffix: '. Ho compreso come saranno trattati i miei dati personali. *',
+    marketing: 'Desidero ricevere comunicazioni su offerte, eventi e novità. Posso annullare l’iscrizione in qualsiasi momento.', processing: 'Invio in corso...', confirm: 'Conferma Prenotazione',
+    policyTitle: 'Politica di Prenotazione', policyItems: ['Puoi prenotare fino a 3 mesi in anticipo', 'Per richieste all’ultimo momento chiamaci se non trovi orari online', 'Per gruppi di 9 o più persone è necessario contattarci direttamente'],
+    importantTitle: 'Informazioni Importanti', importantItems: ['Per cancellare usa il link personale ricevuto via email', 'Per modifiche in giornata chiama il +39 041 520 4603', 'Segnalaci allergie o esigenze alimentari prima di ordinare'],
+    helpTitle: 'Serve aiuto?', helpBody: 'Chiamaci per gruppi di almeno nove persone, richieste in giornata o esigenze di accessibilità.',
+    confirmationTitle: 'Prenotazione Confermata!', confirmationThanks: 'Grazie per aver scelto Al Gobbo di Rialto. Ti aspettiamo il', confirmationDetails: 'Dettagli della Prenotazione', nameLabel: 'Nome', dateLabel: 'Data', timeLabel: 'Ora', emailSent: 'Abbiamo inviato un’email di conferma a', emailMissing: 'Il tavolo è prenotato, ma non è stato possibile consegnare l’email. Chiamaci per modifiche o cancellazioni.', returnHome: 'Torna alla Home',
+    errors: { privacy: 'Accetta la privacy policy per continuare', unavailableDate: 'Questa data non è disponibile', closedDates: 'Impossibile caricare i giorni di chiusura', slots: 'Impossibile caricare gli orari disponibili', unexpected: 'Si è verificato un errore. Riprova più tardi.', waitlistContact: 'Inserisci nome, email e telefono prima di iscriverti alla lista d’attesa', waitlist: 'Impossibile iscriversi alla lista d’attesa. Riprova.' },
+  },
+  fr: {
+    seoTitle: 'Réserver une Table', seoDescription: 'Réservez votre table à Al Gobbo di Rialto à Venise. Disponibilités en temps réel pour le déjeuner et le dîner.',
+    heroTitle: 'Réserver une Table', heroSubtitle: 'Vivez une expérience vénitienne inoubliable', detailsTitle: 'Détails de la Réservation',
+    suspendedTitle: 'Les réservations en ligne sont temporairement suspendues', suspendedText: 'Appelez-nous pour réserver votre table :',
+    fullName: 'Nom Complet', email: 'E-mail', phone: 'Téléphone', countryCode: 'Choisir l’indicatif *', customPrefix: '+00 indicatif', phoneNumber: 'Numéro',
+    guestsLabel: 'Nombre de Personnes', guest: 'Personne', guests: 'Personnes', date: 'Date', availableTimes: 'Horaires Disponibles', noTimes: 'Aucun horaire disponible à cette date',
+    waitlistFull: 'Cet horaire est complet.', waitlistPrompt: 'Inscrivez-vous sur liste d’attente ; nous vous contacterons si une table se libère.', waitlistJoining: 'Inscription...', waitlistJoin: 'Rejoindre la liste', waitlistSuccess: 'Vous êtes sur liste d’attente !', waitlistContact: 'Nous vous contacterons si une table se libère pour le',
+    occasion: 'Occasion (Facultatif)', chooseOccasion: 'Choisir une occasion', occasions: { birthday: 'Anniversaire', anniversary: 'Anniversaire de Mariage', business: 'Dîner d’Affaires', date: 'Dîner en Amoureux', other: 'Autre Occasion' },
+    requests: 'Demandes Spéciales (Facultatif)', requestsPlaceholder: 'Régime alimentaire, allergies, préférence de table...',
+    privacyPrefix: 'J’ai lu et j’accepte la', privacyLink: 'Politique de Confidentialité', privacySuffix: '. Je comprends comment mes données seront traitées. *',
+    marketing: 'Je souhaite recevoir des nouvelles sur les offres et événements. Je peux me désinscrire à tout moment.', processing: 'Traitement...', confirm: 'Confirmer la Réservation',
+    policyTitle: 'Conditions de Réservation', policyItems: ['Réservation possible jusqu’à 3 mois à l’avance', 'Pour une demande de dernière minute, appelez-nous si aucun horaire n’est disponible', 'Les groupes de 9 personnes ou plus doivent nous contacter'],
+    importantTitle: 'Informations Importantes', importantItems: ['Utilisez le lien personnel reçu par e-mail pour annuler', 'Pour une modification le jour même, appelez le +39 041 520 4603', 'Signalez toute allergie ou exigence alimentaire avant de commander'],
+    helpTitle: 'Besoin d’aide ?', helpBody: 'Appelez-nous pour les groupes de neuf personnes ou plus, les demandes du jour ou l’accessibilité.',
+    confirmationTitle: 'Réservation Confirmée !', confirmationThanks: 'Merci d’avoir choisi Al Gobbo di Rialto. Nous vous accueillerons le', confirmationDetails: 'Détails de la Réservation', nameLabel: 'Nom', dateLabel: 'Date', timeLabel: 'Heure', emailSent: 'Un e-mail de confirmation a été envoyé à', emailMissing: 'Votre table est réservée, mais l’e-mail n’a pas pu être remis. Appelez-nous pour toute modification ou annulation.', returnHome: 'Retour à l’Accueil',
+    errors: { privacy: 'Veuillez accepter la politique de confidentialité', unavailableDate: 'Cette date n’est pas disponible', closedDates: 'Impossible de charger les jours de fermeture', slots: 'Impossible de charger les horaires', unexpected: 'Une erreur est survenue. Réessayez plus tard.', waitlistContact: 'Saisissez votre nom, e-mail et téléphone avant de rejoindre la liste d’attente', waitlist: 'Impossible de rejoindre la liste d’attente. Réessayez.' },
+  },
+  de: {
+    seoTitle: 'Tisch Reservieren', seoDescription: 'Reservieren Sie Ihren Tisch im Al Gobbo di Rialto in Venedig. Live-Verfügbarkeit für Mittag- und Abendessen.',
+    heroTitle: 'Tisch Reservieren', heroSubtitle: 'Erleben Sie einen unvergesslichen Abend in Venedig', detailsTitle: 'Reservierungsdetails',
+    suspendedTitle: 'Online-Reservierungen sind vorübergehend pausiert', suspendedText: 'Rufen Sie uns für eine Reservierung an:',
+    fullName: 'Vollständiger Name', email: 'E-Mail', phone: 'Telefonnummer', countryCode: 'Ländervorwahl wählen *', customPrefix: '+00 Vorwahl', phoneNumber: 'Nummer',
+    guestsLabel: 'Anzahl der Gäste', guest: 'Gast', guests: 'Gäste', date: 'Datum', availableTimes: 'Verfügbare Uhrzeiten', noTimes: 'Für dieses Datum sind keine Uhrzeiten verfügbar',
+    waitlistFull: 'Diese Uhrzeit ist ausgebucht.', waitlistPrompt: 'Setzen Sie sich auf die Warteliste. Wir melden uns, wenn ein Tisch frei wird.', waitlistJoining: 'Wird eingetragen...', waitlistJoin: 'Auf die Warteliste', waitlistSuccess: 'Sie stehen auf der Warteliste!', waitlistContact: 'Wir melden uns, wenn ein Tisch frei wird für den',
+    occasion: 'Anlass (Optional)', chooseOccasion: 'Anlass auswählen', occasions: { birthday: 'Geburtstag', anniversary: 'Jahrestag', business: 'Geschäftsessen', date: 'Romantisches Dinner', other: 'Anderer Besonderer Anlass' },
+    requests: 'Besondere Wünsche (Optional)', requestsPlaceholder: 'Ernährungswünsche, Allergien, Sitzplatzwünsche...',
+    privacyPrefix: 'Ich habe die', privacyLink: 'Datenschutzerklärung', privacySuffix: ' gelesen und akzeptiert. Ich verstehe die Verarbeitung meiner Daten. *',
+    marketing: 'Ich möchte Neuigkeiten zu Angeboten und Veranstaltungen erhalten. Eine Abmeldung ist jederzeit möglich.', processing: 'Wird verarbeitet...', confirm: 'Reservierung Bestätigen',
+    policyTitle: 'Reservierungsbedingungen', policyItems: ['Reservierungen sind bis zu 3 Monate im Voraus möglich', 'Rufen Sie uns kurzfristig an, wenn online keine Uhrzeit verfügbar ist', 'Gruppen ab 9 Personen müssen uns direkt kontaktieren'],
+    importantTitle: 'Wichtige Informationen', importantItems: ['Zum Stornieren den persönlichen Link aus der E-Mail verwenden', 'Für Änderungen am selben Tag: +39 041 520 4603', 'Bitte Allergien oder Ernährungswünsche vor der Bestellung mitteilen'],
+    helpTitle: 'Hilfe bei der Reservierung?', helpBody: 'Rufen Sie uns bei Gruppen ab neun Personen, kurzfristigen Fragen oder Barrierefreiheitsbedarf an.',
+    confirmationTitle: 'Reservierung Bestätigt!', confirmationThanks: 'Vielen Dank, dass Sie Al Gobbo di Rialto gewählt haben. Wir erwarten Sie am', confirmationDetails: 'Reservierungsdetails', nameLabel: 'Name', dateLabel: 'Datum', timeLabel: 'Uhrzeit', emailSent: 'Eine Bestätigungs-E-Mail wurde gesendet an', emailMissing: 'Ihr Tisch ist reserviert, aber die E-Mail konnte nicht zugestellt werden. Bitte rufen Sie uns für Änderungen oder Stornierungen an.', returnHome: 'Zur Startseite',
+    errors: { privacy: 'Bitte akzeptieren Sie die Datenschutzerklärung', unavailableDate: 'Dieses Datum ist nicht verfügbar', closedDates: 'Schließtage konnten nicht geladen werden', slots: 'Verfügbare Uhrzeiten konnten nicht geladen werden', unexpected: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.', waitlistContact: 'Geben Sie Name, E-Mail und Telefonnummer ein, bevor Sie sich auf die Warteliste setzen', waitlist: 'Die Warteliste konnte nicht aktualisiert werden. Bitte erneut versuchen.' },
+  },
+  es: {
+    seoTitle: 'Reservar una Mesa', seoDescription: 'Reserva tu mesa en Al Gobbo di Rialto, Venecia. Disponibilidad en tiempo real para almuerzo y cena.',
+    heroTitle: 'Reservar una Mesa', heroSubtitle: 'Disfruta de una experiencia veneciana inolvidable', detailsTitle: 'Datos de la Reserva',
+    suspendedTitle: 'Las reservas online están temporalmente pausadas', suspendedText: 'Llámanos para reservar tu mesa:',
+    fullName: 'Nombre Completo', email: 'Correo Electrónico', phone: 'Teléfono', countryCode: 'Selecciona el prefijo *', customPrefix: '+00 prefijo', phoneNumber: 'Número',
+    guestsLabel: 'Número de Personas', guest: 'Persona', guests: 'Personas', date: 'Fecha', availableTimes: 'Horarios Disponibles', noTimes: 'No hay horarios disponibles para esta fecha',
+    waitlistFull: 'Este horario está completo.', waitlistPrompt: 'Únete a la lista de espera y te avisaremos si queda una mesa libre.', waitlistJoining: 'Inscribiendo...', waitlistJoin: 'Unirme a la lista', waitlistSuccess: '¡Estás en la lista de espera!', waitlistContact: 'Te contactaremos si queda una mesa libre para el',
+    occasion: 'Ocasión (Opcional)', chooseOccasion: 'Selecciona una ocasión', occasions: { birthday: 'Cumpleaños', anniversary: 'Aniversario', business: 'Cena de Negocios', date: 'Cena Romántica', other: 'Otra Ocasión Especial' },
+    requests: 'Peticiones Especiales (Opcional)', requestsPlaceholder: 'Restricciones alimentarias, alergias, preferencia de mesa...',
+    privacyPrefix: 'He leído y acepto la', privacyLink: 'Política de Privacidad', privacySuffix: '. Entiendo cómo se tratarán mis datos personales. *',
+    marketing: 'Deseo recibir noticias sobre ofertas y eventos. Puedo darme de baja en cualquier momento.', processing: 'Procesando...', confirm: 'Confirmar Reserva',
+    policyTitle: 'Política de Reservas', policyItems: ['Puedes reservar con hasta 3 meses de antelación', 'Para peticiones de última hora, llámanos si no hay horarios online', 'Los grupos de 9 o más personas deben contactar directamente'],
+    importantTitle: 'Información Importante', importantItems: ['Usa el enlace personal del correo de confirmación para cancelar', 'Para cambios el mismo día, llama al +39 041 520 4603', 'Informa de alergias o necesidades alimentarias antes de pedir'],
+    helpTitle: '¿Necesitas ayuda?', helpBody: 'Llámanos para grupos de nueve o más personas, dudas del mismo día o necesidades de accesibilidad.',
+    confirmationTitle: '¡Reserva Confirmada!', confirmationThanks: 'Gracias por elegir Al Gobbo di Rialto. Te esperamos el', confirmationDetails: 'Datos de la Reserva', nameLabel: 'Nombre', dateLabel: 'Fecha', timeLabel: 'Hora', emailSent: 'Hemos enviado un correo de confirmación a', emailMissing: 'Tu mesa está reservada, pero no se pudo entregar el correo. Llámanos para cambios o cancelaciones.', returnHome: 'Volver al Inicio',
+    errors: { privacy: 'Acepta la política de privacidad para continuar', unavailableDate: 'Esta fecha no está disponible', closedDates: 'No se pudieron cargar los días de cierre', slots: 'No se pudieron cargar los horarios', unexpected: 'Se produjo un error. Inténtalo más tarde.', waitlistContact: 'Introduce nombre, correo y teléfono antes de unirte a la lista de espera', waitlist: 'No se pudo completar la inscripción. Inténtalo de nuevo.' },
+  },
+};
+
+const dateLocales: Record<Language, string> = {
+  en: 'en-GB', it: 'it-IT', fr: 'fr-FR', de: 'de-DE', es: 'es-ES',
+};
+
 export function ReservePage() {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const copy = reservationCopy[language];
   const waitlistEnabled = useFeatureFlag('waitlist');
   const onlineReservationsEnabled = useFeatureFlag('online_reservations');
   const [formData, setFormData] = useState<ReservationFormData>({
@@ -75,13 +234,50 @@ export function ReservePage() {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
   const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(false);
   const [closedDates, setClosedDates] = useState<string[]>([]);
+  const [closedDatesLoaded, setClosedDatesLoaded] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [showWaitlistBanner, setShowWaitlistBanner] = useState(false);
   const [isJoiningWaitlist, setIsJoiningWaitlist] = useState(false);
   const [waitlistSuccess, setWaitlistSuccess] = useState(false);
+  const displayDate = formData.date
+    ? new Date(`${formData.date}T12:00:00Z`).toLocaleDateString(dateLocales[language], {
+        timeZone: 'Europe/Rome',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : '';
+
+  const fetchClosedDates = useCallback(async () => {
+    try {
+      const dates = await getClosedDates();
+      setClosedDates(dates.map(d => d.date));
+    } catch (error) {
+      console.error('Error fetching closed dates:', error);
+      toast.error(copy.errors.closedDates);
+    } finally {
+      setClosedDatesLoaded(true);
+    }
+  }, [copy.errors.closedDates]);
+
+  const loadTimeSlots = useCallback(async (date: string) => {
+    setIsLoadingTimeSlots(true);
+    setShowWaitlistBanner(false);
+    setWaitlistSuccess(false);
+    try {
+      const slots = await getAvailableTimeSlots(date);
+      setTimeSlots(slots);
+    } catch (error) {
+      console.error('Error loading time slots:', error);
+      toast.error(copy.errors.slots);
+    } finally {
+      setIsLoadingTimeSlots(false);
+    }
+  }, [copy.errors.slots]);
 
   // Keep formData.phone in sync whenever prefix or number changes
   useEffect(() => {
@@ -89,64 +285,57 @@ export function ReservePage() {
     setFormData(prev => ({ ...prev, phone: prefix && phoneNumber ? `${prefix} ${phoneNumber}` : '' }));
   }, [phonePrefix, phoneNumber, customPrefix]);
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
   const maxDate = new Date();
   maxDate.setMonth(maxDate.getMonth() + 3);
-  const maxDateString = maxDate.toISOString().split('T')[0];
+  const maxDateString = format(maxDate, 'yyyy-MM-dd');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedDate = params.get('date') || '';
+    const requestedTime = params.get('time') || '';
+    const dateIsValid = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+      && requestedDate >= today
+      && requestedDate <= maxDateString;
+    const timeIsValid = /^([01]\d|2[0-3]):[0-5]\d$/.test(requestedTime);
+
+    if (dateIsValid) {
+      setFormData(previous => ({
+        ...previous,
+        date: requestedDate,
+        time: timeIsValid ? requestedTime : previous.time,
+      }));
+    }
+  }, [maxDateString, today]);
 
   useEffect(() => {
     fetchClosedDates();
-  }, []);
+  }, [fetchClosedDates]);
 
   useEffect(() => {
-    if (formData.date) {
+    if (formData.date && closedDatesLoaded) {
       if (closedDates.includes(formData.date)) {
-        toast.error('This date is not available for reservations', {
+        toast.error(copy.errors.unavailableDate, {
           icon: <Lock className="text-red-500" />,
           duration: 4000
         });
         setFormData(prev => ({ ...prev, date: '', time: '' }));
         return;
       }
-      loadTimeSlots();
+      loadTimeSlots(formData.date);
     }
-  }, [formData.date, closedDates]);
-
-  const fetchClosedDates = async () => {
-    try {
-      const dates = await getClosedDates();
-      setClosedDates(dates.map(d => d.date));
-    } catch (error) {
-      console.error('Error fetching closed dates:', error);
-      toast.error('Failed to load closed dates');
-    }
-  };
-
-  const loadTimeSlots = async () => {
-    setIsLoadingTimeSlots(true);
-    setShowWaitlistBanner(false);
-    setWaitlistSuccess(false);
-    try {
-      const slots = await getAvailableTimeSlots(formData.date);
-      setTimeSlots(slots);
-    } catch (error) {
-      console.error('Error loading time slots:', error);
-      toast.error('Failed to load available time slots');
-    } finally {
-      setIsLoadingTimeSlots(false);
-    }
-  };
+  }, [closedDates, closedDatesLoaded, copy.errors.unavailableDate, formData.date, loadTimeSlots]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!privacyConsent) {
-      toast.error('Please accept the privacy policy to continue');
+      toast.error(copy.errors.privacy);
       return;
     }
 
     if (closedDates.includes(formData.date)) {
-      toast.error('This date is not available for reservations', {
+      toast.error(copy.errors.unavailableDate, {
         icon: <Lock className="text-red-500" />,
         duration: 4000
       });
@@ -154,6 +343,7 @@ export function ReservePage() {
     }
 
     setIsLoading(true);
+    trackEvent('booking_started', { guests: formData.guests });
 
     try {
       const reservationData = {
@@ -161,8 +351,12 @@ export function ReservePage() {
         marketing_consent: marketingConsent
       };
 
-      console.log('Submitting reservation with data:', reservationData);
-      await createReservation(reservationData);
+      const reservation = await createReservation(reservationData, language);
+      setConfirmationEmailSent(reservation.confirmation_email_sent);
+      trackEvent('booking_completed', {
+        reservation_id: reservation.id,
+        guests: formData.guests,
+      });
       setShowConfirmation(true);
       setShowWaitlistBanner(false);
     } catch (error) {
@@ -183,7 +377,7 @@ export function ReservePage() {
           });
         }
       } else {
-        toast.error('An unexpected error occurred. Please try again later.', {
+        toast.error(copy.errors.unexpected, {
           duration: 5000,
           icon: <AlertCircle className="text-red-500" />
         });
@@ -200,7 +394,7 @@ export function ReservePage() {
 
   const handleJoinWaitlist = async () => {
     if (!formData.name || !formData.email || !formData.phone) {
-      toast.error('Compila nome, email e telefono prima di iscriverti alla lista d\'attesa');
+      toast.error(copy.errors.waitlistContact);
       return;
     }
     setIsJoiningWaitlist(true);
@@ -219,7 +413,7 @@ export function ReservePage() {
       setShowWaitlistBanner(false);
     } catch (error) {
       console.error('Waitlist error:', error);
-      toast.error('Errore nell\'iscrizione alla lista d\'attesa. Riprova.');
+      toast.error(copy.errors.waitlist);
     } finally {
       setIsJoiningWaitlist(false);
     }
@@ -236,9 +430,10 @@ export function ReservePage() {
   return (
     <PageTransition>
       <SEOHead
-        title="Prenota un Tavolo"
-        canonical="/reserve"
-        description="Prenota il tuo tavolo al Ristorante Al Gobbo di Rialto a Venezia. Disponibilità in tempo reale, pranzo e cena. Prenotazione online semplice e veloce."
+        title={copy.seoTitle}
+        canonical="/book"
+        availableLanguages={['en', 'it', 'fr', 'de', 'es']}
+        description={copy.seoDescription}
       />
       <div className="min-h-screen bg-venetian-sandstone/20 pt-20 sm:pt-24">
         {/* Hero Section */}
@@ -261,7 +456,7 @@ export function ReservePage() {
                 className="text-3xl sm:text-5xl lg:text-6xl font-serif text-white mb-2 sm:mb-4"
                 {...fadeIn}
               >
-                Make a Reservation
+                {copy.heroTitle}
               </motion.h1>
               <motion.p
                 className="text-base sm:text-xl text-venetian-sandstone"
@@ -269,7 +464,7 @@ export function ReservePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                Join us for an unforgettable dining experience
+                {copy.heroSubtitle}
               </motion.p>
             </div>
           </div>
@@ -285,12 +480,12 @@ export function ReservePage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-2xl sm:text-3xl font-serif text-venetian-brown mb-4 sm:mb-6">Reservation Details</h2>
+              <h2 className="text-2xl sm:text-3xl font-serif text-venetian-brown mb-4 sm:mb-6">{copy.detailsTitle}</h2>
               {!onlineReservationsEnabled ? (
                 <div className="p-6 rounded-xl bg-amber-50 border border-amber-200 text-center">
-                  <p className="text-venetian-brown font-semibold mb-1">Prenotazioni temporaneamente sospese</p>
+                  <p className="text-venetian-brown font-semibold mb-1">{copy.suspendedTitle}</p>
                   <p className="text-venetian-brown/70 text-sm">
-                    Le prenotazioni online sono temporaneamente sospese. Chiamaci al{' '}
+                    {copy.suspendedText}{' '}
                     <a href="tel:+390415204603" className="text-venetian-gold hover:underline font-medium">+39 041 520 4603</a>
                   </p>
                 </div>
@@ -299,11 +494,13 @@ export function ReservePage() {
                 {/* Personal Information */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                      Full Name
+                    <label htmlFor="reservation-name" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
+                      {copy.fullName}
                     </label>
                     <input
+                      id="reservation-name"
                       type="text"
+                      autoComplete="name"
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
@@ -311,11 +508,13 @@ export function ReservePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                      Email
+                    <label htmlFor="reservation-email" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
+                      {copy.email}
                     </label>
                     <input
+                      id="reservation-email"
                       type="email"
+                      autoComplete="email"
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
@@ -326,9 +525,9 @@ export function ReservePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                      Phone Number
-                    </label>
+                    <p className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
+                      {copy.phone}
+                    </p>
                     <div className="flex flex-col gap-2">
                       {/* Prefix selector */}
                       <select
@@ -338,10 +537,10 @@ export function ReservePage() {
                           if (e.target.value !== 'other') setCustomPrefix('');
                         }}
                         className="w-full px-3 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base text-venetian-brown/80 cursor-pointer"
-                        aria-label="Country code"
+                        aria-label={copy.countryCode}
                         required
                       >
-                        <option value="" disabled>🌍 Select country code *</option>
+                        <option value="" disabled>🌍 {copy.countryCode}</option>
                         {PHONE_PREFIXES.map((p) => (
                           <option key={p.code} value={p.code}>
                             {p.flag} {p.label}
@@ -354,7 +553,8 @@ export function ReservePage() {
                           type="text"
                           value={customPrefix}
                           onChange={(e) => setCustomPrefix(e.target.value.replace(/[^0-9+]/g, ''))}
-                          placeholder="+00 custom prefix"
+                          placeholder={copy.customPrefix}
+                          aria-label={copy.customPrefix}
                           className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                           maxLength={7}
                           required
@@ -367,10 +567,13 @@ export function ReservePage() {
                             {phonePrefix === 'other' ? (customPrefix || '?') : phonePrefix}
                           </span>
                           <input
+                            id="reservation-phone"
                             type="tel"
+                            autoComplete="tel-national"
+                            aria-label={copy.phone}
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9\s-]/g, ''))}
-                            placeholder="Number"
+                            placeholder={copy.phoneNumber}
                             className="flex-1 px-4 py-3 bg-transparent focus:outline-none text-base min-w-0"
                             required
                           />
@@ -379,11 +582,12 @@ export function ReservePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
+                    <label htmlFor="reservation-guests" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                       <Users className="w-4 h-4 inline-block mr-2" />
-                      Number of Guests
+                      {copy.guestsLabel}
                     </label>
                     <select
+                      id="reservation-guests"
                       value={formData.guests}
                       onChange={(e) => setFormData(prev => ({ ...prev, guests: Number(e.target.value) }))}
                       className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
@@ -391,7 +595,7 @@ export function ReservePage() {
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                         <option key={num} value={num}>
-                          {num} {num === 1 ? 'Guest' : 'Guests'}
+                          {num} {num === 1 ? copy.guest : copy.guests}
                         </option>
                       ))}
                     </select>
@@ -400,11 +604,12 @@ export function ReservePage() {
 
                 {/* Date & Time Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
+                  <label htmlFor="reservation-date" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                     <Calendar className="w-4 h-4 inline-block mr-2" />
-                    Date
+                    {copy.date}
                   </label>
                   <input
+                    id="reservation-date"
                     type="date"
                     min={today}
                     max={maxDateString}
@@ -417,18 +622,18 @@ export function ReservePage() {
 
                 {/* Time Slots */}
                 {formData.date && (
-                  <div>
-                    <label className="block text-sm font-medium text-venetian-brown/80 mb-3">
+                  <fieldset>
+                    <legend className="block text-sm font-medium text-venetian-brown/80 mb-3">
                       <Clock className="w-4 h-4 inline-block mr-2" />
-                      Available Time Slots
-                    </label>
+                      {copy.availableTimes}
+                    </legend>
                     {isLoadingTimeSlots ? (
                       <div className="flex items-center justify-center py-4">
                         <Loader2 className="w-6 h-6 text-venetian-brown animate-spin" />
                       </div>
                     ) : timeSlots.length === 0 ? (
                       <p className="text-venetian-brown/70 text-center py-4">
-                        No available time slots for this date
+                        {copy.noTimes}
                       </p>
                     ) : (
                       <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 gap-2">
@@ -438,6 +643,7 @@ export function ReservePage() {
                             type="button"
                             disabled={!slot.available}
                             onClick={() => setFormData(prev => ({ ...prev, time: slot.time }))}
+                            aria-pressed={formData.time === slot.time}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${formData.time === slot.time
                                 ? 'bg-venetian-gold text-venetian-brown'
                                 : slot.available
@@ -452,36 +658,7 @@ export function ReservePage() {
                         ))}
                       </div>
                     )}
-                    {/* New Year's Eve Warning */}
-                    {formData.date === '2025-12-31' && formData.time && formData.time >= '19:00' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg my-6"
-                      >
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0">
-                            <AlertCircle className="h-5 w-5 text-amber-500" />
-                          </div>
-                          <div className="ml-3">
-                            <h3 className="text-sm font-medium text-amber-800">
-                              Special Event Notice / Avviso Evento Speciale
-                            </h3>
-                            <div className="mt-2 text-sm text-amber-700 space-y-2">
-                              <p>
-                                <strong>English:</strong> For reservations on December 31, 2025 from 7:00 PM onwards,
-                                a minimum spend of <strong>€80 per person</strong> is required.
-                              </p>
-                              <p>
-                                <strong>Italiano:</strong> Per le prenotazioni del 31 Dicembre 2025 dalle ore 19:00 in poi,
-                                è richiesta una spesa minima di <strong>80€ a persona</strong>.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
+                  </fieldset>
                 )}
 
                 {/* Waitlist banner */}
@@ -497,10 +674,10 @@ export function ReservePage() {
                         <AlertCircle className="w-5 h-5 text-venetian-gold mt-0.5 shrink-0" />
                         <div className="flex-1">
                           <p className="font-medium text-venetian-brown text-sm">
-                            Questo orario è esaurito.
+                            {copy.waitlistFull}
                           </p>
                           <p className="text-sm text-venetian-brown/80 mt-1">
-                            Vuoi metterti in lista d'attesa? Ti contatteremo se si libera un posto.
+                            {copy.waitlistPrompt}
                           </p>
                           <button
                             type="button"
@@ -509,9 +686,9 @@ export function ReservePage() {
                             className="mt-3 px-4 py-2 bg-venetian-gold text-venetian-brown text-sm font-medium rounded-lg hover:bg-venetian-gold/90 transition-colors disabled:opacity-50 flex items-center gap-2"
                           >
                             {isJoiningWaitlist ? (
-                              <><Loader2 size={14} className="animate-spin" /> Iscrizione...</>
+                              <><Loader2 size={14} className="animate-spin" /> {copy.waitlistJoining}</>
                             ) : (
-                              'Sì, mettimi in lista d\'attesa'
+                              copy.waitlistJoin
                             )}
                           </button>
                         </div>
@@ -528,10 +705,10 @@ export function ReservePage() {
                         <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
                         <div>
                           <p className="font-medium text-green-800 text-sm">
-                            Sei in lista d'attesa!
+                            {copy.waitlistSuccess}
                           </p>
                           <p className="text-sm text-green-700 mt-1">
-                            Ti contatteremo appena si libera un posto per {formData.date} alle {formData.time.slice(0, 5)}.
+                            {copy.waitlistContact} {displayDate} {copy.timeLabel.toLowerCase()} {formData.time.slice(0, 5)}.
                           </p>
                         </div>
                       </div>
@@ -541,34 +718,34 @@ export function ReservePage() {
 
                 {/* Additional Information */}
                 <div>
-                  <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
+                  <label htmlFor="reservation-occasion" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                     <ChefHat className="w-4 h-4 inline-block mr-2" />
-                    Occasion (Optional)
+                    {copy.occasion}
                   </label>
                   <select
+                    id="reservation-occasion"
                     value={formData.occasion || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, occasion: e.target.value }))}
                     className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                   >
-                    <option value="">Select an occasion</option>
-                    <option value="birthday">Birthday</option>
-                    <option value="anniversary">Anniversary</option>
-                    <option value="business">Business Dinner</option>
-                    <option value="date">Date Night</option>
-                    <option value="other">Other Special Occasion</option>
+                    <option value="">{copy.chooseOccasion}</option>
+                    {Object.entries(copy.occasions).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
+                  <label htmlFor="reservation-requests" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
                     <UtensilsCrossed className="w-4 h-4 inline-block mr-2" />
-                    Special Requests (Optional)
+                    {copy.requests}
                   </label>
                   <textarea
+                    id="reservation-requests"
                     value={formData.special_requests || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, special_requests: e.target.value }))}
                     rows={3}
-                    placeholder="Dietary restrictions, allergies, seating preferences..."
+                    placeholder={copy.requestsPlaceholder}
                     className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
                   />
                 </div>
@@ -583,12 +760,12 @@ export function ReservePage() {
                       className="mt-1"
                       required
                     />
-                    <label htmlFor="privacyConsent" className="text-sm text-venetian-brown/70">
-                      I have read and agree to the{' '}
-                      <a href="/privacy" target="_blank" className="text-venetian-gold hover:underline">
-                        Privacy Policy
+                    <label htmlFor="privacyConsent" className="text-sm text-venetian-brown/90">
+                      {copy.privacyPrefix}{' '}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-2">
+                        {copy.privacyLink}
                       </a>
-                      . I understand how my personal data will be processed. *
+                      {copy.privacySuffix}
                     </label>
                   </div>
 
@@ -600,9 +777,8 @@ export function ReservePage() {
                       onChange={(e) => setMarketingConsent(e.target.checked)}
                       className="mt-1"
                     />
-                    <label htmlFor="marketingConsent" className="text-sm text-venetian-brown/70">
-                      I would like to receive marketing communications about special offers, events, and news.
-                      You can unsubscribe at any time.
+                    <label htmlFor="marketingConsent" className="text-sm text-venetian-brown/90">
+                      {copy.marketing}
                     </label>
                   </div>
                 </div>
@@ -614,16 +790,16 @@ export function ReservePage() {
                 >
                   <Button
                     type="submit"
-                    className="w-full bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
+                    className="w-full bg-venetian-gold text-[#4A3329] font-semibold hover:bg-venetian-gold/90"
                     disabled={isLoading || closedDates.includes(formData.date)}
                   >
                     {isLoading ? (
                       <span className="flex items-center justify-center">
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Processing...
+                        {copy.processing}
                       </span>
                     ) : (
-                      'Confirm Reservation'
+                      copy.confirm
                     )}
                   </Button>
                 </motion.div>
@@ -642,21 +818,15 @@ export function ReservePage() {
               <div className="bg-white/95 rounded-2xl shadow-lg p-4 sm:p-6">
                 <h3 className="text-xl font-serif text-venetian-brown mb-4 flex items-center">
                   <CalendarClock className="w-5 h-5 mr-2 text-venetian-gold" />
-                  Reservation Policy
+                  {copy.policyTitle}
                 </h3>
-                <ul className="space-y-3 text-venetian-brown/70">
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-venetian-gold" />
-                    Reservations can be made up to 3 months in advance
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-venetian-gold" />
-                    For same-day reservations, please call us directly
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-venetian-gold" />
-                    Large group bookings (9+ guests) require direct contact
-                  </li>
+                <ul className="space-y-3 text-venetian-brown/90">
+                  {copy.policyItems.map(item => (
+                    <li key={item} className="flex items-start">
+                      <span className="w-1.5 h-1.5 mt-2 mr-2 rounded-full bg-venetian-gold" />
+                      {item}
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -664,36 +834,28 @@ export function ReservePage() {
               <div className="bg-white/95 rounded-2xl shadow-lg p-4 sm:p-6">
                 <h3 className="text-lg sm:text-xl font-serif text-venetian-brown mb-3 flex items-center">
                   <AlertCircle className="w-5 h-5 mr-2 text-venetian-gold" />
-                  Important Information
+                  {copy.importantTitle}
                 </h3>
-                <ul className="space-y-2 text-sm text-venetian-brown/70">
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-1.5 mr-2 shrink-0 rounded-full bg-venetian-gold" />
-                    Tables are held for 15 minutes after reservation time
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-1.5 mr-2 shrink-0 rounded-full bg-venetian-gold" />
-                    Cancellations must be made at least 24 hours in advance
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-1.5 h-1.5 mt-1.5 mr-2 shrink-0 rounded-full bg-venetian-gold" />
-                    Smart casual dress code is required
-                  </li>
+                <ul className="space-y-2 text-sm text-venetian-brown/90">
+                  {copy.importantItems.map(item => (
+                    <li key={item} className="flex items-start">
+                      <span className="w-1.5 h-1.5 mt-1.5 mr-2 shrink-0 rounded-full bg-venetian-gold" />
+                      {item}
+                    </li>
+                  ))}
                 </ul>
               </div>
 
-              {/* Featured */}
-              <div className="bg-venetian-brown/90 rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+              {/* Direct assistance */}
+              <div className="bg-venetian-brown rounded-2xl shadow-lg p-4 sm:p-6 text-white">
                 <h3 className="text-lg sm:text-xl font-serif mb-3 flex items-center">
-                  <Wine className="w-5 h-5 mr-2 text-venetian-gold" />
-                  Chef's Recommendation
+                  <Phone className="w-5 h-5 mr-2 text-venetian-gold" />
+                  {copy.helpTitle}
                 </h3>
-                <p className="text-sm text-venetian-sandstone/90 mb-3">
-                  Join us for our special "Taste of Venice" tasting menu, available every evening with wine pairings.
+                <p className="text-sm text-venetian-sandstone mb-3">
+                  {copy.helpBody}
                 </p>
-                <p className="text-xs text-venetian-sandstone/70">
-                  Please note in special requests if you're interested in the tasting menu.
-                </p>
+                <a href="tel:+390415204603" className="text-sm font-semibold text-white underline decoration-venetian-gold decoration-2 underline-offset-4">+39 041 520 4603</a>
               </div>
             </motion.div>
           </div>
@@ -704,12 +866,16 @@ export function ReservePage() {
           {showConfirmation && (
             <motion.div
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+              role="presentation"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <motion.div
                 className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-3 overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="reservation-confirmation-title"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
@@ -722,24 +888,25 @@ export function ReservePage() {
                   >
                     <CheckCircle2 className="w-16 h-16 mx-auto text-green-500 mb-4" />
                   </motion.div>
-                  <h3 className="text-2xl font-serif text-venetian-brown mb-2">
-                    Reservation Confirmed!
+                  <h3 id="reservation-confirmation-title" className="text-2xl font-serif text-venetian-brown mb-2">
+                    {copy.confirmationTitle}
                   </h3>
                   <p className="text-venetian-brown/70 mb-6">
-                    Thank you for choosing Al Gobbo di Rialto. We look forward to serving you on{' '}
-                    {format(new Date(formData.date), 'MMMM d, yyyy')} at {formData.time.slice(0, 5)}.
+                    {copy.confirmationThanks} {displayDate} {copy.timeLabel.toLowerCase()} {formData.time.slice(0, 5)}.
                   </p>
                   <div className="bg-venetian-brown/5 rounded-lg p-4 mb-6">
-                    <h4 className="font-medium text-venetian-brown mb-2">Reservation Details</h4>
+                    <h4 className="font-medium text-venetian-brown mb-2">{copy.confirmationDetails}</h4>
                     <ul className="space-y-2 text-sm text-venetian-brown/70">
-                      <li>Name: {formData.name}</li>
-                      <li>Guests: {formData.guests}</li>
-                      <li>Date: {format(new Date(formData.date), 'MMMM d, yyyy')}</li>
-                      <li>Time: {formData.time.slice(0, 5)}</li>
+                      <li>{copy.nameLabel}: {formData.name}</li>
+                      <li>{copy.guestsLabel}: {formData.guests}</li>
+                      <li>{copy.dateLabel}: {displayDate}</li>
+                      <li>{copy.timeLabel}: {formData.time.slice(0, 5)}</li>
                     </ul>
                   </div>
-                  <p className="text-sm text-venetian-brown/60 mb-6">
-                    A confirmation email has been sent to {formData.email}
+                  <p className="text-sm text-venetian-brown/80 mb-6">
+                    {confirmationEmailSent
+                      ? `${copy.emailSent} ${formData.email}.`
+                      : copy.emailMissing}
                   </p>
                   <motion.div
                     whileHover={{ scale: 1.02 }}
@@ -749,7 +916,7 @@ export function ReservePage() {
                       onClick={handleConfirmationClose}
                       className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
                     >
-                      Return to Home
+                      {copy.returnHome}
                     </Button>
                   </motion.div>
                 </div>

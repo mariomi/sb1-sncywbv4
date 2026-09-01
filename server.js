@@ -2,14 +2,99 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
+import { z } from 'zod';
 
 dotenv.config();
 
 const app = express();
-app.use(express.json());
-app.use(cors());
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
+app.use(express.json({ limit: '20kb' }));
 
-const resend = new Resend(process.env.VITE_RESEND_API_KEY);
+const allowedOrigins = new Set(
+  (process.env.ALLOWED_ORIGINS || 'https://www.ristorantealgobbodirialto.it,http://localhost:5173,http://127.0.0.1:5173')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean),
+);
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error('Origin not allowed'));
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400,
+}));
+
+app.use((_req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'no-referrer',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  });
+  next();
+});
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabase = supabaseUrl && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+  : null;
+const siteUrl = (process.env.SITE_URL || process.env.VITE_SITE_URL || 'https://www.ristorantealgobbodirialto.it').replace(/\/$/, '');
+const reservationsEmail = process.env.RESERVATIONS_EMAIL || 'reservations@ristorantealgobbodirialto.it';
+
+const rateBuckets = new Map();
+
+function rateLimit({ windowMs, max }) {
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = `${req.ip}:${req.path}`;
+    const bucket = rateBuckets.get(key);
+
+    if (!bucket || bucket.resetAt <= now) {
+      rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+
+    bucket.count += 1;
+    if (bucket.count > max) {
+      res.set('Retry-After', String(Math.ceil((bucket.resetAt - now) / 1000)));
+      return res.status(429).json({ success: false, error: 'Troppe richieste. Riprova più tardi.' });
+    }
+    return next();
+  };
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function safeHeader(value) {
+  return String(value ?? '').replace(/[\r\n]+/g, ' ').slice(0, 160);
+}
+
+function requireServices(res) {
+  if (resend && supabase) return true;
+  res.status(503).json({ success: false, error: 'Servizio temporaneamente non disponibile' });
+  return false;
+}
+
+async function deliverEmail(payload) {
+  const { error } = await resend.emails.send(payload);
+  if (error) throw new Error(error.message || 'Email provider error');
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -75,7 +160,7 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
               Al Gobbo di Rialto
             </h1>
             <p style="margin:10px 0 0;font-size:13px;color:#d4b896;letter-spacing:2px;text-transform:uppercase;">
-              Venezia &nbsp;·&nbsp; Dal 1987
+              Venezia &nbsp;·&nbsp; Dal 1955
             </p>
           </td>
         </tr>
@@ -220,20 +305,18 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
           </td>
         </tr>` : ''}
 
-        <!-- Policy reminder -->
+        <!-- Contact reminder -->
         <tr>
           <td style="padding:0 40px 24px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                    style="background:#fdf6ee;border-radius:8px;border-left:4px solid ${gold};">
               <tr>
                 <td style="padding:16px 20px;">
-                  <p style="margin:0;font-size:13px;font-weight:700;color:${gColor};">ℹ️ &nbsp;Da ricordare / Please note</p>
-                  <ul style="margin:8px 0 0;padding-left:20px;font-size:13px;color:#6b5244;line-height:1.8;">
-                    <li>Il tavolo viene mantenuto per <strong>15 minuti</strong> oltre l'orario prenotato.<br/>
-                        <em style="color:#9e8272;">The table is held for 15 minutes after reservation time.</em></li>
-                    <li>Cancellazioni entro <strong>24 ore prima</strong> della prenotazione.<br/>
-                        <em style="color:#9e8272;">Cancellations must be made at least 24 hours in advance.</em></li>
-                  </ul>
+                  <p style="margin:0;font-size:13px;font-weight:700;color:${gColor};">ℹ️ &nbsp;Serve una modifica? / Need to make a change?</p>
+                  <p style="margin:8px 0 0;font-size:13px;color:#6b5244;line-height:1.8;">
+                    Usi il link personale qui sopra per cancellare, oppure ci chiami per modifiche, ritardi o esigenze di accessibilità.<br/>
+                    <em style="color:#9e8272;">Use the personal link above to cancel, or call us for changes, delays or accessibility needs.</em>
+                  </p>
                 </td>
               </tr>
             </table>
@@ -245,11 +328,7 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
           <td style="padding:0 40px 32px;text-align:center;">
             <p style="margin:0;font-size:14px;color:#6b5244;line-height:2;">
               Per qualsiasi necessità non esiti a contattarci:<br/>
-              <strong style="color:${gColor};">📞 +39 041 520 4603</strong><br/>
-              <a href="mailto:reservations@ristorantealgobbodirialto.it"
-                 style="color:${gold};text-decoration:none;font-weight:600;">
-                reservations@ristorantealgobbodirialto.it
-              </a>
+              <strong style="color:${gColor};">📞 +39 041 520 4603</strong>
             </p>
           </td>
         </tr>
@@ -265,7 +344,7 @@ function buildCustomerHtml({ name, email, phone, date, time, guests, occasion, s
             </p>
             <p style="margin:12px 0 0;font-size:12px;color:#a08878;line-height:1.6;">
               Ristorante Al Gobbo di Rialto<br/>
-              Campo San Polo 649, 30125 Venezia VE<br/>
+              Sestiere San Polo 649, 30125 Venezia VE<br/>
               <a href="https://www.ristorantealgobbodirialto.it" style="color:#c9a87a;text-decoration:none;">
                 www.ristorantealgobbodirialto.it
               </a>
@@ -306,13 +385,11 @@ function buildCustomerText({ name, date, time, guests, occasion, special_request
     special_requests ? `📝 Richieste:       ${special_requests}` : '',
     '',
     '─'.repeat(46),
-    'Il tavolo viene mantenuto 15 minuti dopo l\'orario prenotato.',
-    'Cancellazioni entro 24 ore prima.',
+    'Per modifiche, ritardi o esigenze di accessibilità: +39 041 520 4603.',
     manageUrl ? `\nPer cancellare la prenotazione: ${manageUrl}` : '',
     '',
     'Contatti / Contact:',
     '  Tel: +39 041 520 4603',
-    '  Email: reservations@ristorantealgobbodirialto.it',
     '',
     'A presto a Venezia!',
     'Lo staff del Ristorante Al Gobbo di Rialto',
@@ -382,59 +459,162 @@ function buildAdminHtml({ name, email, phone, date, time, guests, occasion, spec
 
 // ─── Endpoints ───────────────────────────────────────────────────────────────
 
-// Customer confirmation email
-app.post('/send-email', async (req, res) => {
-  console.log('📧 /send-email called');
-  console.log('API Key:', process.env.VITE_RESEND_API_KEY ? '✅ Present' : '❌ Missing');
-  console.log('📝 Body:', JSON.stringify(req.body, null, 2));
+const reservationConfirmationSchema = z.object({
+  reservation_id: z.string().uuid(),
+  cancellation_token: z.string().uuid(),
+}).strict();
 
-  const { name, email, phone, date, time, guests, occasion, special_requests, cancellation_token, reservation_id } = req.body;
-  const baseUrl = 'https://www.ristorantealgobbodirialto.it';
-  const manageUrl = cancellation_token ? `${baseUrl}/cancella/${cancellation_token}` : null;
-
-  try {
-    const response = await resend.emails.send({
-      from:     'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
-      to:       email,
-      reply_to: 'reservations@ristorantealgobbodirialto.it',
-      subject:  `✅ Prenotazione confermata — ${formatDate(date).it} alle ${formatTime(time)}`,
-      html:     buildCustomerHtml({ name, email, phone, date, time, guests, occasion, special_requests, manageUrl }),
-      text:     buildCustomerText({ name, date, time, guests, occasion, special_requests, manageUrl }),
-    });
-
-    console.log('✅ Customer email sent:', response);
-    res.json({ success: true, response });
-  } catch (error) {
-    console.error('❌ Error sending customer email:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
+app.get('/health', (_req, res) => {
+  res.status(resend && supabase ? 200 : 503).json({
+    status: resend && supabase ? 'ok' : 'misconfigured',
+  });
 });
 
-// Admin notification email
-app.post('/send-admin-confirmation', async (req, res) => {
-  console.log('📧 /send-admin-confirmation called');
-  const { name, email, phone, date, time, guests, occasion, special_requests, marketing_consent } = req.body;
+// The browser only supplies two opaque identifiers. Recipient, subject and
+// content are always reloaded from the trusted database.
+app.post(
+  '/send-reservation-confirmation',
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 5 }),
+  async (req, res) => {
+    if (!requireServices(res)) return;
 
-  try {
-    const response = await resend.emails.send({
-      from:    'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
-      to:      'reservations@ristorantealgobbodirialto.it',
-      subject: `🔔 Nuova prenotazione — ${name} · ${formatDate(date).it} ${formatTime(time)} · ${guests} ospiti`,
-      html:    buildAdminHtml({ name, email, phone, date, time, guests, occasion, special_requests, marketing_consent }),
-    });
+    const parsed = reservationConfirmationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, error: 'Richiesta non valida' });
+    }
 
-    console.log('✅ Admin email sent:', response);
-    res.json({ success: true, response });
-  } catch (error) {
-    console.error('❌ Error sending admin email:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
+    const { reservation_id, cancellation_token } = parsed.data;
+    const claimTime = new Date().toISOString();
+    let claimed = null;
+
+    try {
+      const { data, error } = await supabase
+        .from('reservations')
+        .update({ confirmation_sent_at: claimTime })
+        .eq('id', reservation_id)
+        .eq('cancellation_token', cancellation_token)
+        .is('confirmation_sent_at', null)
+        .select('*')
+        .maybeSingle();
+
+      if (error) throw error;
+      claimed = data;
+
+      if (!claimed) {
+        const { data: existing, error: lookupError } = await supabase
+          .from('reservations')
+          .select('id, confirmation_sent_at')
+          .eq('id', reservation_id)
+          .eq('cancellation_token', cancellation_token)
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+        if (!existing) return res.status(404).json({ success: false, error: 'Prenotazione non trovata' });
+        return res.json({ success: true, already_sent: true });
+      }
+
+      if (!z.string().email().safeParse(claimed.email).success) {
+        throw new Error('Invalid reservation email');
+      }
+
+      const manageUrl = `${siteUrl}/cancella/${cancellation_token}`;
+      const safeReservation = {
+        ...claimed,
+        name: escapeHtml(claimed.name),
+        email: escapeHtml(claimed.email),
+        phone: escapeHtml(claimed.phone),
+        occasion: claimed.occasion ? escapeHtml(claimed.occasion) : null,
+        special_requests: claimed.special_requests ? escapeHtml(claimed.special_requests) : null,
+      };
+
+      await deliverEmail({
+        from: `Al Gobbo di Rialto <${reservationsEmail}>`,
+        to: claimed.email,
+        reply_to: reservationsEmail,
+        subject: `✅ Prenotazione confermata — ${formatDate(claimed.date).it} alle ${formatTime(claimed.time)}`,
+        html: buildCustomerHtml({ ...safeReservation, manageUrl }),
+        text: buildCustomerText({ ...claimed, manageUrl }),
+      });
+
+      // Customer delivery is the critical path. An admin notification failure
+      // is recorded server-side but never causes a duplicate customer email.
+      try {
+        await deliverEmail({
+          from: `Al Gobbo di Rialto <${reservationsEmail}>`,
+          to: reservationsEmail,
+          subject: `🔔 Nuova prenotazione — ${safeHeader(claimed.name)} · ${formatDate(claimed.date).it} ${formatTime(claimed.time)} · ${claimed.guests} ospiti`,
+          html: buildAdminHtml(safeReservation),
+        });
+      } catch (adminError) {
+        console.error('Admin reservation notification failed');
+      }
+
+      return res.json({ success: true });
+    } catch (error) {
+      if (claimed) {
+        await supabase
+          .from('reservations')
+          .update({ confirmation_sent_at: null })
+          .eq('id', claimed.id)
+          .eq('confirmation_sent_at', claimTime);
+      }
+      console.error('Reservation confirmation failed');
+      return res.status(502).json({ success: false, error: 'Invio email temporaneamente non disponibile' });
+    }
+  },
+);
+
+app.post(['/send-email', '/send-admin-confirmation'], (_req, res) => {
+  res.status(410).json({ success: false, error: 'Endpoint non più disponibile' });
 });
 
 // ─── Waitlist notification email ─────────────────────────────────────────────
 
-app.post('/send-waitlist-notification', async (req, res) => {
-  console.log('📧 /send-waitlist-notification called');
+const waitlistNotificationSchema = z.object({
+  waitlist_id: z.string().uuid(),
+}).strict();
+
+async function loadAuthorizedWaitlistEntry(req, res, next) {
+  if (!requireServices(res)) return;
+
+  const token = req.get('Authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
+  if (!token) return res.status(401).json({ success: false, error: 'Autenticazione richiesta' });
+
+  const parsed = waitlistNotificationSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success: false, error: 'Richiesta non valida' });
+
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) return res.status(401).json({ success: false, error: 'Sessione non valida' });
+    if (user.app_metadata?.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Accesso non autorizzato' });
+    }
+
+    const claimTime = new Date().toISOString();
+    const { data: entry, error } = await supabase
+      .from('waitlist')
+      .update({ status: 'notified', notified_at: claimTime })
+      .eq('id', parsed.data.waitlist_id)
+      .eq('status', 'waiting')
+      .select('*')
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!entry) return res.status(409).json({ success: false, error: 'Voce già notificata o non disponibile' });
+
+    req.body = entry;
+    req.waitlistClaim = { id: entry.id, claimTime };
+    return next();
+  } catch (error) {
+    console.error('Waitlist authorization failed');
+    return res.status(500).json({ success: false, error: 'Servizio temporaneamente non disponibile' });
+  }
+}
+
+app.post(
+  '/send-waitlist-notification',
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }),
+  loadAuthorizedWaitlistEntry,
+  async (req, res) => {
   const { name, email, date, time, guests } = req.body;
 
   const fDate = formatDate(date);
@@ -444,8 +624,8 @@ app.post('/send-waitlist-notification', async (req, res) => {
   const sand = '#F5EDD8';
 
   // Reservation link with pre-filled date and time
-  const baseUrl = 'https://www.ristorantealgobbodirialto.it';
-  const reserveLink = `${baseUrl}/prenota?date=${date}&time=${encodeURIComponent(time.slice(0, 5))}`;
+  const reserveLink = `${siteUrl}/book?date=${date}&time=${encodeURIComponent(time.slice(0, 5))}`;
+  const safeName = escapeHtml(name);
 
   const html = `<!DOCTYPE html>
 <html lang="it">
@@ -459,7 +639,7 @@ app.post('/send-waitlist-notification', async (req, res) => {
           <td style="background:${gColor};padding:36px 40px 28px;text-align:center;">
             <p style="margin:0 0 8px;font-size:13px;letter-spacing:4px;text-transform:uppercase;color:${gold};font-weight:600;">Ristorante</p>
             <h1 style="margin:0;font-size:26px;font-weight:700;color:#ffffff;font-family:Georgia,serif;">Al Gobbo di Rialto</h1>
-            <p style="margin:8px 0 0;font-size:12px;color:#d4b896;letter-spacing:2px;text-transform:uppercase;">Venezia · Dal 1987</p>
+            <p style="margin:8px 0 0;font-size:12px;color:#d4b896;letter-spacing:2px;text-transform:uppercase;">Venezia · Dal 1955</p>
           </td>
         </tr>
         <tr><td style="height:4px;background:${gold};"></td></tr>
@@ -473,13 +653,13 @@ app.post('/send-waitlist-notification', async (req, res) => {
         </tr>
         <tr>
           <td style="padding:28px 40px;">
-            <p style="margin:0;font-size:16px;color:${gColor};">Gentile <strong>${name}</strong>,</p>
+            <p style="margin:0;font-size:16px;color:${gColor};">Gentile <strong>${safeName}</strong>,</p>
             <p style="margin:12px 0 0;font-size:15px;color:#6b5244;line-height:1.8;">
               Si è liberato un posto per la sua lista d'attesa!<br/>
-              Ha <strong>2 ore</strong> di tempo per completare la prenotazione.
+              La disponibilità può cambiare: completi la prenotazione appena possibile.
             </p>
             <p style="margin:8px 0 0;font-size:13px;color:#9e8272;font-style:italic;line-height:1.7;">
-              A spot has opened up for your waitlist request. You have 2 hours to complete your reservation.
+              A spot has opened up for your waitlist request. Availability may change, so please book as soon as possible.
             </p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                    style="background:${sand};border-radius:10px;border:1px solid #e0c99a;margin-top:20px;">
@@ -513,7 +693,7 @@ app.post('/send-waitlist-notification', async (req, res) => {
           <td style="background:${gColor};padding:20px 40px;text-align:center;">
             <p style="margin:0;font-size:13px;font-family:Georgia,serif;color:${gold};font-style:italic;">"A presto a Venezia"</p>
             <p style="margin:10px 0 0;font-size:11px;color:#a08878;">
-              Ristorante Al Gobbo di Rialto · Campo San Polo 649, 30125 Venezia
+              Ristorante Al Gobbo di Rialto · San Polo 649, 30125 Venezia
             </p>
           </td>
         </tr>
@@ -529,7 +709,7 @@ app.post('/send-waitlist-notification', async (req, res) => {
     '',
     `Gentile ${name},`,
     'Si è liberato un posto per la sua lista d\'attesa!',
-    `Ha 2 ore di tempo per completare la prenotazione.`,
+    'La disponibilità può cambiare: completa la prenotazione appena possibile.',
     '',
     `📅 Data: ${fDate.it}`,
     `🕐 Orario: ${fTime}`,
@@ -542,26 +722,52 @@ app.post('/send-waitlist-notification', async (req, res) => {
   ].join('\n');
 
   try {
-    const response = await resend.emails.send({
-      from: 'Al Gobbo di Rialto <reservations@ristorantealgobbodirialto.it>',
+    await deliverEmail({
+      from: `Al Gobbo di Rialto <${reservationsEmail}>`,
       to: email,
-      reply_to: 'reservations@ristorantealgobbodirialto.it',
+      reply_to: reservationsEmail,
       subject: `🎉 Si è liberato un posto — ${fDate.it} alle ${fTime}`,
       html,
       text,
     });
 
-    console.log('✅ Waitlist notification sent:', response);
-    res.json({ success: true, response });
+    res.json({ success: true });
   } catch (error) {
-    console.error('❌ Error sending waitlist notification:', error);
-    res.status(500).json({ success: false, error: error.message });
+    if (req.waitlistClaim) {
+      await supabase
+        .from('waitlist')
+        .update({ status: 'waiting', notified_at: null })
+        .eq('id', req.waitlistClaim.id)
+        .eq('notified_at', req.waitlistClaim.claimTime);
+    }
+    console.error('Waitlist notification failed');
+    res.status(502).json({ success: false, error: 'Invio email temporaneamente non disponibile' });
   }
 });
 
 // ─── Start server ─────────────────────────────────────────────────────────────
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+app.use((error, _req, res, _next) => {
+  if (error?.message === 'Origin not allowed') {
+    return res.status(403).json({ success: false, error: 'Origin non consentita' });
+  }
+  console.error('Unhandled API error');
+  return res.status(500).json({ success: false, error: 'Errore interno del servizio' });
 });
+
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`API server listening on port ${PORT}`);
+  });
+}
+
+export {
+  app,
+  escapeHtml,
+  safeHeader,
+  formatDate,
+  formatTime,
+  reservationConfirmationSchema,
+  waitlistNotificationSchema,
+};

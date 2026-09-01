@@ -1,0 +1,18 @@
+import { Gallery } from '../components/Gallery';
+import { PageTransition } from '../components/PageTransition';
+import { SEOHead } from '../components/SEOHead';
+
+export function GalleryPage() {
+  return (
+    <PageTransition>
+      <SEOHead
+        title="Gallery"
+        canonical="/gallery"
+        description="Explore the dishes and atmosphere of Ristorante Al Gobbo di Rialto in Venice, near the Rialto district."
+      />
+      <main className="pt-20 bg-venetian-brown">
+        <Gallery />
+      </main>
+    </PageTransition>
+  );
+}

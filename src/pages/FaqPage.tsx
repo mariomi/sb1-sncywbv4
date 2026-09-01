@@ -53,7 +53,7 @@ const faqsEn: FaqItem[] = [
   {
     question: 'How can I book a table?',
     answer:
-      'You can book directly online via our Reserve page, or call us at +39 041 520 4603. We accept reservations for lunch (12:00–14:30) and dinner (19:00–22:00), Monday to Saturday except Tuesday, and on Sunday.',
+      'You can book directly online via our Book a Table page, or call us at +39 041 520 4603. We accept reservations for lunch (12:00–14:30) and dinner (19:00–22:00), Monday to Saturday except Tuesday, and on Sunday.',
   },
   {
     question: 'Which days are you open?',
@@ -137,6 +137,15 @@ function AccordionItem({ item, index }: { item: FaqItem; index: number }) {
 export function FaqPage() {
   const { language } = useLanguage();
   const faqs = language === 'it' ? faqsIt : faqsEn;
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(item => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  };
 
   return (
     <PageTransition>
@@ -144,6 +153,8 @@ export function FaqPage() {
         title="Domande Frequenti – FAQ"
         canonical="/faq"
         description="Domande frequenti sul Ristorante Al Gobbo di Rialto a Venezia. Orari, prenotazioni, menu, allergie, eventi privati e molto altro."
+        availableLanguages={['en', 'it']}
+        structuredData={faqSchema}
       />
 
       <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24 pb-20">
@@ -200,7 +211,7 @@ export function FaqPage() {
                 {language === 'it' ? 'Scrivici' : 'Contact Us'}
               </Link>
               <Link
-                to="/reserve"
+                to="/book"
                 className="inline-block px-6 py-3 rounded-xl border-2 border-venetian-sandstone/40 text-venetian-sandstone font-semibold text-sm hover:bg-venetian-sandstone/10 transition-colors"
               >
                 {language === 'it' ? 'Prenota un tavolo' : 'Book a Table'}

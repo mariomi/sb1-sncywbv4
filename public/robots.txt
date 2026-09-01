@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /admin/dashboard
+Disallow: /admin/
 Disallow: /messages
 Disallow: /my-reservations
+Disallow: /cancella/
 
 Sitemap: https://www.ristorantealgobbodirialto.it/sitemap.xml

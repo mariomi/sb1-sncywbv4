@@ -4,20 +4,20 @@ import { X } from 'lucide-react';
 import { useLanguage } from '../lib/i18n';
 
 // Import food images
-import img2980 from '../Img/food/IMG_2980.JPEG';
-import img2984 from '../Img/food/IMG_2984.JPEG';
-import img2985 from '../Img/food/IMG_2985.JPEG';
-import img2986 from '../Img/food/IMG_2986.JPEG';
+import img2980 from '../Img/food/IMG_2980.webp';
+import img2984 from '../Img/food/IMG_2984.webp';
+import img2985 from '../Img/food/IMG_2985.webp';
+import img2986 from '../Img/food/IMG_2986.webp';
 
 // Import G1 images
-import img2922 from '../Img/G1/IMG_2922.JPEG';
-import img2941 from '../Img/G1/IMG_2941.JPEG';
-import img2943 from '../Img/G1/IMG_2943.JPEG';
-import img2960 from '../Img/G1/IMG_2960.JPEG';
-import img2962 from '../Img/G1/IMG_2962.JPEG';
-import img2968 from '../Img/G1/IMG_2968.JPEG';
-import img2978 from '../Img/G1/IMG_2978.JPEG';
-import img2982 from '../Img/G1/IMG_2992.JPEG';
+import img2922 from '../Img/G1/IMG_2922.webp';
+import img2941 from '../Img/G1/IMG_2941.webp';
+import img2943 from '../Img/G1/IMG_2943.webp';
+import img2960 from '../Img/G1/IMG_2960.webp';
+import img2962 from '../Img/G1/IMG_2962.webp';
+import img2968 from '../Img/G1/IMG_2968.webp';
+import img2978 from '../Img/G1/IMG_2978.webp';
+import img2982 from '../Img/G1/IMG_2992.webp';
 
 type GalleryImage = {
   url: string;
@@ -206,9 +206,9 @@ export default function Gallery() {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-serif text-white mb-4">
+            <h1 className="text-4xl font-serif text-white mb-4">
               {t('gallery.title')}
-            </h2>
+            </h1>
             <p className="text-lg text-venetian-sandstone/80 max-w-2xl mx-auto">
               {t('gallery.subtitle')}
             </p>
