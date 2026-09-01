@@ -1,25 +1,18 @@
 # Production operations
 
-This guide covers the trusted email backend and the two Supabase reminder
-functions. Never place Resend or service-role credentials in a `VITE_*`
+This guide covers the four trusted Supabase email functions: booking
+confirmation, waitlist notification, day-before reminder, and two-hour
+reminder. Never place Resend or service-role credentials in a `VITE_*`
 variable: Vite exposes those values to browsers.
 
 ## Required secrets
-
-The Express backend uses:
-
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `RESEND_API_KEY`
-- `SITE_URL`
-- `RESERVATIONS_EMAIL`
-- `ALLOWED_ORIGINS`
 
 The Supabase Edge Functions use the automatically provided `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY`, plus these custom Function Secrets:
 
 - `RESEND_API_KEY`: a Resend key restricted to sending email
 - `SITE_URL`: `https://www.ristorantealgobbodirialto.it`
+- `RESERVATIONS_EMAIL`: the restaurant inbox that receives new-booking alerts
 - `REMINDER_CRON_SECRET`: a new random value with at least 32 bytes of entropy
 
 Store local values only in ignored environment files. To upload Edge Function
@@ -30,14 +23,19 @@ secrets without putting them in shell history, create an ignored file such as
 npx supabase secrets set --env-file .env.reminders.local
 ```
 
-## Deploy reminder functions
+## Deploy email functions
 
 Keep JWT verification enabled. The additional `x-reminder-secret` check limits
 who can trigger bulk email even if a public Supabase key is known.
 
 ```powershell
-npx supabase functions deploy send-reminders send-2h-reminders --use-api
+npx supabase functions deploy send-reservation-confirmation send-waitlist-notification send-reminders send-2h-reminders --use-api
 ```
+
+The public booking form invokes `send-reservation-confirmation` through the
+Supabase client after the reservation is stored. The admin waitlist action
+invokes `send-waitlist-notification` with the signed-in administrator session.
+No browser request depends on a localhost or Express email server.
 
 ## Create schedules
 

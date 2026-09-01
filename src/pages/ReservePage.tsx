@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, Users, UtensilsCrossed, ChefHat, Phone, CalendarClock, AlertCircle, CheckCircle2, Loader2, Lock } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
@@ -211,10 +211,27 @@ const dateLocales: Record<Language, string> = {
   en: 'en-GB', it: 'it-IT', fr: 'fr-FR', de: 'de-DE', es: 'es-ES',
 };
 
+const bookingFlowCopy: Record<Language, {
+  steps: [string, string, string];
+  continue: string;
+  back: string;
+  selectionError: string;
+  contactError: string;
+  summaryTitle: string;
+  summaryIntro: string;
+}> = {
+  en: { steps: ['Table', 'Contact', 'Confirm'], continue: 'Continue', back: 'Back', selectionError: 'Choose a date and an available time', contactError: 'Enter a valid name, email and phone number', summaryTitle: 'Check your reservation', summaryIntro: 'Review the details before confirming.' },
+  it: { steps: ['Tavolo', 'Contatti', 'Conferma'], continue: 'Continua', back: 'Indietro', selectionError: 'Scegli una data e un orario disponibile', contactError: 'Inserisci nome, email e telefono validi', summaryTitle: 'Controlla la prenotazione', summaryIntro: 'Verifica i dati prima di confermare.' },
+  fr: { steps: ['Table', 'Contact', 'Confirmation'], continue: 'Continuer', back: 'Retour', selectionError: 'Choisissez une date et une heure disponible', contactError: 'Saisissez un nom, un e-mail et un téléphone valides', summaryTitle: 'Vérifiez votre réservation', summaryIntro: 'Vérifiez les informations avant de confirmer.' },
+  de: { steps: ['Tisch', 'Kontakt', 'Bestätigung'], continue: 'Weiter', back: 'Zurück', selectionError: 'Wählen Sie ein Datum und eine verfügbare Uhrzeit', contactError: 'Geben Sie einen gültigen Namen, eine E-Mail-Adresse und eine Telefonnummer ein', summaryTitle: 'Reservierung prüfen', summaryIntro: 'Prüfen Sie Ihre Angaben vor der Bestätigung.' },
+  es: { steps: ['Mesa', 'Contacto', 'Confirmación'], continue: 'Continuar', back: 'Atrás', selectionError: 'Elige una fecha y una hora disponible', contactError: 'Introduce un nombre, correo y teléfono válidos', summaryTitle: 'Revisa tu reserva', summaryIntro: 'Comprueba los datos antes de confirmar.' },
+};
+
 export function ReservePage() {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const copy = reservationCopy[language];
+  const flowCopy = bookingFlowCopy[language];
   const waitlistEnabled = useFeatureFlag('waitlist');
   const onlineReservationsEnabled = useFeatureFlag('online_reservations');
   const [formData, setFormData] = useState<ReservationFormData>({
@@ -243,6 +260,8 @@ export function ReservePage() {
   const [showWaitlistBanner, setShowWaitlistBanner] = useState(false);
   const [isJoiningWaitlist, setIsJoiningWaitlist] = useState(false);
   const [waitlistSuccess, setWaitlistSuccess] = useState(false);
+  const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
+  const formTopRef = useRef<HTMLDivElement>(null);
   const displayDate = formData.date
     ? new Date(`${formData.date}T12:00:00Z`).toLocaleDateString(dateLocales[language], {
         timeZone: 'Europe/Rome',
@@ -326,8 +345,54 @@ export function ReservePage() {
     }
   }, [closedDates, closedDatesLoaded, copy.errors.unavailableDate, formData.date, loadTimeSlots]);
 
+  useEffect(() => {
+    if (!formData.time) return;
+    const selectedSlot = timeSlots.find((slot) => slot.time === formData.time);
+    if (selectedSlot && (!selectedSlot.available || selectedSlot.remainingCapacity < formData.guests)) {
+      setFormData((previous) => ({ ...previous, time: '' }));
+    }
+  }, [formData.guests, formData.time, timeSlots]);
+
+  const moveToStep = (step: 1 | 2 | 3) => {
+    setBookingStep(step);
+    window.requestAnimationFrame(() => {
+      formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  const handleContinue = () => {
+    if (bookingStep === 1) {
+      if (!formData.date || !formData.time) {
+        toast.error(flowCopy.selectionError);
+        return;
+      }
+      moveToStep(2);
+      return;
+    }
+
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+    if (!formData.name.trim() || !validEmail || !formData.phone.trim()) {
+      toast.error(flowCopy.contactError);
+      return;
+    }
+    moveToStep(3);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.date || !formData.time) {
+      moveToStep(1);
+      toast.error(flowCopy.selectionError);
+      return;
+    }
+
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+    if (!formData.name.trim() || !validEmail || !formData.phone.trim()) {
+      moveToStep(2);
+      toast.error(flowCopy.contactError);
+      return;
+    }
 
     if (!privacyConsent) {
       toast.error(copy.errors.privacy);
@@ -490,319 +555,290 @@ export function ReservePage() {
                   </p>
                 </div>
               ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                {/* Personal Information */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  <div>
-                    <label htmlFor="reservation-name" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                      {copy.fullName}
-                    </label>
-                    <input
-                      id="reservation-name"
-                      type="text"
-                      autoComplete="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="reservation-email" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                      {copy.email}
-                    </label>
-                    <input
-                      id="reservation-email"
-                      type="email"
-                      autoComplete="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
-                      required
-                    />
-                  </div>
-                </div>
+              <form onSubmit={handleSubmit} className="scroll-mt-28 space-y-6" ref={formTopRef}>
+                <ol className="grid grid-cols-3 gap-2" aria-label="Booking progress">
+                  {flowCopy.steps.map((label, index) => {
+                    const stepNumber = (index + 1) as 1 | 2 | 3;
+                    const isActive = bookingStep === stepNumber;
+                    const isComplete = bookingStep > stepNumber;
+                    return (
+                      <li key={label}>
+                        <button
+                          type="button"
+                          onClick={() => isComplete && moveToStep(stepNumber)}
+                          disabled={!isComplete}
+                          aria-current={isActive ? 'step' : undefined}
+                          className={`w-full rounded-xl border px-2 py-2.5 text-center text-xs font-semibold transition sm:text-sm ${
+                            isActive
+                              ? 'border-venetian-gold bg-venetian-gold text-venetian-brown'
+                              : isComplete
+                                ? 'border-venetian-gold/40 bg-venetian-gold/10 text-venetian-brown'
+                                : 'border-venetian-brown/10 bg-venetian-brown/5 text-venetian-brown/45'
+                          }`}
+                        >
+                          <span className="mr-1">{stepNumber}.</span> {label}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  <div>
-                    <p className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                      {copy.phone}
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      {/* Prefix selector */}
-                      <select
-                        value={phonePrefix}
-                        onChange={(e) => {
-                          setPhonePrefix(e.target.value);
-                          if (e.target.value !== 'other') setCustomPrefix('');
-                        }}
-                        className="w-full px-3 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base text-venetian-brown/80 cursor-pointer"
-                        aria-label={copy.countryCode}
-                        required
-                      >
-                        <option value="" disabled>🌍 {copy.countryCode}</option>
-                        {PHONE_PREFIXES.map((p) => (
-                          <option key={p.code} value={p.code}>
-                            {p.flag} {p.label}
-                          </option>
-                        ))}
-                      </select>
-                      {/* Custom prefix input */}
-                      {phonePrefix === 'other' && (
+                {bookingStep === 1 ? (
+                  <motion.div key="booking-step-1" className="space-y-5" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="reservation-date" className="mb-1.5 block text-sm font-medium text-venetian-brown/80">
+                          <Calendar className="mr-2 inline-block h-4 w-4" />
+                          {copy.date}
+                        </label>
+                        <input
+                          id="reservation-date"
+                          type="date"
+                          min={today}
+                          max={maxDateString}
+                          value={formData.date}
+                          onChange={(event) => setFormData((previous) => ({ ...previous, date: event.target.value, time: '' }))}
+                          className="w-full rounded-lg border border-venetian-brown/20 bg-white/50 px-4 py-3 text-base focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="reservation-guests" className="mb-1.5 block text-sm font-medium text-venetian-brown/80">
+                          <Users className="mr-2 inline-block h-4 w-4" />
+                          {copy.guestsLabel}
+                        </label>
+                        <select
+                          id="reservation-guests"
+                          value={formData.guests}
+                          onChange={(event) => setFormData((previous) => ({ ...previous, guests: Number(event.target.value) }))}
+                          className="w-full rounded-lg border border-venetian-brown/20 bg-white/50 px-4 py-3 text-base focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold"
+                        >
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map((number) => (
+                            <option key={number} value={number}>{number} {number === 1 ? copy.guest : copy.guests}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {formData.date ? (
+                      <fieldset>
+                        <legend className="mb-3 block text-sm font-medium text-venetian-brown/80">
+                          <Clock className="mr-2 inline-block h-4 w-4" />
+                          {copy.availableTimes}
+                        </legend>
+                        {isLoadingTimeSlots ? (
+                          <div className="flex items-center justify-center py-8" role="status">
+                            <Loader2 className="h-6 w-6 animate-spin text-venetian-brown" />
+                          </div>
+                        ) : timeSlots.length === 0 ? (
+                          <p className="rounded-lg bg-venetian-brown/5 py-5 text-center text-venetian-brown/70">{copy.noTimes}</p>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                            {timeSlots.map((slot) => {
+                              const canFit = slot.available && slot.remainingCapacity >= formData.guests;
+                              return (
+                                <motion.button
+                                  key={slot.time}
+                                  type="button"
+                                  disabled={!canFit}
+                                  onClick={() => setFormData((previous) => ({ ...previous, time: slot.time }))}
+                                  aria-pressed={formData.time === slot.time}
+                                  className={`min-h-11 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                                    formData.time === slot.time
+                                      ? 'bg-venetian-gold text-venetian-brown shadow-sm'
+                                      : canFit
+                                        ? 'border border-venetian-brown/10 bg-white text-venetian-brown hover:bg-venetian-gold/10'
+                                        : 'cursor-not-allowed bg-venetian-brown/5 text-venetian-brown/35'
+                                  }`}
+                                  whileHover={canFit ? { scale: 1.02 } : undefined}
+                                  whileTap={canFit ? { scale: 0.98 } : undefined}
+                                >
+                                  {slot.time.slice(0, 5)}
+                                </motion.button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </fieldset>
+                    ) : null}
+
+                    <Button type="button" onClick={handleContinue} className="w-full bg-venetian-gold font-semibold text-venetian-brown hover:bg-venetian-gold/90">
+                      {flowCopy.continue}
+                    </Button>
+                  </motion.div>
+                ) : null}
+
+                {bookingStep === 2 ? (
+                  <motion.div key="booking-step-2" className="space-y-5" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="reservation-name" className="mb-1.5 block text-sm font-medium text-venetian-brown/80">{copy.fullName}</label>
+                        <input
+                          id="reservation-name"
+                          type="text"
+                          autoComplete="name"
+                          value={formData.name}
+                          onChange={(event) => setFormData((previous) => ({ ...previous, name: event.target.value }))}
+                          className="w-full rounded-lg border border-venetian-brown/20 bg-white/50 px-4 py-3 text-base focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="reservation-email" className="mb-1.5 block text-sm font-medium text-venetian-brown/80">{copy.email}</label>
+                        <input
+                          id="reservation-email"
+                          type="email"
+                          autoComplete="email"
+                          value={formData.email}
+                          onChange={(event) => setFormData((previous) => ({ ...previous, email: event.target.value }))}
+                          className="w-full rounded-lg border border-venetian-brown/20 bg-white/50 px-4 py-3 text-base focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="mb-1.5 block text-sm font-medium text-venetian-brown/80">{copy.phone}</p>
+                      <div className="grid gap-2 sm:grid-cols-[minmax(190px,0.8fr)_1.2fr]">
+                        <select
+                          value={phonePrefix}
+                          onChange={(event) => {
+                            setPhonePrefix(event.target.value);
+                            if (event.target.value !== 'other') setCustomPrefix('');
+                          }}
+                          className="w-full rounded-lg border border-venetian-brown/20 bg-white/50 px-3 py-3 text-base text-venetian-brown/80 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold"
+                          aria-label={copy.countryCode}
+                        >
+                          <option value="" disabled>🌍 {copy.countryCode}</option>
+                          {PHONE_PREFIXES.map((prefix) => (
+                            <option key={prefix.code} value={prefix.code}>{prefix.flag} {prefix.label}</option>
+                          ))}
+                        </select>
+                        {phonePrefix ? (
+                          <div className="flex overflow-hidden rounded-lg border border-venetian-brown/20 bg-white/50 focus-within:border-venetian-gold focus-within:ring-1 focus-within:ring-venetian-gold">
+                            <span className="flex shrink-0 items-center border-r border-venetian-brown/20 bg-venetian-brown/5 px-3 text-sm font-medium text-venetian-brown/70">
+                              {phonePrefix === 'other' ? (customPrefix || '?') : phonePrefix}
+                            </span>
+                            <input
+                              id="reservation-phone"
+                              type="tel"
+                              autoComplete="tel-national"
+                              aria-label={copy.phone}
+                              value={phoneNumber}
+                              onChange={(event) => setPhoneNumber(event.target.value.replace(/[^0-9\s-]/g, ''))}
+                              placeholder={copy.phoneNumber}
+                              className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base focus:outline-none"
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                      {phonePrefix === 'other' ? (
                         <input
                           type="text"
                           value={customPrefix}
-                          onChange={(e) => setCustomPrefix(e.target.value.replace(/[^0-9+]/g, ''))}
+                          onChange={(event) => setCustomPrefix(event.target.value.replace(/[^0-9+]/g, ''))}
                           placeholder={copy.customPrefix}
                           aria-label={copy.customPrefix}
-                          className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
+                          className="mt-2 w-full rounded-lg border border-venetian-brown/20 bg-white/50 px-4 py-3 text-base focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold"
                           maxLength={7}
-                          required
                         />
-                      )}
-                      {/* Number input — shown only after prefix is selected */}
-                      {phonePrefix && (
-                        <div className="flex rounded-lg border border-venetian-brown/20 focus-within:border-venetian-gold focus-within:ring-1 focus-within:ring-venetian-gold overflow-hidden bg-white/50">
-                          <span className="shrink-0 bg-venetian-brown/5 border-r border-venetian-brown/20 text-venetian-brown/70 text-sm font-medium px-3 flex items-center">
-                            {phonePrefix === 'other' ? (customPrefix || '?') : phonePrefix}
-                          </span>
-                          <input
-                            id="reservation-phone"
-                            type="tel"
-                            autoComplete="tel-national"
-                            aria-label={copy.phone}
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9\s-]/g, ''))}
-                            placeholder={copy.phoneNumber}
-                            className="flex-1 px-4 py-3 bg-transparent focus:outline-none text-base min-w-0"
-                            required
-                          />
-                        </div>
-                      )}
+                      ) : null}
                     </div>
-                  </div>
-                  <div>
-                    <label htmlFor="reservation-guests" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                      <Users className="w-4 h-4 inline-block mr-2" />
-                      {copy.guestsLabel}
-                    </label>
-                    <select
-                      id="reservation-guests"
-                      value={formData.guests}
-                      onChange={(e) => setFormData(prev => ({ ...prev, guests: Number(e.target.value) }))}
-                      className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
-                      required
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                        <option key={num} value={num}>
-                          {num} {num === 1 ? copy.guest : copy.guests}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
 
-                {/* Date & Time Selection */}
-                <div>
-                  <label htmlFor="reservation-date" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                    <Calendar className="w-4 h-4 inline-block mr-2" />
-                    {copy.date}
-                  </label>
-                  <input
-                    id="reservation-date"
-                    type="date"
-                    min={today}
-                    max={maxDateString}
-                    value={formData.date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value, time: '' }))}
-                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
-                    required
-                  />
-                </div>
-
-                {/* Time Slots */}
-                {formData.date && (
-                  <fieldset>
-                    <legend className="block text-sm font-medium text-venetian-brown/80 mb-3">
-                      <Clock className="w-4 h-4 inline-block mr-2" />
-                      {copy.availableTimes}
-                    </legend>
-                    {isLoadingTimeSlots ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="w-6 h-6 text-venetian-brown animate-spin" />
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="reservation-occasion" className="mb-1.5 block text-sm font-medium text-venetian-brown/80">
+                          <ChefHat className="mr-2 inline-block h-4 w-4" />{copy.occasion}
+                        </label>
+                        <select
+                          id="reservation-occasion"
+                          value={formData.occasion || ''}
+                          onChange={(event) => setFormData((previous) => ({ ...previous, occasion: event.target.value }))}
+                          className="w-full rounded-lg border border-venetian-brown/20 bg-white/50 px-4 py-3 text-base focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold"
+                        >
+                          <option value="">{copy.chooseOccasion}</option>
+                          {Object.entries(copy.occasions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                        </select>
                       </div>
-                    ) : timeSlots.length === 0 ? (
-                      <p className="text-venetian-brown/70 text-center py-4">
-                        {copy.noTimes}
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                        {timeSlots.map((slot) => (
-                          <motion.button
-                            key={slot.time}
-                            type="button"
-                            disabled={!slot.available}
-                            onClick={() => setFormData(prev => ({ ...prev, time: slot.time }))}
-                            aria-pressed={formData.time === slot.time}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${formData.time === slot.time
-                                ? 'bg-venetian-gold text-venetian-brown'
-                                : slot.available
-                                  ? 'bg-white/80 text-venetian-brown hover:bg-venetian-gold/10'
-                                  : 'bg-venetian-brown/5 text-venetian-brown/40 cursor-not-allowed'
-                              }`}
-                            whileHover={slot.available ? { scale: 1.02 } : {}}
-                            whileTap={slot.available ? { scale: 0.98 } : {}}
-                          >
-                            {slot.time.slice(0, 5)}
-                          </motion.button>
-                        ))}
+                      <div>
+                        <label htmlFor="reservation-requests" className="mb-1.5 block text-sm font-medium text-venetian-brown/80">
+                          <UtensilsCrossed className="mr-2 inline-block h-4 w-4" />{copy.requests}
+                        </label>
+                        <textarea
+                          id="reservation-requests"
+                          value={formData.special_requests || ''}
+                          onChange={(event) => setFormData((previous) => ({ ...previous, special_requests: event.target.value }))}
+                          rows={3}
+                          placeholder={copy.requestsPlaceholder}
+                          className="w-full rounded-lg border border-venetian-brown/20 bg-white/50 px-4 py-3 text-base focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold"
+                        />
                       </div>
-                    )}
-                  </fieldset>
-                )}
+                    </div>
 
-                {/* Waitlist banner */}
-                <AnimatePresence>
-                  {waitlistEnabled && showWaitlistBanner && !waitlistSuccess && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="bg-amber-50 border-l-4 border-venetian-gold rounded-r-lg p-4"
-                    >
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-venetian-gold mt-0.5 shrink-0" />
-                        <div className="flex-1">
-                          <p className="font-medium text-venetian-brown text-sm">
-                            {copy.waitlistFull}
-                          </p>
-                          <p className="text-sm text-venetian-brown/80 mt-1">
-                            {copy.waitlistPrompt}
-                          </p>
-                          <button
-                            type="button"
-                            onClick={handleJoinWaitlist}
-                            disabled={isJoiningWaitlist}
-                            className="mt-3 px-4 py-2 bg-venetian-gold text-venetian-brown text-sm font-medium rounded-lg hover:bg-venetian-gold/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-                          >
-                            {isJoiningWaitlist ? (
-                              <><Loader2 size={14} className="animate-spin" /> {copy.waitlistJoining}</>
-                            ) : (
-                              copy.waitlistJoin
-                            )}
-                          </button>
-                        </div>
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+                      <Button type="button" variant="outline" onClick={() => moveToStep(1)}>{flowCopy.back}</Button>
+                      <Button type="button" onClick={handleContinue} className="bg-venetian-gold font-semibold text-venetian-brown hover:bg-venetian-gold/90 sm:min-w-40">{flowCopy.continue}</Button>
+                    </div>
+                  </motion.div>
+                ) : null}
+
+                {bookingStep === 3 ? (
+                  <motion.div key="booking-step-3" className="space-y-5" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}>
+                    <div className="rounded-xl border border-venetian-gold/35 bg-venetian-gold/10 p-4 sm:p-5">
+                      <h3 className="text-xl font-serif text-venetian-brown">{flowCopy.summaryTitle}</h3>
+                      <p className="mt-1 text-sm text-venetian-brown/65">{flowCopy.summaryIntro}</p>
+                      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-3">
+                        <div><dt className="text-venetian-brown/55">{copy.date}</dt><dd className="font-semibold text-venetian-brown">{displayDate}</dd></div>
+                        <div><dt className="text-venetian-brown/55">{copy.timeLabel}</dt><dd className="font-semibold text-venetian-brown">{formData.time.slice(0, 5)}</dd></div>
+                        <div><dt className="text-venetian-brown/55">{copy.guestsLabel}</dt><dd className="font-semibold text-venetian-brown">{formData.guests}</dd></div>
+                        <div><dt className="text-venetian-brown/55">{copy.nameLabel}</dt><dd className="font-semibold text-venetian-brown">{formData.name}</dd></div>
+                        <div className="col-span-2"><dt className="text-venetian-brown/55">{copy.email}</dt><dd className="break-all font-semibold text-venetian-brown">{formData.email}</dd></div>
+                      </dl>
+                    </div>
+
+                    <AnimatePresence>
+                      {waitlistEnabled && showWaitlistBanner && !waitlistSuccess ? (
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="rounded-r-lg border-l-4 border-venetian-gold bg-amber-50 p-4">
+                          <div className="flex items-start gap-3">
+                            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-venetian-gold" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-venetian-brown">{copy.waitlistFull}</p>
+                              <p className="mt-1 text-sm text-venetian-brown/80">{copy.waitlistPrompt}</p>
+                              <button type="button" onClick={handleJoinWaitlist} disabled={isJoiningWaitlist} className="mt-3 flex items-center gap-2 rounded-lg bg-venetian-gold px-4 py-2 text-sm font-medium text-venetian-brown transition-colors hover:bg-venetian-gold/90 disabled:opacity-50">
+                                {isJoiningWaitlist ? <><Loader2 size={14} className="animate-spin" /> {copy.waitlistJoining}</> : copy.waitlistJoin}
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ) : null}
+                      {waitlistSuccess ? (
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-r-lg border-l-4 border-green-500 bg-green-50 p-4">
+                          <div className="flex items-start gap-3">
+                            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
+                            <div><p className="text-sm font-medium text-green-800">{copy.waitlistSuccess}</p><p className="mt-1 text-sm text-green-700">{copy.waitlistContact} {displayDate} {copy.timeLabel.toLowerCase()} {formData.time.slice(0, 5)}.</p></div>
+                          </div>
+                        </motion.div>
+                      ) : null}
+                    </AnimatePresence>
+
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 rounded-lg bg-venetian-brown/[0.03] p-3">
+                        <input type="checkbox" id="privacyConsent" checked={privacyConsent} onChange={(event) => setPrivacyConsent(event.target.checked)} className="mt-1 h-4 w-4" />
+                        <label htmlFor="privacyConsent" className="text-sm text-venetian-brown/90">
+                          {copy.privacyPrefix}{' '}<a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-2">{copy.privacyLink}</a>{copy.privacySuffix}
+                        </label>
                       </div>
-                    </motion.div>
-                  )}
-                  {waitlistSuccess && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-4"
-                    >
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-                        <div>
-                          <p className="font-medium text-green-800 text-sm">
-                            {copy.waitlistSuccess}
-                          </p>
-                          <p className="text-sm text-green-700 mt-1">
-                            {copy.waitlistContact} {displayDate} {copy.timeLabel.toLowerCase()} {formData.time.slice(0, 5)}.
-                          </p>
-                        </div>
+                      <div className="flex items-start gap-3 rounded-lg bg-venetian-brown/[0.03] p-3">
+                        <input type="checkbox" id="marketingConsent" checked={marketingConsent} onChange={(event) => setMarketingConsent(event.target.checked)} className="mt-1 h-4 w-4" />
+                        <label htmlFor="marketingConsent" className="text-sm text-venetian-brown/90">{copy.marketing}</label>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
 
-                {/* Additional Information */}
-                <div>
-                  <label htmlFor="reservation-occasion" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                    <ChefHat className="w-4 h-4 inline-block mr-2" />
-                    {copy.occasion}
-                  </label>
-                  <select
-                    id="reservation-occasion"
-                    value={formData.occasion || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, occasion: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
-                  >
-                    <option value="">{copy.chooseOccasion}</option>
-                    {Object.entries(copy.occasions).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="reservation-requests" className="block text-sm font-medium text-venetian-brown/80 mb-1.5">
-                    <UtensilsCrossed className="w-4 h-4 inline-block mr-2" />
-                    {copy.requests}
-                  </label>
-                  <textarea
-                    id="reservation-requests"
-                    value={formData.special_requests || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, special_requests: e.target.value }))}
-                    rows={3}
-                    placeholder={copy.requestsPlaceholder}
-                    className="w-full px-4 py-3 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 text-base"
-                  />
-                </div>
-
-                <div className="space-y-3 mt-4">
-                  <div className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      id="privacyConsent"
-                      checked={privacyConsent}
-                      onChange={(e) => setPrivacyConsent(e.target.checked)}
-                      className="mt-1"
-                      required
-                    />
-                    <label htmlFor="privacyConsent" className="text-sm text-venetian-brown/90">
-                      {copy.privacyPrefix}{' '}
-                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-2">
-                        {copy.privacyLink}
-                      </a>
-                      {copy.privacySuffix}
-                    </label>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      id="marketingConsent"
-                      checked={marketingConsent}
-                      onChange={(e) => setMarketingConsent(e.target.checked)}
-                      className="mt-1"
-                    />
-                    <label htmlFor="marketingConsent" className="text-sm text-venetian-brown/90">
-                      {copy.marketing}
-                    </label>
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    type="submit"
-                    className="w-full bg-venetian-gold text-[#4A3329] font-semibold hover:bg-venetian-gold/90"
-                    disabled={isLoading || closedDates.includes(formData.date)}
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center justify-center">
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        {copy.processing}
-                      </span>
-                    ) : (
-                      copy.confirm
-                    )}
-                  </Button>
-                </motion.div>
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+                      <Button type="button" variant="outline" onClick={() => moveToStep(2)} disabled={isLoading}>{flowCopy.back}</Button>
+                      <Button type="submit" className="bg-venetian-gold font-semibold text-[#4A3329] hover:bg-venetian-gold/90 sm:min-w-56" disabled={isLoading || !privacyConsent || closedDates.includes(formData.date)}>
+                        {isLoading ? <span className="flex items-center justify-center"><Loader2 className="mr-2 h-5 w-5 animate-spin" />{copy.processing}</span> : copy.confirm}
+                      </Button>
+                    </div>
+                  </motion.div>
+                ) : null}
               </form>
               )}
             </motion.div>

@@ -4,8 +4,30 @@ import { Button } from './Button';
 import { Cookie } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { readConsent, saveConsent } from '../lib/analytics';
+import { useLanguage, type Language } from '../lib/i18n';
+
+const consentCopy: Record<Language, {
+  title: string;
+  body: string;
+  privacy: string;
+  learnMore: string;
+  analytics: string;
+  advertising: string;
+  reject: string;
+  save: string;
+  customize: string;
+  accept: string;
+}> = {
+  en: { title: 'We value your privacy', body: 'We use optional analytics and advertising technologies only with your consent. Essential functions work without them. Read our', privacy: 'Privacy Policy', learnMore: 'to learn more.', analytics: 'Analytics', advertising: 'Advertising', reject: 'Reject all', save: 'Save choices', customize: 'Customize', accept: 'Accept all' },
+  it: { title: 'La tua privacy è importante', body: 'Usiamo strumenti facoltativi di analisi e pubblicità solo con il tuo consenso. Le funzioni essenziali funzionano comunque. Leggi la nostra', privacy: 'Privacy Policy', learnMore: 'per saperne di più.', analytics: 'Analisi', advertising: 'Pubblicità', reject: 'Rifiuta tutto', save: 'Salva scelte', customize: 'Personalizza', accept: 'Accetta tutto' },
+  fr: { title: 'Votre vie privée compte', body: 'Nous utilisons les outils facultatifs d’analyse et de publicité uniquement avec votre accord. Les fonctions essentielles restent actives. Consultez notre', privacy: 'Politique de confidentialité', learnMore: 'pour en savoir plus.', analytics: 'Analyse', advertising: 'Publicité', reject: 'Tout refuser', save: 'Enregistrer', customize: 'Personnaliser', accept: 'Tout accepter' },
+  de: { title: 'Ihre Privatsphäre ist uns wichtig', body: 'Optionale Analyse- und Werbetechnologien verwenden wir nur mit Ihrer Einwilligung. Wesentliche Funktionen bleiben aktiv. Lesen Sie unsere', privacy: 'Datenschutzerklärung', learnMore: 'für weitere Informationen.', analytics: 'Analyse', advertising: 'Werbung', reject: 'Alle ablehnen', save: 'Auswahl speichern', customize: 'Anpassen', accept: 'Alle akzeptieren' },
+  es: { title: 'Tu privacidad nos importa', body: 'Usamos herramientas opcionales de análisis y publicidad solo con tu consentimiento. Las funciones esenciales siguen activas. Lee nuestra', privacy: 'Política de privacidad', learnMore: 'para saber más.', analytics: 'Análisis', advertising: 'Publicidad', reject: 'Rechazar todo', save: 'Guardar opciones', customize: 'Personalizar', accept: 'Aceptar todo' },
+};
 
 export function CookieConsent() {
+  const { language } = useLanguage();
+  const copy = consentCopy[language];
   const [showConsent, setShowConsent] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [analytics, setAnalytics] = useState(false);
@@ -63,14 +85,14 @@ export function CookieConsent() {
               <Cookie className="w-6 h-6 text-venetian-gold flex-shrink-0 mt-1" />
               <div>
                 <h3 id="cookie-consent-title" className="text-lg font-medium text-venetian-brown dark:text-venetian-sandstone mb-1">
-                  We value your privacy
+                  {copy.title}
                 </h3>
                 <p className="text-sm text-venetian-brown/90 dark:text-venetian-sandstone/90">
-                  We use optional analytics and advertising technologies only with your consent. Essential functions work without them. Read our{' '}
+                  {copy.body}{' '}
                   <Link to="/privacy" className="font-semibold text-venetian-brown dark:text-venetian-sandstone underline decoration-venetian-gold decoration-2 underline-offset-2">
-                    Privacy Policy
+                    {copy.privacy}
                   </Link>{' '}
-                  to learn more.
+                  {copy.learnMore}
                 </p>
               </div>
             </div>
@@ -83,7 +105,7 @@ export function CookieConsent() {
                     onChange={event => setAnalytics(event.target.checked)}
                     className="accent-venetian-gold"
                   />
-                  Analytics
+                  {copy.analytics}
                 </label>
                 <label className="flex items-center gap-2 text-venetian-brown dark:text-venetian-sandstone">
                   <input
@@ -92,7 +114,7 @@ export function CookieConsent() {
                     onChange={event => setMarketing(event.target.checked)}
                     className="accent-venetian-gold"
                   />
-                  Advertising
+                  {copy.advertising}
                 </label>
               </div>
             )}
@@ -103,15 +125,15 @@ export function CookieConsent() {
                 onClick={handleReject}
                 className="whitespace-nowrap"
               >
-                Reject All
+                {copy.reject}
               </Button>
               {showPreferences ? (
                 <Button variant="outline" size="sm" onClick={handleSave}>
-                  Save choices
+                  {copy.save}
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" onClick={() => setShowPreferences(true)}>
-                  Customize
+                  {copy.customize}
                 </Button>
               )}
               <Button
@@ -119,7 +141,7 @@ export function CookieConsent() {
                 onClick={handleAccept}
                 className="bg-venetian-gold text-[#4A3329] font-semibold hover:bg-venetian-gold/90 whitespace-nowrap"
               >
-                Accept All
+                {copy.accept}
               </Button>
             </div>
           </div>
