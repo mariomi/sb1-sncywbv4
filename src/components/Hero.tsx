@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowRight } from 'lucide-react';
-import { motion, type MotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { motion, type MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage, type Language } from '../lib/i18n';
@@ -132,6 +132,8 @@ function sceneAt(progress: number) {
   return progress < 0.13 ? 0 : progress < 0.28 ? 1 : progress < 0.4 ? 2 : progress < 0.53 ? 3 : progress < 0.65 ? 4 : 5;
 }
 
+const mobileScrollSnapPoints = [0, 0.15, 0.255, 0.38, 0.53, 0.6, 0.71, 0.855, 1] as const;
+
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState<HeroPhase>('prompt');
@@ -146,51 +148,55 @@ export function Hero() {
   const { language } = useLanguage();
   const copy = heroCopy[language];
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] });
-  const smoothScrollYProgress = useSpring(scrollYProgress, {
+  const followsTouchGesture = typeof window !== 'undefined'
+    && window.matchMedia('(max-width: 1023px) and (any-pointer: coarse)').matches;
+  const dormantScrollYProgress = useMotionValue(0);
+  const smoothScrollYProgress = useSpring(followsTouchGesture ? dormantScrollYProgress : scrollYProgress, {
     stiffness: 190,
     damping: 30,
     mass: 0.45,
     restDelta: 0.0001,
     restSpeed: 0.001,
   });
+  const visualScrollYProgress = followsTouchGesture ? scrollYProgress : smoothScrollYProgress;
 
-  const promptOpacity = useTransform(smoothScrollYProgress, [0, 0.055, 0.13], [1, 1, 0]);
+  const promptOpacity = useTransform(visualScrollYProgress, [0, 0.055, 0.13], [1, 1, 0]);
 
-  const firstOpacity = useTransform(smoothScrollYProgress, [0.05, 0.105, 0.21, 0.27], [0, 1, 1, 0]);
-  const firstX = useTransform(smoothScrollYProgress, [0.07, 0.26], ['0vw', '-12vw']);
-  const firstScale = useTransform(smoothScrollYProgress, [0.07, 0.26], [0.94, 1.03]);
+  const firstOpacity = useTransform(visualScrollYProgress, [0.05, 0.105, 0.21, 0.27], [0, 1, 1, 0]);
+  const firstX = useTransform(visualScrollYProgress, [0.07, 0.26], ['0vw', '-12vw']);
+  const firstScale = useTransform(visualScrollYProgress, [0.07, 0.26], [0.94, 1.03]);
 
-  const secondOpacity = useTransform(smoothScrollYProgress, [0.18, 0.235, 0.31, 0.37], [0, 1, 1, 0]);
-  const secondX = useTransform(smoothScrollYProgress, [0.18, 0.25, 0.36], ['38vw', '5vw', '-8vw']);
-  const secondY = useTransform(smoothScrollYProgress, [0.18, 0.36], ['5vh', '-2vh']);
+  const secondOpacity = useTransform(visualScrollYProgress, [0.18, 0.235, 0.31, 0.37], [0, 1, 1, 0]);
+  const secondX = useTransform(visualScrollYProgress, [0.18, 0.25, 0.36], ['38vw', '5vw', '-8vw']);
+  const secondY = useTransform(visualScrollYProgress, [0.18, 0.36], ['5vh', '-2vh']);
 
-  const thirdOpacity = useTransform(smoothScrollYProgress, [0.29, 0.35, 0.43, 0.49], [0, 1, 1, 0]);
-  const thirdX = useTransform(smoothScrollYProgress, [0.29, 0.37, 0.48], ['-40vw', '-5vw', '8vw']);
-  const thirdY = useTransform(smoothScrollYProgress, [0.29, 0.48], ['-4vh', '3vh']);
+  const thirdOpacity = useTransform(visualScrollYProgress, [0.29, 0.35, 0.43, 0.49], [0, 1, 1, 0]);
+  const thirdX = useTransform(visualScrollYProgress, [0.29, 0.37, 0.48], ['-40vw', '-5vw', '8vw']);
+  const thirdY = useTransform(visualScrollYProgress, [0.29, 0.48], ['-4vh', '3vh']);
 
-  const clusterOpacity = useTransform(smoothScrollYProgress, [0.42, 0.48, 0.57, 0.63], [0, 1, 1, 0]);
-  const clusterOneOpacity = useTransform(smoothScrollYProgress, [0.42, 0.465, 0.575, 0.625], [0, 1, 1, 0]);
-  const clusterTwoOpacity = useTransform(smoothScrollYProgress, [0.45, 0.495, 0.58, 0.63], [0, 1, 1, 0]);
-  const clusterThreeOpacity = useTransform(smoothScrollYProgress, [0.48, 0.525, 0.585, 0.635], [0, 1, 1, 0]);
-  const clusterLeftX = useTransform(smoothScrollYProgress, [0.42, 0.56], ['-12vw', '-24vw']);
-  const clusterRightX = useTransform(smoothScrollYProgress, [0.45, 0.57], ['13vw', '25vw']);
-  const clusterBottomY = useTransform(smoothScrollYProgress, [0.48, 0.59], ['18vh', '25vh']);
+  const clusterOpacity = useTransform(visualScrollYProgress, [0.42, 0.48, 0.57, 0.63], [0, 1, 1, 0]);
+  const clusterOneOpacity = useTransform(visualScrollYProgress, [0.42, 0.465, 0.575, 0.625], [0, 1, 1, 0]);
+  const clusterTwoOpacity = useTransform(visualScrollYProgress, [0.45, 0.495, 0.58, 0.63], [0, 1, 1, 0]);
+  const clusterThreeOpacity = useTransform(visualScrollYProgress, [0.48, 0.525, 0.585, 0.635], [0, 1, 1, 0]);
+  const clusterLeftX = useTransform(visualScrollYProgress, [0.42, 0.56], ['-12vw', '-24vw']);
+  const clusterRightX = useTransform(visualScrollYProgress, [0.45, 0.57], ['13vw', '25vw']);
+  const clusterBottomY = useTransform(visualScrollYProgress, [0.48, 0.59], ['18vh', '25vh']);
 
-  const mainOpacity = useTransform(smoothScrollYProgress, [0.54, 0.59, 0.93, 0.99], [0, 1, 1, 0.2]);
-  const mainScale = useTransform(smoothScrollYProgress, [0.54, 0.6, 0.67, 0.82], [0.28, 0.58, 1.04, 1]);
-  const shadeOpacity = useTransform(smoothScrollYProgress, [0.535, 0.58], [0, 1]);
-  const interludeOneOpacity = useTransform(smoothScrollYProgress, [0.545, 0.58, 0.625, 0.655], [0, 1, 1, 0]);
-  const interludeOneY = useTransform(smoothScrollYProgress, [0.545, 0.58, 0.625, 0.655], [18, 0, 0, -18]);
-  const interludeTwoOpacity = useTransform(smoothScrollYProgress, [0.655, 0.69, 0.735, 0.765], [0, 1, 1, 0]);
-  const interludeTwoY = useTransform(smoothScrollYProgress, [0.655, 0.69, 0.735, 0.765], [18, 0, 0, -18]);
-  const narrativeOpacity = useTransform(smoothScrollYProgress, [0.765, 0.785, 0.895, 0.945], [0, 1, 1, 0]);
-  const portalBackdropOpacity = useTransform(smoothScrollYProgress, [0.92, 0.97], [0, 1]);
-  const portalOpacity = useTransform(smoothScrollYProgress, [0.95, 0.985], [0, 1]);
-  const portalY = useTransform(smoothScrollYProgress, [0.95, 0.985], [32, 0]);
-  const skipOpacity = useTransform(smoothScrollYProgress, [0, 0.04, 0.11, 0.89, 0.97], [0, 0, 1, 1, 0]);
+  const mainOpacity = useTransform(visualScrollYProgress, [0.54, 0.59, 0.93, 0.99], [0, 1, 1, 0.2]);
+  const mainScale = useTransform(visualScrollYProgress, [0.54, 0.6, 0.67, 0.82], [0.28, 0.58, 1.04, 1]);
+  const shadeOpacity = useTransform(visualScrollYProgress, [0.535, 0.58], [0, 1]);
+  const interludeOneOpacity = useTransform(visualScrollYProgress, [0.545, 0.58, 0.625, 0.655], [0, 1, 1, 0]);
+  const interludeOneY = useTransform(visualScrollYProgress, [0.545, 0.58, 0.625, 0.655], [18, 0, 0, -18]);
+  const interludeTwoOpacity = useTransform(visualScrollYProgress, [0.655, 0.69, 0.735, 0.765], [0, 1, 1, 0]);
+  const interludeTwoY = useTransform(visualScrollYProgress, [0.655, 0.69, 0.735, 0.765], [18, 0, 0, -18]);
+  const narrativeOpacity = useTransform(visualScrollYProgress, [0.765, 0.785, 0.895, 0.945], [0, 1, 1, 0]);
+  const portalBackdropOpacity = useTransform(visualScrollYProgress, [0.92, 0.97], [0, 1]);
+  const portalOpacity = useTransform(visualScrollYProgress, [0.95, 0.985], [0, 1]);
+  const portalY = useTransform(visualScrollYProgress, [0.95, 0.985], [32, 0]);
+  const skipOpacity = useTransform(visualScrollYProgress, [0, 0.04, 0.11, 0.89, 0.97], [0, 0, 1, 1, 0]);
 
   useEffect(() => {
-    const visualProgress = smoothScrollYProgress.get();
+    const visualProgress = visualScrollYProgress.get();
     const nextPhase = phaseAt(visualProgress);
     const nextAssetStage = assetStageAt(scrollYProgress.get());
     const nextScene = sceneAt(visualProgress);
@@ -200,7 +206,7 @@ export function Hero() {
     setPhase(nextPhase);
     setAssetStage(nextAssetStage);
     setActiveScene(nextScene);
-  }, [scrollYProgress, smoothScrollYProgress]);
+  }, [scrollYProgress, visualScrollYProgress]);
 
   useLayoutEffect(() => {
     const root = document.documentElement;
@@ -232,7 +238,7 @@ export function Hero() {
     }
   });
 
-  useMotionValueEvent(smoothScrollYProgress, 'change', (progress) => {
+  useMotionValueEvent(visualScrollYProgress, 'change', (progress) => {
     const nextPhase = phaseAt(progress);
     if (phaseRef.current !== nextPhase) {
       phaseRef.current = nextPhase;
@@ -295,6 +301,17 @@ export function Hero() {
 
   return (
     <section ref={sectionRef} id="home-scroll-intro" className="relative h-[510svh] touch-pan-y bg-[#050505] sm:h-[535svh] lg:h-[565svh]" aria-labelledby="home-title">
+      {mobileScrollSnapPoints.map((progress) => {
+        const offset = progress * 100;
+        return (
+          <span
+            key={progress}
+            aria-hidden="true"
+            className="home-scroll-snap-point pointer-events-none absolute left-0 h-px w-px"
+            style={{ top: `calc(${offset}% - ${offset}dvh)` }}
+          />
+        );
+      })}
       <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#050505]">
         <h1 id="home-title" className="sr-only">{copy.title}</h1>
         <p id="home-intro-story" className="sr-only">{copy.interludeOne} {copy.interludeTwo}</p>
@@ -372,7 +389,7 @@ export function Hero() {
             <p className="mb-7 text-[0.66rem] font-bold uppercase tracking-[0.24em] text-venetian-gold sm:mb-10 sm:text-xs">{copy.eyebrow}</p>
             <h2 aria-label={copy.title} className="mx-auto flex max-w-[12ch] flex-wrap justify-center gap-x-[0.2em] gap-y-[0.05em] font-serif text-[clamp(3.3rem,15vw,9.5rem)] font-semibold leading-[0.82] tracking-[-0.055em] text-white sm:leading-[0.78]">
               {copy.title.split(' ').map((word, index) => (
-                <ComposingWord key={`${word}-${index}`} word={word} index={index} progress={smoothScrollYProgress} />
+                <ComposingWord key={`${word}-${index}`} word={word} index={index} progress={visualScrollYProgress} />
               ))}
             </h2>
           </div>

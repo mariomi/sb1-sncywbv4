@@ -67,6 +67,17 @@
   }
 }
 
+@media (max-width: 1023px) and (any-pointer: coarse) {
+  html[data-home-intro-active='true'] {
+    scroll-snap-type: y mandatory;
+  }
+
+  .home-scroll-snap-point {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
