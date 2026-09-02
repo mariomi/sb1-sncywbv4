@@ -4,7 +4,7 @@ import { ArrowRight, Fish, Pizza, Wheat } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { categories, menuData } from './Menu';
 import { useLanguage, type Language } from '../lib/i18n';
-import menuImage from '../Img/food/IMG_2985.webp';
+import menuImage from '../Img/al-gobbo-2026/pasta-wide-1600.webp';
 
 const icons = { mare: Fish, terra: Wheat, pizza: Pizza };
 

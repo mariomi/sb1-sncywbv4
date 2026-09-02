@@ -77,24 +77,24 @@ const baseTranslations = {
       orCall: 'or call us'
     },
     gallery: {
-      title: 'A Culinary Journey Through Venice',
-      subtitle: 'Experience the artistry of our kitchen, where traditional Venetian recipes meet contemporary presentation',
+      title: 'Venice, From the Inside',
+      subtitle: 'Real moments from our dining room, tables, kitchen and bar in the heart of San Polo.',
       groups: {
-        dishes: {
-          title: 'Signature Dishes',
-          description: 'Our most beloved Venetian specialties'
+        cuisine: {
+          title: 'From the Kitchen',
+          description: 'Burrata, pasta, risotto and fish served at the table'
         },
-        ingredients: {
-          title: 'Fresh Ingredients',
-          description: 'Quality local produce from the Rialto Market'
+        tables: {
+          title: 'The Table',
+          description: 'Menus, details and the pleasure of taking a seat'
         },
-        ambiance: {
-          title: 'Restaurant Ambiance',
-          description: 'Experience our warm Venetian atmosphere'
+        spaces: {
+          title: 'The Rooms',
+          description: 'Brick, warm light and a distinctly Venetian character'
         },
-        desserts: {
-          title: 'Desserts',
-          description: 'Sweet endings to your Venetian meal'
+        hospitality: {
+          title: 'Our Welcome',
+          description: 'The team, the bar and the details behind every service'
         }
       }
     },
@@ -205,24 +205,24 @@ const baseTranslations = {
       orCall: 'oppure chiamaci'
     },
     gallery: {
-      title: 'Un Viaggio Culinario a Venezia',
-      subtitle: 'Scopri l\'arte della nostra cucina, dove le ricette tradizionali veneziane incontrano la presentazione contemporanea',
+      title: 'Venezia, da Dentro',
+      subtitle: 'Momenti reali della sala, dei tavoli, della cucina e del bar nel cuore di San Polo.',
       groups: {
-        dishes: {
-          title: 'Piatti Signature',
-          description: 'Le nostre specialità veneziane più amate'
+        cuisine: {
+          title: 'Dalla Cucina',
+          description: 'Burrata, pasta, risotto e pesce serviti al tavolo'
         },
-        ingredients: {
-          title: 'Ingredienti Freschi',
-          description: 'Prodotti locali di qualità dal Mercato di Rialto'
+        tables: {
+          title: 'La Tavola',
+          description: 'Menu, dettagli e il piacere di accomodarsi'
         },
-        ambiance: {
-          title: 'Atmosfera del Ristorante',
-          description: 'Vivi la nostra calda atmosfera veneziana'
+        spaces: {
+          title: 'Gli Spazi',
+          description: 'Mattoni, luce calda e carattere veneziano'
         },
-        desserts: {
-          title: 'Dessert',
-          description: 'Dolci conclusioni per il tuo pasto veneziano'
+        hospitality: {
+          title: 'L’Accoglienza',
+          description: 'Lo staff, il bar e i gesti dietro ogni servizio'
         }
       }
     },
@@ -305,13 +305,13 @@ export const translations = {
       orCall: 'ou appelez-nous',
     },
     gallery: {
-      title: 'Les saveurs de Venise en images',
-      subtitle: 'Découvrez nos plats, nos ingrédients et l’atmosphère d’Al Gobbo di Rialto.',
+      title: 'Venise, vue de l’intérieur',
+      subtitle: 'Des moments authentiques dans la salle, à table, en cuisine et au bar, au cœur de San Polo.',
       groups: {
-        dishes: { title: 'Plats signature', description: 'Les spécialités vénitiennes de la maison' },
-        ingredients: { title: 'Ingrédients', description: 'Des produits choisis avec attention' },
-        ambiance: { title: 'Le restaurant', description: 'Une atmosphère chaleureuse à San Polo' },
-        desserts: { title: 'Desserts', description: 'Une touche sucrée pour terminer' },
+        cuisine: { title: 'Depuis la cuisine', description: 'Burrata, pâtes, risotto et poisson servis à table' },
+        tables: { title: 'La table', description: 'Menus, détails et le plaisir de s’installer' },
+        spaces: { title: 'Les espaces', description: 'Briques, lumière chaleureuse et caractère vénitien' },
+        hospitality: { title: 'Notre accueil', description: 'L’équipe, le bar et les gestes derrière chaque service' },
       },
     },
     menu: {
@@ -367,13 +367,13 @@ export const translations = {
       orCall: 'oder anrufen',
     },
     gallery: {
-      title: 'Venedigs Aromen in Bildern',
-      subtitle: 'Entdecken Sie unsere Gerichte, Zutaten und die Atmosphäre im Al Gobbo di Rialto.',
+      title: 'Venedig, von innen',
+      subtitle: 'Echte Momente im Gastraum, am Tisch, in der Küche und an der Bar im Herzen von San Polo.',
       groups: {
-        dishes: { title: 'Spezialitäten', description: 'Beliebte venezianische Gerichte' },
-        ingredients: { title: 'Zutaten', description: 'Sorgfältig ausgewählte Produkte' },
-        ambiance: { title: 'Restaurant', description: 'Herzliche Atmosphäre in San Polo' },
-        desserts: { title: 'Desserts', description: 'Ein süßer Abschluss' },
+        cuisine: { title: 'Aus der Küche', description: 'Burrata, Pasta, Risotto und Fisch am Tisch serviert' },
+        tables: { title: 'Der Tisch', description: 'Speisekarten, Details und die Freude am Platznehmen' },
+        spaces: { title: 'Die Räume', description: 'Ziegel, warmes Licht und venezianischer Charakter' },
+        hospitality: { title: 'Unser Empfang', description: 'Team, Bar und die Details hinter jedem Service' },
       },
     },
     menu: {
@@ -429,13 +429,13 @@ export const translations = {
       orCall: 'o llámanos',
     },
     gallery: {
-      title: 'Los sabores de Venecia en imágenes',
-      subtitle: 'Descubre nuestros platos, ingredientes y el ambiente de Al Gobbo di Rialto.',
+      title: 'Venecia, desde dentro',
+      subtitle: 'Momentos reales del comedor, las mesas, la cocina y el bar en el corazón de San Polo.',
       groups: {
-        dishes: { title: 'Platos destacados', description: 'Especialidades venecianas de la casa' },
-        ingredients: { title: 'Ingredientes', description: 'Productos elegidos con cuidado' },
-        ambiance: { title: 'El restaurante', description: 'Un ambiente acogedor en San Polo' },
-        desserts: { title: 'Postres', description: 'El final más dulce' },
+        cuisine: { title: 'Desde la cocina', description: 'Burrata, pasta, risotto y pescado servidos en la mesa' },
+        tables: { title: 'La mesa', description: 'Menús, detalles y el placer de sentarse' },
+        spaces: { title: 'Los espacios', description: 'Ladrillo, luz cálida y carácter veneciano' },
+        hospitality: { title: 'Nuestra bienvenida', description: 'El equipo, el bar y los gestos detrás de cada servicio' },
       },
     },
     menu: {

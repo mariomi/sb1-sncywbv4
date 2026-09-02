@@ -13,7 +13,7 @@ interface SEOHeadProps {
 }
 
 const BASE_URL = 'https://www.ristorantealgobbodirialto.it';
-const DEFAULT_IMAGE = `${BASE_URL}/images/hero/img0.jpg`;
+const DEFAULT_IMAGE = `${BASE_URL}/images/hero/al-gobbo-rialto.jpg`;
 const SITE_NAME = 'Ristorante Al Gobbo di Rialto';
 const DEFAULT_DESCRIPTION = 'Authentic Venetian cuisine near Rialto Bridge in Venice. Seafood, traditional recipes and family hospitality since 1955. Book your table online.';
 const LOCALES: Record<Language, string> = {

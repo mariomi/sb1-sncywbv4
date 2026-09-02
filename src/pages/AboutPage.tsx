@@ -5,9 +5,9 @@ import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
 import { SocialProof } from '../components/SocialProof';
 import { useLanguage, type Language } from '../lib/i18n';
-import roomImage from '../Img/G1/IMG_2960.webp';
-import tableImage from '../Img/G1/IMG_2962.webp';
-import dishImage from '../Img/food/IMG_2985.webp';
+import roomImage from '../Img/al-gobbo-2026/interior-wide-1600.webp';
+import tableImage from '../Img/al-gobbo-2026/table-portrait-1200.webp';
+import dishImage from '../Img/al-gobbo-2026/pasta-wide-1600.webp';
 
 type StoryCopy = {
   seoTitle: string;

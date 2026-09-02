@@ -2,7 +2,7 @@ import { Fish, Leaf, UtensilsCrossed } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
-import dishImage from '../Img/food/IMG_2980.webp';
+import dishImage from '../Img/al-gobbo-2026/risotto-wide-1600.webp';
 
 const dishes = [
   { name: 'Sarde in saor', text: 'Sardines with onions and a sweet-and-sour balance: a recipe shaped by Venice’s historic need to preserve food.' },

@@ -11,7 +11,7 @@ import { reservationSchema, type ReservationFormData } from '../lib/validators';
 import { PageTransition } from '../components/PageTransition';
 import { useLanguage, type Language } from '../lib/i18n';
 import { trackEvent } from '../lib/analytics';
-import img2939 from '../Img/G1/IMG_2939.webp';
+import reservationImage from '../Img/al-gobbo-2026/reserved-table-wide-1600.webp';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -664,7 +664,7 @@ export function ReservePage() {
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: `url(${img2939})`
+              backgroundImage: `url(${reservationImage})`
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent" />

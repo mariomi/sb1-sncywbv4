@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
 import { SocialProof } from '../components/SocialProof';
-import seafoodImage from '../Img/food/IMG_2980.webp';
-import restaurantImage from '../Img/G1/IMG_2960.webp';
+import seafoodImage from '../Img/al-gobbo-2026/fish-wide-1600.webp';
+import restaurantImage from '../Img/al-gobbo-2026/interior-bar-wide-1600.webp';
 
 type LandingConfig = {
   canonical: string;

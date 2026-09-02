@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Button } from '../components/Button';
 import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
-import img2947 from '../Img/G1/IMG_2947.webp';
+import exteriorImage from '../Img/al-gobbo-2026/exterior-wide-1600.webp';
 import { createContactMessage } from '../lib/api';
 import { useLanguage, type Language } from '../lib/i18n';
 
@@ -137,7 +137,7 @@ export function ContactPage() {
       <SEOHead title={text.seoTitle} canonical="/contact" description={text.seoDescription} />
       <main className="min-h-screen bg-[#f7f3eb] pb-16 pt-[84px] dark:bg-venetian-brown sm:pb-24">
         <motion.section className="relative mx-auto h-[34svh] min-h-[280px] max-w-[1480px] overflow-hidden border-x border-venetian-brown/15 dark:border-white/10 sm:h-[46vh] sm:min-h-[420px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
-          <img src={img2947} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
+          <img src={exteriorImage} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/20" />
           <div className="relative flex h-full items-end px-5 py-8 sm:px-10 sm:py-12 lg:px-16">
             <div className="max-w-3xl">

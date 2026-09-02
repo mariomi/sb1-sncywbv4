@@ -2,29 +2,33 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { ArrowUpRight, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useLanguage } from '../lib/i18n';
-import img2980 from '../Img/food/IMG_2980.webp';
-import img2984 from '../Img/food/IMG_2984.webp';
-import img2985 from '../Img/food/IMG_2985.webp';
-import img2986 from '../Img/food/IMG_2986.webp';
-import img2922 from '../Img/G1/IMG_2922.webp';
-import img2941 from '../Img/G1/IMG_2941.webp';
-import img2943 from '../Img/G1/IMG_2943.webp';
-import img2960 from '../Img/G1/IMG_2960.webp';
-import img2962 from '../Img/G1/IMG_2962.webp';
-import img2968 from '../Img/G1/IMG_2968.webp';
-import img2978 from '../Img/G1/IMG_2978.webp';
-import img2992 from '../Img/G1/IMG_2992.webp';
+import barDetail from '../Img/al-gobbo-2026/bar-detail-wide-1600.webp';
+import barWide from '../Img/al-gobbo-2026/bar-wide-1600.webp';
+import brandDetail from '../Img/al-gobbo-2026/brand-detail-wide-1600.webp';
+import brandTable from '../Img/al-gobbo-2026/brand-table-wide-1600.webp';
+import burrata from '../Img/al-gobbo-2026/burrata-wide-1600.webp';
+import exterior from '../Img/al-gobbo-2026/exterior-wide-1600.webp';
+import fish from '../Img/al-gobbo-2026/fish-wide-1600.webp';
+import interiorBar from '../Img/al-gobbo-2026/interior-bar-wide-1600.webp';
+import interiorHero from '../Img/al-gobbo-2026/interior-hero-1600.webp';
+import interiorWide from '../Img/al-gobbo-2026/interior-wide-1600.webp';
+import pasta from '../Img/al-gobbo-2026/pasta-wide-1600.webp';
+import reservedTable from '../Img/al-gobbo-2026/reserved-table-wide-1600.webp';
+import risotto from '../Img/al-gobbo-2026/risotto-wide-1600.webp';
+import staff from '../Img/al-gobbo-2026/staff-wide-1600.webp';
+import tableWide from '../Img/al-gobbo-2026/table-wide-1600.webp';
+import wineWall from '../Img/al-gobbo-2026/wine-wall-portrait-1200.webp';
 
 type GalleryGroup = {
-  id: 'dishes' | 'ingredients' | 'ambiance' | 'desserts';
+  id: 'cuisine' | 'tables' | 'spaces' | 'hospitality';
   images: { url: string; alt: string }[];
 };
 
 const galleryGroups: GalleryGroup[] = [
-  { id: 'dishes', images: [{ url: img2980, alt: 'Tagliolini con gamberi e zucchine' }, { url: img2984, alt: 'Piatto della cucina italiana' }, { url: img2985, alt: 'Risotto di mare' }, { url: img2986, alt: 'Specialità del ristorante' }] },
-  { id: 'ingredients', images: [{ url: img2941, alt: 'Dettaglio del ristorante' }, { url: img2943, alt: 'Atmosfera veneziana' }, { url: img2960, alt: 'Sala del ristorante' }] },
-  { id: 'ambiance', images: [{ url: img2922, alt: 'Giardino interno del ristorante' }, { url: img2962, alt: 'Tavoli apparecchiati nella sala' }, { url: img2968, alt: 'Dettaglio della sala' }] },
-  { id: 'desserts', images: [{ url: img2978, alt: 'Dolce della casa' }, { url: img2992, alt: 'Dessert italiano' }] },
+  { id: 'cuisine', images: [{ url: burrata, alt: 'Burrata con pomodorini servita da Al Gobbo di Rialto' }, { url: pasta, alt: 'Pasta della cucina di Al Gobbo di Rialto' }, { url: risotto, alt: 'Risotto preparato nella cucina del ristorante' }, { url: fish, alt: 'Secondo piatto di pesce servito al tavolo' }] },
+  { id: 'tables', images: [{ url: tableWide, alt: 'Tavolo apparecchiato nella sala' }, { url: brandTable, alt: 'Mise en place con il menu del ristorante' }, { url: brandDetail, alt: 'Dettaglio del marchio Al Gobbo di Rialto' }, { url: reservedTable, alt: 'Tavoli pronti per accogliere gli ospiti' }] },
+  { id: 'spaces', images: [{ url: interiorHero, alt: 'La sala interna di Al Gobbo di Rialto' }, { url: interiorWide, alt: 'Interni veneziani del ristorante' }, { url: interiorBar, alt: 'Vista della sala verso il bar' }, { url: exterior, alt: 'L’ingresso di Al Gobbo di Rialto a San Polo' }] },
+  { id: 'hospitality', images: [{ url: staff, alt: 'Lo staff di Al Gobbo di Rialto' }, { url: barWide, alt: 'Il bancone del ristorante' }, { url: barDetail, alt: 'Dettaglio del bar' }, { url: wineWall, alt: 'La selezione di vini del ristorante' }] },
 ];
 
 function GalleryModal({ group, onClose }: { group: GalleryGroup; onClose: () => void }) {

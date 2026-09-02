@@ -4,25 +4,25 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage, type Language } from '../lib/i18n';
 import { developerLegalIdentity, restaurantLegalIdentity } from '../lib/legal';
-import heroImage from '../Img/G1/IMG_2922.webp';
-import hero480 from '../Img/G1/IMG_2922-480.webp';
-import hero900 from '../Img/G1/IMG_2922-900.webp';
-import hero1200 from '../Img/G1/IMG_2922-1200.webp';
-import gardenImage from '../Img/G1/IMG_2934.webp';
-import garden480 from '../Img/G1/IMG_2934-480.webp';
-import garden900 from '../Img/G1/IMG_2934-900.webp';
-import closingImage from '../Img/G1/IMG_2939.webp';
-import closing480 from '../Img/G1/IMG_2939-480.webp';
-import closing900 from '../Img/G1/IMG_2939-900.webp';
-import welcomeImage from '../Img/G1/IMG_2944.webp';
-import welcome480 from '../Img/G1/IMG_2944-480.webp';
-import welcome900 from '../Img/G1/IMG_2944-900.webp';
-import roomImage from '../Img/G1/IMG_2965.webp';
-import room480 from '../Img/G1/IMG_2965-480.webp';
-import room900 from '../Img/G1/IMG_2965-900.webp';
-import tableImage from '../Img/G1/IMG_2995.webp';
-import table480 from '../Img/G1/IMG_2995-480.webp';
-import table900 from '../Img/G1/IMG_2995-900.webp';
+import heroImage from '../Img/al-gobbo-2026/interior-hero-1600.webp';
+import hero480 from '../Img/al-gobbo-2026/interior-hero-480.webp';
+import hero900 from '../Img/al-gobbo-2026/interior-hero-900.webp';
+import hero1200 from '../Img/al-gobbo-2026/interior-hero-1200.webp';
+import gardenImage from '../Img/al-gobbo-2026/bar-portrait-1200.webp';
+import garden480 from '../Img/al-gobbo-2026/bar-portrait-480.webp';
+import garden900 from '../Img/al-gobbo-2026/bar-portrait-900.webp';
+import closingImage from '../Img/al-gobbo-2026/burrata-portrait-1200.webp';
+import closing480 from '../Img/al-gobbo-2026/burrata-portrait-480.webp';
+import closing900 from '../Img/al-gobbo-2026/burrata-portrait-900.webp';
+import welcomeImage from '../Img/al-gobbo-2026/staff-wide-1600.webp';
+import welcome480 from '../Img/al-gobbo-2026/staff-wide-480.webp';
+import welcome900 from '../Img/al-gobbo-2026/staff-wide-900.webp';
+import roomImage from '../Img/al-gobbo-2026/entrance-portrait-1200.webp';
+import room480 from '../Img/al-gobbo-2026/entrance-portrait-480.webp';
+import room900 from '../Img/al-gobbo-2026/entrance-portrait-900.webp';
+import tableImage from '../Img/al-gobbo-2026/table-portrait-1200.webp';
+import table480 from '../Img/al-gobbo-2026/table-portrait-480.webp';
+import table900 from '../Img/al-gobbo-2026/table-portrait-900.webp';
 
 const heroCopy: Record<Language, {
   scroll: string;
@@ -51,7 +51,7 @@ const heroCopy: Record<Language, {
     portalKicker: 'Il prossimo momento è tuo', portalTitle: 'Il tuo tavolo, a Venezia.',
     portalHint: 'Scegli il giorno. Noi prepariamo il resto.',
     reserve: 'Prenota il tuo tavolo', place: 'Venezia · San Polo', privacy: 'Privacy', legal: 'Note legali', developedBy: 'Sito di',
-    imageAlt: 'Il giardino interno del Ristorante Al Gobbo di Rialto',
+    imageAlt: 'La sala interna del Ristorante Al Gobbo di Rialto',
   },
   en: {
     scroll: 'Scroll', skip: 'Skip introduction', eyebrow: 'San Polo 649 · steps from Rialto',
@@ -62,7 +62,7 @@ const heroCopy: Record<Language, {
     portalKicker: 'The next moment is yours', portalTitle: 'Your table, in Venice.',
     portalHint: 'Choose the day. We will prepare the rest.',
     reserve: 'Reserve your table', place: 'Venice · San Polo', privacy: 'Privacy', legal: 'Legal notice', developedBy: 'Website by',
-    imageAlt: 'The hidden garden at Al Gobbo di Rialto restaurant',
+    imageAlt: 'The dining room at Al Gobbo di Rialto restaurant',
   },
   fr: {
     scroll: 'Faites défiler', skip: 'Passer l’introduction', eyebrow: 'San Polo 649 · à deux pas du Rialto',
@@ -73,7 +73,7 @@ const heroCopy: Record<Language, {
     portalKicker: 'Le prochain moment est à vous', portalTitle: 'Votre table, à Venise.',
     portalHint: 'Choisissez le jour. Nous préparons le reste.',
     reserve: 'Réserver votre table', place: 'Venise · San Polo', privacy: 'Confidentialité', legal: 'Mentions légales', developedBy: 'Site par',
-    imageAlt: 'Le jardin intérieur du restaurant Al Gobbo di Rialto',
+    imageAlt: 'La salle du restaurant Al Gobbo di Rialto',
   },
   de: {
     scroll: 'Scrollen', skip: 'Einführung überspringen', eyebrow: 'San Polo 649 · wenige Schritte vom Rialto',
@@ -84,7 +84,7 @@ const heroCopy: Record<Language, {
     portalKicker: 'Der nächste Moment gehört Ihnen', portalTitle: 'Ihr Tisch, in Venedig.',
     portalHint: 'Wählen Sie den Tag. Wir bereiten den Rest vor.',
     reserve: 'Tisch reservieren', place: 'Venedig · San Polo', privacy: 'Datenschutz', legal: 'Impressum', developedBy: 'Website von',
-    imageAlt: 'Der versteckte Garten des Restaurants Al Gobbo di Rialto',
+    imageAlt: 'Der Gastraum des Restaurants Al Gobbo di Rialto',
   },
   es: {
     scroll: 'Desliza', skip: 'Saltar introducción', eyebrow: 'San Polo 649 · a un paso de Rialto',
@@ -95,7 +95,7 @@ const heroCopy: Record<Language, {
     portalKicker: 'El próximo momento es tuyo', portalTitle: 'Tu mesa, en Venecia.',
     portalHint: 'Elige el día. Nosotros preparamos el resto.',
     reserve: 'Reserva tu mesa', place: 'Venecia · San Polo', privacy: 'Privacidad', legal: 'Aviso legal', developedBy: 'Sitio de',
-    imageAlt: 'El jardín interior del restaurante Al Gobbo di Rialto',
+    imageAlt: 'El comedor del restaurante Al Gobbo di Rialto',
   },
 };
 
@@ -277,12 +277,12 @@ export function Hero() {
     window.scrollTo({ top: targetTop, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
   };
 
-  const heroSrcSet = `${hero480} 480w, ${hero900} 900w, ${hero1200} 1200w, ${heroImage} 1500w`;
-  const roomSrcSet = responsiveSources(room480, room900, roomImage, 1125);
-  const tableSrcSet = responsiveSources(table480, table900, tableImage);
-  const gardenSrcSet = responsiveSources(garden480, garden900, gardenImage, 1125);
-  const closingSrcSet = responsiveSources(closing480, closing900, closingImage, 1125);
-  const welcomeSrcSet = responsiveSources(welcome480, welcome900, welcomeImage, 1125);
+  const heroSrcSet = `${hero480} 480w, ${hero900} 900w, ${hero1200} 1200w, ${heroImage} 1600w`;
+  const roomSrcSet = responsiveSources(room480, room900, roomImage, 1200);
+  const tableSrcSet = responsiveSources(table480, table900, tableImage, 1200);
+  const gardenSrcSet = responsiveSources(garden480, garden900, gardenImage, 1200);
+  const closingSrcSet = responsiveSources(closing480, closing900, closingImage, 1200);
+  const welcomeSrcSet = responsiveSources(welcome480, welcome900, welcomeImage, 1600);
 
   if (prefersReducedMotion) {
     return (
@@ -356,7 +356,7 @@ export function Hero() {
             <motion.img src={closingImage} srcSet={closingSrcSet} sizes="(min-width: 640px) 25vw, 42vw" alt="" style={{ opacity: clusterOneOpacity, x: clusterLeftX, rotate: -3 }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
           </div>
           <div className="absolute left-1/2 top-[43%] h-[42svh] w-[44vw] -translate-x-1/2 -translate-y-1/2 sm:h-[50svh] sm:w-[26vw]">
-            <motion.img src={welcomeImage} srcSet={welcomeSrcSet} sizes="(min-width: 640px) 26vw, 44vw" alt="" style={{ opacity: clusterTwoOpacity, x: clusterRightX, rotate: 3 }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
+            <motion.img src={welcomeImage} srcSet={welcomeSrcSet} sizes="(min-width: 640px) 26vw, 44vw" alt="" style={{ opacity: clusterTwoOpacity, x: clusterRightX, rotate: 3 }} className="h-full w-full border border-white/10 object-cover object-[28%_center] will-change-[transform,opacity]" decoding="async" />
           </div>
           <div className="absolute left-1/2 top-1/2 h-[32svh] w-[50vw] -translate-x-1/2 -translate-y-1/2 sm:h-[38svh] sm:w-[28vw]">
             <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 28vw, 50vw" alt="" style={{ opacity: clusterThreeOpacity, y: clusterBottomY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
