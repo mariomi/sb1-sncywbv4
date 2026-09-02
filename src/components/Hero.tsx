@@ -29,6 +29,8 @@ const heroCopy: Record<Language, {
   eyebrow: string;
   title: string;
   body: string;
+  interludeOne: string;
+  interludeTwo: string;
   portalKicker: string;
   portalTitle: string;
   portalHint: string;
@@ -40,6 +42,8 @@ const heroCopy: Record<Language, {
     scroll: 'Scorri', skip: 'Salta introduzione', eyebrow: 'San Polo 649 · a due passi da Rialto',
     title: 'Fuori, Rialto. Dentro, un’altra Venezia.',
     body: 'Una porta, il profumo della cucina, un giardino nascosto. Dal 1955 accogliamo Venezia a tavola.',
+    interludeOne: 'Segui il profumo tra le calli.',
+    interludeTwo: 'Un passo ancora.\nIl giardino si rivela.',
     portalKicker: 'Il prossimo momento è tuo', portalTitle: 'Il tuo tavolo, a Venezia.',
     portalHint: 'Scegli il giorno. Noi prepariamo il resto.',
     reserve: 'Prenota il tuo tavolo', place: 'Venezia · San Polo',
@@ -49,6 +53,8 @@ const heroCopy: Record<Language, {
     scroll: 'Scroll', skip: 'Skip introduction', eyebrow: 'San Polo 649 · steps from Rialto',
     title: 'Outside, Rialto. Inside, another Venice.',
     body: 'A doorway, the aroma of the kitchen, a hidden garden. Since 1955, we have welcomed Venice to the table.',
+    interludeOne: 'Follow the aroma through Venice’s calli.',
+    interludeTwo: 'One step further.\nThe garden reveals itself.',
     portalKicker: 'The next moment is yours', portalTitle: 'Your table, in Venice.',
     portalHint: 'Choose the day. We will prepare the rest.',
     reserve: 'Reserve your table', place: 'Venice · San Polo',
@@ -58,6 +64,8 @@ const heroCopy: Record<Language, {
     scroll: 'Faites défiler', skip: 'Passer l’introduction', eyebrow: 'San Polo 649 · à deux pas du Rialto',
     title: 'Dehors, le Rialto. Dedans, une autre Venise.',
     body: 'Une porte, les parfums de la cuisine, un jardin caché. Depuis 1955, nous accueillons Venise à table.',
+    interludeOne: 'Suivez les parfums dans les calli de Venise.',
+    interludeTwo: 'Encore un pas.\nLe jardin se dévoile.',
     portalKicker: 'Le prochain moment est à vous', portalTitle: 'Votre table, à Venise.',
     portalHint: 'Choisissez le jour. Nous préparons le reste.',
     reserve: 'Réserver votre table', place: 'Venise · San Polo',
@@ -67,6 +75,8 @@ const heroCopy: Record<Language, {
     scroll: 'Scrollen', skip: 'Einführung überspringen', eyebrow: 'San Polo 649 · wenige Schritte vom Rialto',
     title: 'Draußen Rialto. Drinnen ein anderes Venedig.',
     body: 'Eine Tür, der Duft aus der Küche, ein versteckter Garten. Seit 1955 heißen wir Venedig am Tisch willkommen.',
+    interludeOne: 'Folgen Sie dem Duft durch Venedigs Calli.',
+    interludeTwo: 'Noch ein Schritt.\nDer Garten zeigt sich.',
     portalKicker: 'Der nächste Moment gehört Ihnen', portalTitle: 'Ihr Tisch, in Venedig.',
     portalHint: 'Wählen Sie den Tag. Wir bereiten den Rest vor.',
     reserve: 'Tisch reservieren', place: 'Venedig · San Polo',
@@ -76,6 +86,8 @@ const heroCopy: Record<Language, {
     scroll: 'Desliza', skip: 'Saltar introducción', eyebrow: 'San Polo 649 · a un paso de Rialto',
     title: 'Fuera, Rialto. Dentro, otra Venecia.',
     body: 'Una puerta, el aroma de la cocina, un jardín escondido. Desde 1955 recibimos a Venecia en la mesa.',
+    interludeOne: 'Sigue el aroma por las calli de Venecia.',
+    interludeTwo: 'Un paso más.\nEl jardín se revela.',
     portalKicker: 'El próximo momento es tuyo', portalTitle: 'Tu mesa, en Venecia.',
     portalHint: 'Elige el día. Nosotros preparamos el resto.',
     reserve: 'Reserva tu mesa', place: 'Venecia · San Polo',
@@ -88,10 +100,10 @@ function responsiveSources(small: string, medium: string, large: string, largeWi
 }
 
 function ComposingWord({ word, index, progress }: { word: string; index: number; progress: MotionValue<number> }) {
-  const enterStart = 0.665 + index * 0.018;
-  const enterEnd = enterStart + 0.034;
-  const exitStart = 0.848 + index * 0.006;
-  const exitEnd = exitStart + 0.05;
+  const enterStart = 0.775 + index * 0.008;
+  const enterEnd = enterStart + 0.028;
+  const exitStart = 0.875 + index * 0.004;
+  const exitEnd = exitStart + 0.04;
   const direction = index % 2 === 0 ? -1 : 1;
   const opacity = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [0, 1, 1, 0]);
   const x = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [direction * 28, 0, 0, direction * -55]);
@@ -109,7 +121,7 @@ function ComposingWord({ word, index, progress }: { word: string; index: number;
 type HeroPhase = 'prompt' | 'reveal' | 'narrative' | 'portal';
 
 function phaseAt(progress: number): HeroPhase {
-  return progress < 0.13 ? 'prompt' : progress < 0.64 ? 'reveal' : progress < 0.92 ? 'narrative' : 'portal';
+  return progress < 0.13 ? 'prompt' : progress < 0.765 ? 'reveal' : progress < 0.965 ? 'narrative' : 'portal';
 }
 
 function assetStageAt(progress: number) {
@@ -164,14 +176,18 @@ export function Hero() {
   const clusterRightX = useTransform(smoothScrollYProgress, [0.45, 0.57], ['13vw', '25vw']);
   const clusterBottomY = useTransform(smoothScrollYProgress, [0.48, 0.59], ['18vh', '25vh']);
 
-  const mainOpacity = useTransform(smoothScrollYProgress, [0.54, 0.59, 0.9, 0.97], [0, 1, 1, 0.2]);
+  const mainOpacity = useTransform(smoothScrollYProgress, [0.54, 0.59, 0.93, 0.99], [0, 1, 1, 0.2]);
   const mainScale = useTransform(smoothScrollYProgress, [0.54, 0.6, 0.67, 0.82], [0.28, 0.58, 1.04, 1]);
-  const shadeOpacity = useTransform(smoothScrollYProgress, [0.61, 0.69], [0, 1]);
-  const narrativeOpacity = useTransform(smoothScrollYProgress, [0.64, 0.675, 0.88, 0.925], [0, 1, 1, 0]);
-  const portalBackdropOpacity = useTransform(smoothScrollYProgress, [0.87, 0.95], [0, 1]);
-  const portalOpacity = useTransform(smoothScrollYProgress, [0.91, 0.965], [0, 1]);
-  const portalY = useTransform(smoothScrollYProgress, [0.91, 0.98], [32, 0]);
-  const skipOpacity = useTransform(smoothScrollYProgress, [0, 0.04, 0.11, 0.86, 0.92], [0, 0, 1, 1, 0]);
+  const shadeOpacity = useTransform(smoothScrollYProgress, [0.535, 0.58], [0, 1]);
+  const interludeOneOpacity = useTransform(smoothScrollYProgress, [0.545, 0.58, 0.625, 0.655], [0, 1, 1, 0]);
+  const interludeOneY = useTransform(smoothScrollYProgress, [0.545, 0.58, 0.625, 0.655], [18, 0, 0, -18]);
+  const interludeTwoOpacity = useTransform(smoothScrollYProgress, [0.655, 0.69, 0.735, 0.765], [0, 1, 1, 0]);
+  const interludeTwoY = useTransform(smoothScrollYProgress, [0.655, 0.69, 0.735, 0.765], [18, 0, 0, -18]);
+  const narrativeOpacity = useTransform(smoothScrollYProgress, [0.765, 0.785, 0.895, 0.945], [0, 1, 1, 0]);
+  const portalBackdropOpacity = useTransform(smoothScrollYProgress, [0.92, 0.97], [0, 1]);
+  const portalOpacity = useTransform(smoothScrollYProgress, [0.95, 0.985], [0, 1]);
+  const portalY = useTransform(smoothScrollYProgress, [0.95, 0.985], [32, 0]);
+  const skipOpacity = useTransform(smoothScrollYProgress, [0, 0.04, 0.11, 0.89, 0.97], [0, 0, 1, 1, 0]);
 
   useEffect(() => {
     const visualProgress = smoothScrollYProgress.get();
@@ -264,6 +280,10 @@ export function Hero() {
         <img src={heroImage} srcSet={heroSrcSet} sizes="100vw" alt={copy.imageAlt} className="absolute inset-0 h-full w-full object-cover" loading="eager" decoding="async" />
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative mx-auto w-full max-w-[1480px]">
+          <p id="home-intro-story" className="mb-7 max-w-xl font-serif text-xl italic leading-7 text-white/80 sm:text-2xl">
+            <span className="block">{copy.interludeOne}</span>
+            <span className="mt-2 block whitespace-pre-line">{copy.interludeTwo}</span>
+          </p>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-venetian-gold">{copy.portalKicker}</p>
           <h1 id="home-title" className="mt-5 max-w-[11ch] font-serif text-[clamp(2.75rem,13vw,8.8rem)] font-semibold leading-[0.82] tracking-[-0.05em] sm:leading-[0.79]">{copy.portalTitle}</h1>
           <p className="mt-7 max-w-xl border-l border-white/50 pl-5 text-base leading-7 text-white/90 sm:text-lg">{copy.portalHint}</p>
@@ -274,9 +294,10 @@ export function Hero() {
   }
 
   return (
-    <section ref={sectionRef} id="home-scroll-intro" className="relative h-[455svh] touch-pan-y bg-[#050505] sm:h-[480svh] lg:h-[510svh]" aria-label={copy.title}>
+    <section ref={sectionRef} id="home-scroll-intro" className="relative h-[510svh] touch-pan-y bg-[#050505] sm:h-[535svh] lg:h-[565svh]" aria-labelledby="home-title">
       <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#050505]">
         <h1 id="home-title" className="sr-only">{copy.title}</h1>
+        <p id="home-intro-story" className="sr-only">{copy.interludeOne} {copy.interludeTwo}</p>
         <button type="button" onClick={skipIntro} tabIndex={phase === 'prompt' ? 0 : -1} className="sr-only z-50 bg-white px-4 py-3 text-sm font-semibold text-venetian-brown focus:not-sr-only focus:absolute focus:right-4 focus:top-4">{copy.skip}</button>
         <motion.button type="button" onClick={skipIntro} tabIndex={phase === 'reveal' || phase === 'narrative' ? 0 : -1} aria-hidden={phase === 'prompt' || phase === 'portal'} style={{ opacity: skipOpacity }} className={`absolute right-4 top-4 z-50 min-h-11 border border-white/25 bg-black/80 px-4 text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold sm:right-6 sm:top-6 ${phase === 'reveal' || phase === 'narrative' ? 'pointer-events-auto' : 'pointer-events-none'}`}>{copy.skip}</motion.button>
 
@@ -328,6 +349,19 @@ export function Hero() {
           decoding="async"
         /> : null}
         <motion.div style={{ opacity: shadeOpacity }} className="absolute inset-0 z-20 bg-[linear-gradient(0deg,rgba(16,14,12,0.88)_0%,rgba(16,14,12,0.52)_62%,rgba(16,14,12,0.22)_100%)] lg:bg-[linear-gradient(90deg,rgba(16,14,12,0.9)_0%,rgba(16,14,12,0.48)_50%,rgba(16,14,12,0.12)_100%),linear-gradient(0deg,rgba(16,14,12,0.64)_0%,transparent_50%)]" />
+
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[29] flex items-center justify-center px-6 text-center">
+          <motion.p style={{ opacity: interludeOneOpacity, y: interludeOneY }} className="max-w-[25ch] text-balance text-[clamp(0.82rem,2.4vw,1.35rem)] font-semibold uppercase leading-[1.55] tracking-[0.2em] text-white/90 will-change-[transform,opacity]">
+            <span className="mx-auto mb-6 block h-px w-12 bg-venetian-gold/80" />
+            {copy.interludeOne}
+          </motion.p>
+        </div>
+
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[29] flex items-center justify-center px-6 text-center">
+          <motion.p style={{ opacity: interludeTwoOpacity, y: interludeTwoY }} className="max-w-[17ch] whitespace-pre-line text-balance font-serif text-[clamp(2.6rem,11vw,7.25rem)] font-medium italic leading-[0.88] tracking-[-0.035em] text-white will-change-[transform,opacity]">
+            {copy.interludeTwo}
+          </motion.p>
+        </div>
 
         <motion.div
           style={{ opacity: narrativeOpacity }}
