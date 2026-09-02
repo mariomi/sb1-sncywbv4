@@ -168,9 +168,11 @@ VITE_SITE_URL=          # Public canonical website URL
 - Only values intended for the browser may use the `VITE_` prefix.
 - Email and WhatsApp are sent by Supabase Edge Functions, not by a frontend-configured Express API.
 - Configure `RESEND_API_KEY`, `SITE_URL`, `RESERVATIONS_EMAIL`,
-  `REMINDER_CRON_SECRET`, and all `META_WHATSAPP_*` credentials as Supabase
-  Function Secrets. Deployed functions receive Supabase's built-in URL and keys
-  automatically.
+  `REMINDER_CRON_SECRET`, `ADMIN_ALERT_CRON_SECRET`, and all `META_WHATSAPP_*`
+  credentials as Supabase Function Secrets. Deployed functions receive
+  Supabase's built-in URL and keys automatically.
+- Restaurant alerts run every five minutes and send at approximately 24 hours,
+  09:00 Europe/Rome on the reservation date, and approximately 45 minutes before.
 - The one-time admin bootstrap may read `SUPABASE_SERVICE_ROLE_KEY` from an
   ignored local environment file; never expose it to the browser or frontend host.
 - **Never commit `.env` to source control**
@@ -280,6 +282,8 @@ This runs `src/scripts/createAdmin.ts` which creates a Supabase auth user with a
 - Scheduled reminders run in protected Supabase Edge Functions and use
   server-only Function Secrets such as `RESEND_API_KEY` and
   `REMINDER_CRON_SECRET`.
+- Restaurant operational alerts use a separate `ADMIN_ALERT_CRON_SECRET`,
+  Supabase Cron, and Vault-backed scheduler credentials.
 - Email failures should never block the primary action (e.g., reservation creation)
 - Log email results with emoji prefixes: `📧`, `✅`, `❌`
 

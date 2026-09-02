@@ -55,6 +55,32 @@ export function getRomeTimeWindow(value, startMinutes, endMinutes) {
   };
 }
 
+export function getAdminReservationAlertSchedule(value = new Date()) {
+  const now = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(now.getTime())) {
+    throw new TypeError('A valid date is required');
+  }
+
+  const romeNow = getRomeDateTimeParts(now);
+  return {
+    romeNow,
+    dayBefore: getRomeTimeWindow(now, 1435, 1445),
+    morning: {
+      enabled: romeNow.hour === 9,
+      date: romeNow.date,
+      afterTime: romeNow.time,
+    },
+    shortlyBefore: getRomeTimeWindow(now, 40, 50),
+  };
+}
+
+export function isReservationInRomeWindow(reservation, window) {
+  const reservationDateTime = `${reservation.date} ${String(reservation.time).slice(0, 5)}`;
+  const windowStart = `${window.start.date} ${window.start.time}`;
+  const windowEnd = `${window.end.date} ${window.end.time}`;
+  return reservationDateTime >= windowStart && reservationDateTime <= windowEnd;
+}
+
 export function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')

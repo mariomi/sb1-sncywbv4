@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   buildContactCustomerEmail,
+  buildReservationAdminAlertEmail,
   buildReservationAdminEmail,
   buildReservationCustomerEmail,
   buildWaitlistEmail,
@@ -79,4 +80,23 @@ test('updated reservations use update-specific customer and admin subjects', () 
   assert.match(customerEmail.html, /Gestisci o cancella/);
   assert.match(adminEmail.subject, /^Prenotazione modificata/);
   assert.match(adminEmail.html, /PRENOTAZIONE MODIFICATA DAL CLIENTE/);
+});
+
+test('restaurant alerts describe all three reminder moments without exposing HTML', () => {
+  const alertReservation = {
+    ...reservation,
+    name: '<Mario Rossi>',
+    phone: '+39 041 123 4567',
+  };
+
+  const dayBefore = buildReservationAdminAlertEmail(alertReservation, '24h', 'https://example.com');
+  const morning = buildReservationAdminAlertEmail(alertReservation, 'morning', 'https://example.com');
+  const shortlyBefore = buildReservationAdminAlertEmail(alertReservation, '45m', 'https://example.com');
+
+  assert.match(dayBefore.subject, /^\[Promemoria 24h\]/);
+  assert.match(morning.subject, /^\[Oggi\]/);
+  assert.match(shortlyBefore.subject, /^\[Tra 45 min\]/);
+  assert.doesNotMatch(shortlyBefore.html, /<Mario Rossi>/);
+  assert.match(shortlyBefore.html, /&lt;Mario Rossi&gt;/);
+  assert.match(shortlyBefore.text, /Gestisci: https:\/\/example\.com\/admin/);
 });
