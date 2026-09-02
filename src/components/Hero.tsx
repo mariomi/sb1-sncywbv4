@@ -3,6 +3,7 @@ import { motion, type MotionValue, useMotionValue, useMotionValueEvent, useReduc
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage, type Language } from '../lib/i18n';
+import { developerLegalIdentity, restaurantLegalIdentity } from '../lib/legal';
 import heroImage from '../Img/G1/IMG_2922.webp';
 import hero480 from '../Img/G1/IMG_2922-480.webp';
 import hero900 from '../Img/G1/IMG_2922-900.webp';
@@ -36,6 +37,9 @@ const heroCopy: Record<Language, {
   portalHint: string;
   reserve: string;
   place: string;
+  privacy: string;
+  legal: string;
+  developedBy: string;
   imageAlt: string;
 }> = {
   it: {
@@ -46,7 +50,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'Un passo ancora.\nIl giardino si rivela.',
     portalKicker: 'Il prossimo momento è tuo', portalTitle: 'Il tuo tavolo, a Venezia.',
     portalHint: 'Scegli il giorno. Noi prepariamo il resto.',
-    reserve: 'Prenota il tuo tavolo', place: 'Venezia · San Polo',
+    reserve: 'Prenota il tuo tavolo', place: 'Venezia · San Polo', privacy: 'Privacy', legal: 'Note legali', developedBy: 'Sito di',
     imageAlt: 'Il giardino interno del Ristorante Al Gobbo di Rialto',
   },
   en: {
@@ -57,7 +61,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'One step further.\nThe garden reveals itself.',
     portalKicker: 'The next moment is yours', portalTitle: 'Your table, in Venice.',
     portalHint: 'Choose the day. We will prepare the rest.',
-    reserve: 'Reserve your table', place: 'Venice · San Polo',
+    reserve: 'Reserve your table', place: 'Venice · San Polo', privacy: 'Privacy', legal: 'Legal notice', developedBy: 'Website by',
     imageAlt: 'The hidden garden at Al Gobbo di Rialto restaurant',
   },
   fr: {
@@ -68,7 +72,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'Encore un pas.\nLe jardin se dévoile.',
     portalKicker: 'Le prochain moment est à vous', portalTitle: 'Votre table, à Venise.',
     portalHint: 'Choisissez le jour. Nous préparons le reste.',
-    reserve: 'Réserver votre table', place: 'Venise · San Polo',
+    reserve: 'Réserver votre table', place: 'Venise · San Polo', privacy: 'Confidentialité', legal: 'Mentions légales', developedBy: 'Site par',
     imageAlt: 'Le jardin intérieur du restaurant Al Gobbo di Rialto',
   },
   de: {
@@ -79,7 +83,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'Noch ein Schritt.\nDer Garten zeigt sich.',
     portalKicker: 'Der nächste Moment gehört Ihnen', portalTitle: 'Ihr Tisch, in Venedig.',
     portalHint: 'Wählen Sie den Tag. Wir bereiten den Rest vor.',
-    reserve: 'Tisch reservieren', place: 'Venedig · San Polo',
+    reserve: 'Tisch reservieren', place: 'Venedig · San Polo', privacy: 'Datenschutz', legal: 'Impressum', developedBy: 'Website von',
     imageAlt: 'Der versteckte Garten des Restaurants Al Gobbo di Rialto',
   },
   es: {
@@ -90,7 +94,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'Un paso más.\nEl jardín se revela.',
     portalKicker: 'El próximo momento es tuyo', portalTitle: 'Tu mesa, en Venecia.',
     portalHint: 'Elige el día. Nosotros preparamos el resto.',
-    reserve: 'Reserva tu mesa', place: 'Venecia · San Polo',
+    reserve: 'Reserva tu mesa', place: 'Venecia · San Polo', privacy: 'Privacidad', legal: 'Aviso legal', developedBy: 'Sitio de',
     imageAlt: 'El jardín interior del restaurante Al Gobbo di Rialto',
   },
 };
@@ -294,6 +298,10 @@ export function Hero() {
           <h1 id="home-title" className="mt-5 max-w-[11ch] font-serif text-[clamp(2.75rem,13vw,8.8rem)] font-semibold leading-[0.82] tracking-[-0.05em] sm:leading-[0.79]">{copy.portalTitle}</h1>
           <p className="mt-7 max-w-xl border-l border-white/50 pl-5 text-base leading-7 text-white/90 sm:text-lg">{copy.portalHint}</p>
           <Link id="home-reservation-link" to="/book" className="mt-8 inline-flex min-h-[52px] items-center gap-3 bg-venetian-gold px-6 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#050505]">{copy.reserve}<ArrowRight className="h-4 w-4" /></Link>
+          <div className="mt-8 max-w-2xl text-[0.66rem] leading-5 text-white/55">
+            <p>{restaurantLegalIdentity.legalName} · P.IVA/C.F. IT{restaurantLegalIdentity.vatNumber}</p>
+            <p><Link to="/privacy" className="underline underline-offset-4 hover:text-white">{copy.privacy}</Link> · <Link to="/legal" className="underline underline-offset-4 hover:text-white">{copy.legal}</Link> · {copy.developedBy}{' '}<a href={developerLegalIdentity.website} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-white">{developerLegalIdentity.brand} SRLS · P.IVA IT{developerLegalIdentity.vatNumber}</a></p>
+          </div>
         </div>
       </section>
     );
@@ -421,6 +429,10 @@ export function Hero() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <p className="mt-8 text-[0.64rem] font-bold uppercase tracking-[0.22em] text-white/50">{copy.place}</p>
+            <div className="mx-auto mt-5 max-w-3xl text-[0.58rem] leading-4 text-white/40 sm:text-[0.64rem]">
+              <p>{restaurantLegalIdentity.legalName} · P.IVA/C.F. IT{restaurantLegalIdentity.vatNumber}</p>
+              <p className="mt-1"><Link to="/privacy" tabIndex={phase === 'portal' ? 0 : -1} className="underline underline-offset-4 hover:text-white">{copy.privacy}</Link> · <Link to="/legal" tabIndex={phase === 'portal' ? 0 : -1} className="underline underline-offset-4 hover:text-white">{copy.legal}</Link> · {copy.developedBy}{' '}<a href={developerLegalIdentity.website} target="_blank" rel="noopener noreferrer" tabIndex={phase === 'portal' ? 0 : -1} className="underline underline-offset-4 hover:text-white">{developerLegalIdentity.brand} SRLS · P.IVA IT{developerLegalIdentity.vatNumber}</a></p>
+            </div>
           </div>
         </motion.div>
       </div>

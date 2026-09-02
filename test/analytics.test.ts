@@ -4,6 +4,7 @@ import {
   captureAttribution,
   initializeTracking,
   isSensitiveAnalyticsRoute,
+  readConsent,
   trackEvent,
   trackPageView,
 } from '../src/lib/analytics.ts';
@@ -37,7 +38,7 @@ test('private cancellation routes never initialise or emit analytics data', () =
   const dataLayer: unknown[] = [];
   const local = memoryStorage();
   const session = memoryStorage();
-  local.setItem('al-gobbo-consent-v1', JSON.stringify({ analytics: true, marketing: true, updatedAt: 'now' }));
+  local.setItem('al-gobbo-consent-v1', JSON.stringify({ analytics: true, marketing: true, updatedAt: new Date().toISOString() }));
 
   Object.assign(globalThis, {
     localStorage: local,
@@ -62,4 +63,24 @@ test('private cancellation routes never initialise or emit analytics data', () =
 
   assert.deepEqual(dataLayer, []);
   assert.equal(session.getItem('al-gobbo-attribution-v1'), null);
+});
+
+test('cookie choices expire after six calendar months', () => {
+  const local = memoryStorage();
+  const expiredAt = new Date();
+  expiredAt.setUTCMonth(expiredAt.getUTCMonth() - 7);
+  local.setItem('al-gobbo-consent-v1', JSON.stringify({ analytics: true, marketing: false, updatedAt: expiredAt.toISOString() }));
+  Object.assign(globalThis, { localStorage: local });
+
+  assert.equal(readConsent(), null);
+  assert.equal(local.getItem('al-gobbo-consent-v1'), null);
+});
+
+test('fresh cookie choices remain available', () => {
+  const local = memoryStorage();
+  const updatedAt = new Date().toISOString();
+  local.setItem('al-gobbo-consent-v1', JSON.stringify({ analytics: false, marketing: false, updatedAt }));
+  Object.assign(globalThis, { localStorage: local });
+
+  assert.deepEqual(readConsent(), { analytics: false, marketing: false, updatedAt });
 });

@@ -19,6 +19,7 @@ const ReservePage = lazy(() => import('./pages/ReservePage').then(module => ({ d
 const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })));
 const LoginPage = lazy(() => import('./pages/LoginPage').then(module => ({ default: module.LoginPage })));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(module => ({ default: module.PrivacyPage })));
+const LegalPage = lazy(() => import('./pages/LegalPage').then(module => ({ default: module.LegalPage })));
 const MessagesPage = lazy(() => import('./pages/MessagesPage').then(module => ({ default: module.MessagesPage })));
 const MyReservationsPage = lazy(() => import('./pages/MyReservationsPage').then(module => ({ default: module.MyReservationsPage })));
 const FaqPage = lazy(() => import('./pages/FaqPage').then(module => ({ default: module.FaqPage })));
@@ -113,6 +114,7 @@ function AppRoutes() {
         <Route path="/seafood-restaurant-rialto" element={<SeafoodRestaurantPage />} />
         <Route path="/venetian-cuisine" element={<VenetianCuisinePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/legal" element={<LegalPage />} />
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/cancella/:token" element={<CancelReservationPage />} />
         <Route path="/my-reservations" element={<MyReservationsPage />} />

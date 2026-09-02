@@ -86,8 +86,11 @@ type ReservationCopy = {
   occasions: Record<'birthday' | 'anniversary' | 'business' | 'date' | 'other', string>;
   requests: string;
   requestsPlaceholder: string;
+  requestsPrivacy: string;
   privacyPrefix: string;
   privacyLink: string;
+  privacyMiddle: string;
+  termsLink: string;
   privacySuffix: string;
   marketing: string;
   processing: string;
@@ -129,14 +132,14 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     guestsLabel: 'Number of Guests', guest: 'Guest', guests: 'Guests', date: 'Date', availableTimes: 'Available Time Slots', noTimes: 'No available time slots for this date',
     waitlistFull: 'This time is fully booked.', waitlistPrompt: 'Join the waitlist and we will contact you if a table becomes available.', waitlistJoining: 'Joining...', waitlistJoin: 'Yes, join the waitlist', waitlistLabel: 'Waitlist', waitlistSuccess: 'You are on the waitlist!', waitlistContact: 'We will contact you if a table becomes available for',
     occasion: 'Occasion (Optional)', chooseOccasion: 'Select an occasion', occasions: { birthday: 'Birthday', anniversary: 'Anniversary', business: 'Business Dinner', date: 'Date Night', other: 'Other Special Occasion' },
-    requests: 'Special Requests (Optional)', requestsPlaceholder: 'Dietary restrictions, allergies, seating preferences...',
-    privacyPrefix: 'I have read and agree to the', privacyLink: 'Privacy Policy', privacySuffix: '. I understand how my personal data will be processed. *',
+    requests: 'Special Requests (Optional)', requestsPlaceholder: 'Seating preferences or a note for our team...', requestsPrivacy: 'Do not enter health or other sensitive data here. For allergies, call the restaurant before your visit.',
+    privacyPrefix: 'I confirm that I have read the', privacyLink: 'Privacy Policy', privacyMiddle: 'and accept the', termsLink: 'Booking Terms', privacySuffix: '. *',
     marketing: 'I would like to receive marketing communications about special offers, events and news. I can unsubscribe at any time.', processing: 'Processing...', confirm: 'Confirm Reservation',
     policyTitle: 'Reservation Policy', policyItems: ['Reservations can be made up to 3 months in advance', 'For last-minute requests, call us if online times are unavailable', 'Large group bookings (9+ guests) require direct contact'],
     importantTitle: 'Important Information', importantItems: ['Use the private link in your confirmation email to cancel', 'For same-day changes, please call +39 041 520 4603', 'Tell us about allergies or dietary requirements before ordering'],
     helpTitle: 'Need help booking?', helpBody: 'Call the restaurant for groups of nine or more, same-day questions or accessibility needs.',
     confirmationTitle: 'Reservation Confirmed!', confirmationThanks: 'Thank you for choosing Al Gobbo di Rialto. We look forward to welcoming you on', confirmationDetails: 'Reservation Details', nameLabel: 'Name', dateLabel: 'Date', timeLabel: 'Time', emailSent: 'A confirmation email has been sent to', emailMissing: 'Your table is reserved, but the email could not be delivered. Please call us if you need to change or cancel it.', manageBooking: 'Manage or cancel booking', manageBookingHint: 'Save this private link in case you need it later.', returnHome: 'Return to Home',
-    errors: { privacy: 'Please accept the privacy policy to continue', unavailableDate: 'This date is not available for reservations', closedDates: 'Failed to load closed dates', slots: 'Failed to load available time slots', unexpected: 'An unexpected error occurred. Please try again later.', waitlistContact: 'Enter your name, email and phone number before joining the waitlist', waitlist: 'Could not join the waitlist. Please try again.' },
+    errors: { privacy: 'Confirm that you have read the privacy notice and accept the booking terms', unavailableDate: 'This date is not available for reservations', closedDates: 'Failed to load closed dates', slots: 'Failed to load available time slots', unexpected: 'An unexpected error occurred. Please try again later.', waitlistContact: 'Enter your name, email and phone number before joining the waitlist', waitlist: 'Could not join the waitlist. Please try again.' },
   },
   it: {
     seoTitle: 'Prenota un Tavolo', seoDescription: 'Prenota il tuo tavolo da Al Gobbo di Rialto a Venezia. Disponibilità in tempo reale per pranzo e cena.',
@@ -146,14 +149,14 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     guestsLabel: 'Numero di Ospiti', guest: 'Ospite', guests: 'Ospiti', date: 'Data', availableTimes: 'Orari Disponibili', noTimes: 'Nessun orario disponibile per questa data',
     waitlistFull: 'Questo orario è esaurito.', waitlistPrompt: 'Iscriviti alla lista d’attesa: ti contatteremo se si libera un tavolo.', waitlistJoining: 'Iscrizione...', waitlistJoin: 'Sì, iscrivimi alla lista', waitlistLabel: 'Lista', waitlistSuccess: 'Sei in lista d’attesa!', waitlistContact: 'Ti contatteremo se si libera un tavolo per',
     occasion: 'Occasione (Facoltativa)', chooseOccasion: 'Seleziona un’occasione', occasions: { birthday: 'Compleanno', anniversary: 'Anniversario', business: 'Cena di Lavoro', date: 'Cena Romantica', other: 'Altra Occasione Speciale' },
-    requests: 'Richieste Speciali (Facoltative)', requestsPlaceholder: 'Intolleranze, allergie, preferenze per il tavolo...',
-    privacyPrefix: 'Ho letto e accetto la', privacyLink: 'Privacy Policy', privacySuffix: '. Ho compreso come saranno trattati i miei dati personali. *',
+    requests: 'Richieste Speciali (Facoltative)', requestsPlaceholder: 'Preferenze per il tavolo o una nota per lo staff...', requestsPrivacy: 'Non inserire qui dati sanitari o altre informazioni sensibili. Per allergie chiama il ristorante prima della visita.',
+    privacyPrefix: 'Confermo di aver letto la', privacyLink: 'Privacy Policy', privacyMiddle: 'e accetto le', termsLink: 'Condizioni di prenotazione', privacySuffix: '. *',
     marketing: 'Desidero ricevere comunicazioni su offerte, eventi e novità. Posso annullare l’iscrizione in qualsiasi momento.', processing: 'Invio in corso...', confirm: 'Conferma Prenotazione',
     policyTitle: 'Politica di Prenotazione', policyItems: ['Puoi prenotare fino a 3 mesi in anticipo', 'Per richieste all’ultimo momento chiamaci se non trovi orari online', 'Per gruppi di 9 o più persone è necessario contattarci direttamente'],
     importantTitle: 'Informazioni Importanti', importantItems: ['Per cancellare usa il link personale ricevuto via email', 'Per modifiche in giornata chiama il +39 041 520 4603', 'Segnalaci allergie o esigenze alimentari prima di ordinare'],
     helpTitle: 'Serve aiuto?', helpBody: 'Chiamaci per gruppi di almeno nove persone, richieste in giornata o esigenze di accessibilità.',
     confirmationTitle: 'Prenotazione Confermata!', confirmationThanks: 'Grazie per aver scelto Al Gobbo di Rialto. Ti aspettiamo il', confirmationDetails: 'Dettagli della Prenotazione', nameLabel: 'Nome', dateLabel: 'Data', timeLabel: 'Ora', emailSent: 'Abbiamo inviato un’email di conferma a', emailMissing: 'Il tavolo è prenotato, ma non è stato possibile consegnare l’email. Chiamaci per modifiche o cancellazioni.', manageBooking: 'Gestisci o cancella', manageBookingHint: 'Salva questo link personale se ti servirà più tardi.', returnHome: 'Torna alla Home',
-    errors: { privacy: 'Accetta la privacy policy per continuare', unavailableDate: 'Questa data non è disponibile', closedDates: 'Impossibile caricare i giorni di chiusura', slots: 'Impossibile caricare gli orari disponibili', unexpected: 'Si è verificato un errore. Riprova più tardi.', waitlistContact: 'Inserisci nome, email e telefono prima di iscriverti alla lista d’attesa', waitlist: 'Impossibile iscriversi alla lista d’attesa. Riprova.' },
+    errors: { privacy: 'Conferma di aver letto l’informativa e accetta le condizioni di prenotazione', unavailableDate: 'Questa data non è disponibile', closedDates: 'Impossibile caricare i giorni di chiusura', slots: 'Impossibile caricare gli orari disponibili', unexpected: 'Si è verificato un errore. Riprova più tardi.', waitlistContact: 'Inserisci nome, email e telefono prima di iscriverti alla lista d’attesa', waitlist: 'Impossibile iscriversi alla lista d’attesa. Riprova.' },
   },
   fr: {
     seoTitle: 'Réserver une Table', seoDescription: 'Réservez votre table à Al Gobbo di Rialto à Venise. Disponibilités en temps réel pour le déjeuner et le dîner.',
@@ -163,14 +166,14 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     guestsLabel: 'Nombre de Personnes', guest: 'Personne', guests: 'Personnes', date: 'Date', availableTimes: 'Horaires Disponibles', noTimes: 'Aucun horaire disponible à cette date',
     waitlistFull: 'Cet horaire est complet.', waitlistPrompt: 'Inscrivez-vous sur liste d’attente ; nous vous contacterons si une table se libère.', waitlistJoining: 'Inscription...', waitlistJoin: 'Rejoindre la liste', waitlistLabel: 'Attente', waitlistSuccess: 'Vous êtes sur liste d’attente !', waitlistContact: 'Nous vous contacterons si une table se libère pour le',
     occasion: 'Occasion (Facultatif)', chooseOccasion: 'Choisir une occasion', occasions: { birthday: 'Anniversaire', anniversary: 'Anniversaire de Mariage', business: 'Dîner d’Affaires', date: 'Dîner en Amoureux', other: 'Autre Occasion' },
-    requests: 'Demandes Spéciales (Facultatif)', requestsPlaceholder: 'Régime alimentaire, allergies, préférence de table...',
-    privacyPrefix: 'J’ai lu et j’accepte la', privacyLink: 'Politique de Confidentialité', privacySuffix: '. Je comprends comment mes données seront traitées. *',
+    requests: 'Demandes Spéciales (Facultatif)', requestsPlaceholder: 'Préférence de table ou message pour l’équipe...', requestsPrivacy: 'N’inscrivez pas ici de données de santé ou sensibles. Pour les allergies, appelez le restaurant avant votre visite.',
+    privacyPrefix: 'Je confirme avoir lu la', privacyLink: 'Politique de confidentialité', privacyMiddle: 'et accepter les', termsLink: 'Conditions de réservation', privacySuffix: '. *',
     marketing: 'Je souhaite recevoir des nouvelles sur les offres et événements. Je peux me désinscrire à tout moment.', processing: 'Traitement...', confirm: 'Confirmer la Réservation',
     policyTitle: 'Conditions de Réservation', policyItems: ['Réservation possible jusqu’à 3 mois à l’avance', 'Pour une demande de dernière minute, appelez-nous si aucun horaire n’est disponible', 'Les groupes de 9 personnes ou plus doivent nous contacter'],
     importantTitle: 'Informations Importantes', importantItems: ['Utilisez le lien personnel reçu par e-mail pour annuler', 'Pour une modification le jour même, appelez le +39 041 520 4603', 'Signalez toute allergie ou exigence alimentaire avant de commander'],
     helpTitle: 'Besoin d’aide ?', helpBody: 'Appelez-nous pour les groupes de neuf personnes ou plus, les demandes du jour ou l’accessibilité.',
     confirmationTitle: 'Réservation Confirmée !', confirmationThanks: 'Merci d’avoir choisi Al Gobbo di Rialto. Nous vous accueillerons le', confirmationDetails: 'Détails de la Réservation', nameLabel: 'Nom', dateLabel: 'Date', timeLabel: 'Heure', emailSent: 'Un e-mail de confirmation a été envoyé à', emailMissing: 'Votre table est réservée, mais l’e-mail n’a pas pu être remis. Appelez-nous pour toute modification ou annulation.', manageBooking: 'Gérer ou annuler', manageBookingHint: 'Conservez ce lien privé si vous en avez besoin plus tard.', returnHome: 'Retour à l’Accueil',
-    errors: { privacy: 'Veuillez accepter la politique de confidentialité', unavailableDate: 'Cette date n’est pas disponible', closedDates: 'Impossible de charger les jours de fermeture', slots: 'Impossible de charger les horaires', unexpected: 'Une erreur est survenue. Réessayez plus tard.', waitlistContact: 'Saisissez votre nom, e-mail et téléphone avant de rejoindre la liste d’attente', waitlist: 'Impossible de rejoindre la liste d’attente. Réessayez.' },
+    errors: { privacy: 'Confirmez la lecture de la politique de confidentialité et acceptez les conditions de réservation', unavailableDate: 'Cette date n’est pas disponible', closedDates: 'Impossible de charger les jours de fermeture', slots: 'Impossible de charger les horaires', unexpected: 'Une erreur est survenue. Réessayez plus tard.', waitlistContact: 'Saisissez votre nom, e-mail et téléphone avant de rejoindre la liste d’attente', waitlist: 'Impossible de rejoindre la liste d’attente. Réessayez.' },
   },
   de: {
     seoTitle: 'Tisch Reservieren', seoDescription: 'Reservieren Sie Ihren Tisch im Al Gobbo di Rialto in Venedig. Live-Verfügbarkeit für Mittag- und Abendessen.',
@@ -180,14 +183,14 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     guestsLabel: 'Anzahl der Gäste', guest: 'Gast', guests: 'Gäste', date: 'Datum', availableTimes: 'Verfügbare Uhrzeiten', noTimes: 'Für dieses Datum sind keine Uhrzeiten verfügbar',
     waitlistFull: 'Diese Uhrzeit ist ausgebucht.', waitlistPrompt: 'Setzen Sie sich auf die Warteliste. Wir melden uns, wenn ein Tisch frei wird.', waitlistJoining: 'Wird eingetragen...', waitlistJoin: 'Auf die Warteliste', waitlistLabel: 'Warteliste', waitlistSuccess: 'Sie stehen auf der Warteliste!', waitlistContact: 'Wir melden uns, wenn ein Tisch frei wird für den',
     occasion: 'Anlass (Optional)', chooseOccasion: 'Anlass auswählen', occasions: { birthday: 'Geburtstag', anniversary: 'Jahrestag', business: 'Geschäftsessen', date: 'Romantisches Dinner', other: 'Anderer Besonderer Anlass' },
-    requests: 'Besondere Wünsche (Optional)', requestsPlaceholder: 'Ernährungswünsche, Allergien, Sitzplatzwünsche...',
-    privacyPrefix: 'Ich habe die', privacyLink: 'Datenschutzerklärung', privacySuffix: ' gelesen und akzeptiert. Ich verstehe die Verarbeitung meiner Daten. *',
+    requests: 'Besondere Wünsche (Optional)', requestsPlaceholder: 'Sitzplatzwunsch oder Nachricht an das Team...', requestsPrivacy: 'Tragen Sie hier keine Gesundheits- oder sensiblen Daten ein. Bei Allergien rufen Sie das Restaurant vor Ihrem Besuch an.',
+    privacyPrefix: 'Ich bestätige, die', privacyLink: 'Datenschutzerklärung', privacyMiddle: 'gelesen zu haben, und akzeptiere die', termsLink: 'Reservierungsbedingungen', privacySuffix: '. *',
     marketing: 'Ich möchte Neuigkeiten zu Angeboten und Veranstaltungen erhalten. Eine Abmeldung ist jederzeit möglich.', processing: 'Wird verarbeitet...', confirm: 'Reservierung Bestätigen',
     policyTitle: 'Reservierungsbedingungen', policyItems: ['Reservierungen sind bis zu 3 Monate im Voraus möglich', 'Rufen Sie uns kurzfristig an, wenn online keine Uhrzeit verfügbar ist', 'Gruppen ab 9 Personen müssen uns direkt kontaktieren'],
     importantTitle: 'Wichtige Informationen', importantItems: ['Zum Stornieren den persönlichen Link aus der E-Mail verwenden', 'Für Änderungen am selben Tag: +39 041 520 4603', 'Bitte Allergien oder Ernährungswünsche vor der Bestellung mitteilen'],
     helpTitle: 'Hilfe bei der Reservierung?', helpBody: 'Rufen Sie uns bei Gruppen ab neun Personen, kurzfristigen Fragen oder Barrierefreiheitsbedarf an.',
     confirmationTitle: 'Reservierung Bestätigt!', confirmationThanks: 'Vielen Dank, dass Sie Al Gobbo di Rialto gewählt haben. Wir erwarten Sie am', confirmationDetails: 'Reservierungsdetails', nameLabel: 'Name', dateLabel: 'Datum', timeLabel: 'Uhrzeit', emailSent: 'Eine Bestätigungs-E-Mail wurde gesendet an', emailMissing: 'Ihr Tisch ist reserviert, aber die E-Mail konnte nicht zugestellt werden. Bitte rufen Sie uns für Änderungen oder Stornierungen an.', manageBooking: 'Verwalten oder stornieren', manageBookingHint: 'Speichern Sie diesen privaten Link für später.', returnHome: 'Zur Startseite',
-    errors: { privacy: 'Bitte akzeptieren Sie die Datenschutzerklärung', unavailableDate: 'Dieses Datum ist nicht verfügbar', closedDates: 'Schließtage konnten nicht geladen werden', slots: 'Verfügbare Uhrzeiten konnten nicht geladen werden', unexpected: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.', waitlistContact: 'Geben Sie Name, E-Mail und Telefonnummer ein, bevor Sie sich auf die Warteliste setzen', waitlist: 'Die Warteliste konnte nicht aktualisiert werden. Bitte erneut versuchen.' },
+    errors: { privacy: 'Bestätigen Sie die Datenschutzhinweise und akzeptieren Sie die Reservierungsbedingungen', unavailableDate: 'Dieses Datum ist nicht verfügbar', closedDates: 'Schließtage konnten nicht geladen werden', slots: 'Verfügbare Uhrzeiten konnten nicht geladen werden', unexpected: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.', waitlistContact: 'Geben Sie Name, E-Mail und Telefonnummer ein, bevor Sie sich auf die Warteliste setzen', waitlist: 'Die Warteliste konnte nicht aktualisiert werden. Bitte erneut versuchen.' },
   },
   es: {
     seoTitle: 'Reservar una Mesa', seoDescription: 'Reserva tu mesa en Al Gobbo di Rialto, Venecia. Disponibilidad en tiempo real para almuerzo y cena.',
@@ -197,14 +200,14 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     guestsLabel: 'Número de Personas', guest: 'Persona', guests: 'Personas', date: 'Fecha', availableTimes: 'Horarios Disponibles', noTimes: 'No hay horarios disponibles para esta fecha',
     waitlistFull: 'Este horario está completo.', waitlistPrompt: 'Únete a la lista de espera y te avisaremos si queda una mesa libre.', waitlistJoining: 'Inscribiendo...', waitlistJoin: 'Unirme a la lista', waitlistLabel: 'Espera', waitlistSuccess: '¡Estás en la lista de espera!', waitlistContact: 'Te contactaremos si queda una mesa libre para el',
     occasion: 'Ocasión (Opcional)', chooseOccasion: 'Selecciona una ocasión', occasions: { birthday: 'Cumpleaños', anniversary: 'Aniversario', business: 'Cena de Negocios', date: 'Cena Romántica', other: 'Otra Ocasión Especial' },
-    requests: 'Peticiones Especiales (Opcional)', requestsPlaceholder: 'Restricciones alimentarias, alergias, preferencia de mesa...',
-    privacyPrefix: 'He leído y acepto la', privacyLink: 'Política de Privacidad', privacySuffix: '. Entiendo cómo se tratarán mis datos personales. *',
+    requests: 'Peticiones Especiales (Opcional)', requestsPlaceholder: 'Preferencia de mesa o una nota para el equipo...', requestsPrivacy: 'No introduzcas aquí datos de salud ni sensibles. Para alergias, llama al restaurante antes de tu visita.',
+    privacyPrefix: 'Confirmo que he leído la', privacyLink: 'Política de privacidad', privacyMiddle: 'y acepto las', termsLink: 'Condiciones de reserva', privacySuffix: '. *',
     marketing: 'Deseo recibir noticias sobre ofertas y eventos. Puedo darme de baja en cualquier momento.', processing: 'Procesando...', confirm: 'Confirmar Reserva',
     policyTitle: 'Política de Reservas', policyItems: ['Puedes reservar con hasta 3 meses de antelación', 'Para peticiones de última hora, llámanos si no hay horarios online', 'Los grupos de 9 o más personas deben contactar directamente'],
     importantTitle: 'Información Importante', importantItems: ['Usa el enlace personal del correo de confirmación para cancelar', 'Para cambios el mismo día, llama al +39 041 520 4603', 'Informa de alergias o necesidades alimentarias antes de pedir'],
     helpTitle: '¿Necesitas ayuda?', helpBody: 'Llámanos para grupos de nueve o más personas, dudas del mismo día o necesidades de accesibilidad.',
     confirmationTitle: '¡Reserva Confirmada!', confirmationThanks: 'Gracias por elegir Al Gobbo di Rialto. Te esperamos el', confirmationDetails: 'Datos de la Reserva', nameLabel: 'Nombre', dateLabel: 'Fecha', timeLabel: 'Hora', emailSent: 'Hemos enviado un correo de confirmación a', emailMissing: 'Tu mesa está reservada, pero no se pudo entregar el correo. Llámanos para cambios o cancelaciones.', manageBooking: 'Gestionar o cancelar', manageBookingHint: 'Guarda este enlace privado por si lo necesitas más tarde.', returnHome: 'Volver al Inicio',
-    errors: { privacy: 'Acepta la política de privacidad para continuar', unavailableDate: 'Esta fecha no está disponible', closedDates: 'No se pudieron cargar los días de cierre', slots: 'No se pudieron cargar los horarios', unexpected: 'Se produjo un error. Inténtalo más tarde.', waitlistContact: 'Introduce nombre, correo y teléfono antes de unirte a la lista de espera', waitlist: 'No se pudo completar la inscripción. Inténtalo de nuevo.' },
+    errors: { privacy: 'Confirma que has leído la política de privacidad y acepta las condiciones de reserva', unavailableDate: 'Esta fecha no está disponible', closedDates: 'No se pudieron cargar los días de cierre', slots: 'No se pudieron cargar los horarios', unexpected: 'Se produjo un error. Inténtalo más tarde.', waitlistContact: 'Introduce nombre, correo y teléfono antes de unirte a la lista de espera', waitlist: 'No se pudo completar la inscripción. Inténtalo de nuevo.' },
   },
 };
 
@@ -968,6 +971,7 @@ export function ReservePage() {
                           placeholder={copy.requestsPlaceholder}
                           className="booking-field"
                         />
+                        <p className="mt-2 text-xs leading-5 text-venetian-brown/60 dark:text-white/60">{copy.requestsPrivacy}</p>
                       </div>
                     </div>
 
@@ -1024,7 +1028,7 @@ export function ReservePage() {
                       <div className="flex items-start gap-3 bg-venetian-brown/[0.03] p-3 dark:bg-white/5">
                         <input type="checkbox" id="privacyConsent" checked={privacyConsent} onChange={(event) => { setPrivacyConsent(event.target.checked); setPrivacyError(false); }} aria-invalid={privacyError} aria-describedby={privacyError ? 'privacy-consent-error' : undefined} className="mt-1 h-5 w-5 shrink-0" />
                         <label htmlFor="privacyConsent" className="text-sm text-venetian-brown/90 dark:text-white/90">
-                          {copy.privacyPrefix}{' '}<a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-2 dark:text-white">{copy.privacyLink}</a>{copy.privacySuffix}
+                          {copy.privacyPrefix}{' '}<a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-2 dark:text-white">{copy.privacyLink}</a>{' '}{copy.privacyMiddle}{' '}<a href="/legal#booking-terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-2 dark:text-white">{copy.termsLink}</a>{copy.privacySuffix}
                           {privacyError ? <span id="privacy-consent-error" className="mt-2 block font-semibold text-red-700 dark:text-red-300" role="alert">{copy.errors.privacy}</span> : null}
                         </label>
                       </div>

@@ -509,13 +509,14 @@
 
       <div class="field">
         <label for="requests" data-i18n="requestsLabel">Richieste speciali</label>
-        <textarea id="requests" maxlength="1000" placeholder="Allergie, seggiolone, tavolo vicino alla finestra…" data-i18n-placeholder="requestsPlaceholder"></textarea>
+        <textarea id="requests" maxlength="1000" placeholder="Seggiolone, preferenza del tavolo o una nota per lo staff…" data-i18n-placeholder="requestsPlaceholder"></textarea>
+        <p class="helper-text" data-i18n="requestsNote">Non inserire dati sanitari o sensibili. Per allergie chiama il ristorante.</p>
       </div>
 
       <div class="checkbox-field">
         <label class="checkbox-line" for="privacy">
           <input type="checkbox" id="privacy" required aria-required="true" />
-          <span><span data-i18n="privacyPrefix">Ho letto e accetto la</span> <a href="https://www.ristorantealgobbodirialto.it/privacy" target="_blank" rel="noopener noreferrer" data-i18n="privacyLink">privacy policy</a><span data-i18n="privacySuffix"></span>. <span aria-hidden="true">*</span></span>
+          <span><span data-i18n="privacyPrefix">Confermo di aver letto la</span> <a href="https://www.ristorantealgobbodirialto.it/privacy" target="_blank" rel="noopener noreferrer" data-i18n="privacyLink">privacy policy</a><span data-i18n="privacySuffix"></span> <span data-i18n="termsMiddle">e accetto le</span> <a href="https://www.ristorantealgobbodirialto.it/legal#booking-terms" target="_blank" rel="noopener noreferrer" data-i18n="termsLink">condizioni di prenotazione</a>. <span aria-hidden="true">*</span></span>
         </label>
       </div>
 
@@ -537,7 +538,8 @@
 
   <div class="footer">
     <span data-i18n="footerAddress">Ristorante Al Gobbo di Rialto · Sestiere San Polo 649, Venezia</span><br/>
-    <a href="tel:+390415204603" aria-label="Telefono: +39 041 520 4603">+39 041 520 4603</a>
+    <span>Ca' Foscari S.n.c. di Eryan Mosaad Farag Farag &amp; C. · P.IVA/C.F. IT04467730273</span><br/>
+    <a href="tel:+390415204603" aria-label="Telefono: +39 041 520 4603">+39 041 520 4603</a> · <a href="https://www.ristorantealgobbodirialto.it/legal" target="_blank" rel="noopener noreferrer">Note legali</a>
   </div>
 </main>
 
@@ -563,8 +565,9 @@
       occasionDate: 'Serata romantica', occasionOther: 'Altra occasione',
       marketingLabel: 'Desidero ricevere comunicazioni promozionali (facoltativo).',
       requestsLabel: 'Richieste speciali',
-      requestsPlaceholder: 'Allergie, seggiolone, tavolo vicino alla finestra…',
-      privacyPrefix: 'Ho letto e accetto la', privacyLink: 'privacy policy', privacySuffix: '',
+      requestsPlaceholder: 'Seggiolone, preferenza del tavolo o una nota per lo staff…',
+      requestsNote: 'Non inserire dati sanitari o sensibili. Per allergie chiama il ristorante.',
+      privacyPrefix: 'Confermo di aver letto la', privacyLink: 'privacy policy', privacySuffix: '', termsMiddle: 'e accetto le', termsLink: 'condizioni di prenotazione',
       submit: 'Prenota ora', processing: 'Invio in corso…',
       successTitle: 'Prenotazione ricevuta!', newBooking: 'Nuova prenotazione',
       footerAddress: 'Ristorante Al Gobbo di Rialto · Sestiere San Polo 649, Venezia',
@@ -574,7 +577,7 @@
       selectDate: 'Seleziona una data.', selectGuests: 'Seleziona il numero di ospiti.',
       selectTime: 'Seleziona un orario.', enterName: 'Inserisci il tuo nome.', invalidName: 'Inserisci un nome di almeno 2 caratteri.',
       invalidEmail: 'Inserisci un indirizzo email valido.', enterPhone: 'Inserisci il tuo numero di telefono.',
-      invalidPhone: 'Controlla il numero di telefono.', acceptPrivacy: 'Accetta la privacy policy per continuare.',
+      invalidPhone: 'Controlla il numero di telefono.', acceptPrivacy: 'Conferma di aver letto la privacy policy e accettato le condizioni di prenotazione.',
       invalidDate: 'Scegli una data compresa nel periodo prenotabile.',
       genericError: 'Non siamo riusciti a completare la prenotazione. Riprova o chiamaci al +39 041 520 4603.',
       bookingStatusLoading: 'Verifica delle prenotazioni online…',
@@ -600,8 +603,9 @@
       occasionDate: 'Romantic dinner', occasionOther: 'Other occasion',
       marketingLabel: 'I would like to receive promotional updates (optional).',
       requestsLabel: 'Special requests',
-      requestsPlaceholder: 'Allergies, high chair, table by the window…',
-      privacyPrefix: 'I have read and accept the', privacyLink: 'privacy policy', privacySuffix: '',
+      requestsPlaceholder: 'High chair, seating preference or a note for the team…',
+      requestsNote: 'Do not enter health or sensitive data. For allergies, call the restaurant.',
+      privacyPrefix: 'I confirm that I have read the', privacyLink: 'privacy policy', privacySuffix: '', termsMiddle: 'and accept the', termsLink: 'booking terms',
       submit: 'Book now', processing: 'Sending…',
       successTitle: 'Booking received!', newBooking: 'Make another booking',
       footerAddress: 'Al Gobbo di Rialto · Sestiere San Polo 649, Venice',
@@ -611,7 +615,7 @@
       selectDate: 'Choose a date.', selectGuests: 'Choose the number of guests.',
       selectTime: 'Choose a time.', enterName: 'Enter your name.', invalidName: 'Enter a name with at least 2 characters.',
       invalidEmail: 'Enter a valid email address.', enterPhone: 'Enter your phone number.',
-      invalidPhone: 'Check the phone number.', acceptPrivacy: 'Accept the privacy policy to continue.',
+      invalidPhone: 'Check the phone number.', acceptPrivacy: 'Confirm that you have read the privacy policy and accepted the booking terms.',
       invalidDate: 'Choose a date within the available booking period.',
       genericError: 'We could not complete your booking. Please try again or call +39 041 520 4603.',
       bookingStatusLoading: 'Checking online booking availability…',
@@ -637,8 +641,9 @@
       occasionDate: 'Dîner romantique', occasionOther: 'Autre occasion',
       marketingLabel: 'Je souhaite recevoir des communications promotionnelles (facultatif).',
       requestsLabel: 'Demandes particulières',
-      requestsPlaceholder: 'Allergies, chaise haute, table près de la fenêtre…',
-      privacyPrefix: 'J’ai lu et j’accepte la', privacyLink: 'politique de confidentialité', privacySuffix: '',
+      requestsPlaceholder: 'Chaise haute, préférence de table ou message pour l’équipe…',
+      requestsNote: 'N’inscrivez pas de données de santé ou sensibles. Pour les allergies, appelez le restaurant.',
+      privacyPrefix: 'Je confirme avoir lu la', privacyLink: 'politique de confidentialité', privacySuffix: '', termsMiddle: 'et accepter les', termsLink: 'conditions de réservation',
       submit: 'Réserver', processing: 'Envoi en cours…',
       successTitle: 'Réservation reçue !', newBooking: 'Nouvelle réservation',
       footerAddress: 'Al Gobbo di Rialto · Sestiere San Polo 649, Venise',
@@ -648,7 +653,7 @@
       selectDate: 'Sélectionnez une date.', selectGuests: 'Sélectionnez le nombre de personnes.',
       selectTime: 'Sélectionnez un horaire.', enterName: 'Saisissez votre nom.', invalidName: 'Saisissez un nom d’au moins 2 caractères.',
       invalidEmail: 'Saisissez une adresse e-mail valide.', enterPhone: 'Saisissez votre numéro de téléphone.',
-      invalidPhone: 'Vérifiez le numéro de téléphone.', acceptPrivacy: 'Acceptez la politique de confidentialité pour continuer.',
+      invalidPhone: 'Vérifiez le numéro de téléphone.', acceptPrivacy: 'Confirmez avoir lu la politique de confidentialité et accepté les conditions de réservation.',
       invalidDate: 'Choisissez une date comprise dans la période de réservation.',
       genericError: 'Nous n’avons pas pu finaliser votre réservation. Réessayez ou appelez le +39 041 520 4603.',
       bookingStatusLoading: 'Vérification des réservations en ligne…',
@@ -674,8 +679,9 @@
       occasionDate: 'Romantisches Abendessen', occasionOther: 'Anderer Anlass',
       marketingLabel: 'Ich möchte Werbeinformationen erhalten (optional).',
       requestsLabel: 'Besondere Wünsche',
-      requestsPlaceholder: 'Allergien, Hochstuhl, Tisch am Fenster…',
-      privacyPrefix: 'Ich habe die', privacyLink: 'Datenschutzerklärung', privacySuffix: ' gelesen und akzeptiere sie',
+      requestsPlaceholder: 'Hochstuhl, Sitzplatzwunsch oder Nachricht an das Team…',
+      requestsNote: 'Keine Gesundheits- oder sensiblen Daten eingeben. Bei Allergien das Restaurant anrufen.',
+      privacyPrefix: 'Ich bestätige, die', privacyLink: 'Datenschutzerklärung', privacySuffix: ' gelesen zu haben', termsMiddle: 'und akzeptiere die', termsLink: 'Reservierungsbedingungen',
       submit: 'Jetzt reservieren', processing: 'Wird gesendet…',
       successTitle: 'Reservierung eingegangen!', newBooking: 'Neue Reservierung',
       footerAddress: 'Al Gobbo di Rialto · Sestiere San Polo 649, Venedig',
@@ -685,7 +691,7 @@
       selectDate: 'Wählen Sie ein Datum.', selectGuests: 'Wählen Sie die Personenzahl.',
       selectTime: 'Wählen Sie eine Uhrzeit.', enterName: 'Geben Sie Ihren Namen ein.', invalidName: 'Geben Sie einen Namen mit mindestens 2 Zeichen ein.',
       invalidEmail: 'Geben Sie eine gültige E-Mail-Adresse ein.', enterPhone: 'Geben Sie Ihre Telefonnummer ein.',
-      invalidPhone: 'Überprüfen Sie die Telefonnummer.', acceptPrivacy: 'Akzeptieren Sie die Datenschutzerklärung, um fortzufahren.',
+      invalidPhone: 'Überprüfen Sie die Telefonnummer.', acceptPrivacy: 'Bestätigen Sie, die Datenschutzerklärung gelesen und die Reservierungsbedingungen akzeptiert zu haben.',
       invalidDate: 'Wählen Sie ein Datum innerhalb des buchbaren Zeitraums.',
       genericError: 'Ihre Reservierung konnte nicht abgeschlossen werden. Versuchen Sie es erneut oder rufen Sie +39 041 520 4603 an.',
       bookingStatusLoading: 'Online-Reservierungen werden geprüft…',
@@ -711,8 +717,9 @@
       occasionDate: 'Cena romántica', occasionOther: 'Otra ocasión',
       marketingLabel: 'Quiero recibir comunicaciones promocionales (opcional).',
       requestsLabel: 'Peticiones especiales',
-      requestsPlaceholder: 'Alergias, trona, mesa junto a la ventana…',
-      privacyPrefix: 'He leído y acepto la', privacyLink: 'política de privacidad', privacySuffix: '',
+      requestsPlaceholder: 'Trona, preferencia de mesa o una nota para el equipo…',
+      requestsNote: 'No introduzcas datos de salud o sensibles. Para alergias, llama al restaurante.',
+      privacyPrefix: 'Confirmo que he leído la', privacyLink: 'política de privacidad', privacySuffix: '', termsMiddle: 'y acepto las', termsLink: 'condiciones de reserva',
       submit: 'Reservar ahora', processing: 'Enviando…',
       successTitle: '¡Reserva recibida!', newBooking: 'Nueva reserva',
       footerAddress: 'Al Gobbo di Rialto · Sestiere San Polo 649, Venecia',
@@ -722,7 +729,7 @@
       selectDate: 'Selecciona una fecha.', selectGuests: 'Selecciona el número de personas.',
       selectTime: 'Selecciona una hora.', enterName: 'Escribe tu nombre.', invalidName: 'Escribe un nombre de al menos 2 caracteres.',
       invalidEmail: 'Escribe una dirección de correo válida.', enterPhone: 'Escribe tu número de teléfono.',
-      invalidPhone: 'Comprueba el número de teléfono.', acceptPrivacy: 'Acepta la política de privacidad para continuar.',
+      invalidPhone: 'Comprueba el número de teléfono.', acceptPrivacy: 'Confirma que has leído la política de privacidad y aceptado las condiciones de reserva.',
       invalidDate: 'Elige una fecha dentro del periodo disponible para reservas.',
       genericError: 'No hemos podido completar tu reserva. Inténtalo de nuevo o llama al +39 041 520 4603.',
       bookingStatusLoading: 'Comprobando las reservas online…',

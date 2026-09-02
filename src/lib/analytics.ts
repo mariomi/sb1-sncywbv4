@@ -30,6 +30,7 @@ type TrackingWindow = Window & {
 };
 
 const CONSENT_KEY = 'al-gobbo-consent-v1';
+const CONSENT_VALIDITY_MONTHS = 6;
 const ATTRIBUTION_KEY = 'al-gobbo-attribution-v1';
 const UTM_KEYS = [
   'utm_source',
@@ -49,6 +50,16 @@ const UTM_KEYS = [
 ] as const;
 
 let initializedSignature = '';
+
+function consentRefreshDate(updatedAt: Date) {
+  const refreshAt = new Date(updatedAt);
+  const originalDay = refreshAt.getUTCDate();
+  refreshAt.setUTCDate(1);
+  refreshAt.setUTCMonth(refreshAt.getUTCMonth() + CONSENT_VALIDITY_MONTHS);
+  const lastDayOfTargetMonth = new Date(Date.UTC(refreshAt.getUTCFullYear(), refreshAt.getUTCMonth() + 1, 0)).getUTCDate();
+  refreshAt.setUTCDate(Math.min(originalDay, lastDayOfTargetMonth));
+  return refreshAt;
+}
 
 export function isSensitiveAnalyticsRoute(path: string) {
   const pathname = path.split(/[?#]/, 1)[0] || '/';
@@ -111,11 +122,18 @@ export function readConsent(): ConsentPreferences | null {
     const raw = localStorage.getItem(CONSENT_KEY);
     if (!raw) return null;
     const value = JSON.parse(raw) as Partial<ConsentPreferences>;
-    if (typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean') return null;
+    if (typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean' || typeof value.updatedAt !== 'string') return null;
+    const updatedAt = new Date(value.updatedAt);
+    if (Number.isNaN(updatedAt.getTime())) return null;
+    const refreshAt = consentRefreshDate(updatedAt);
+    if (Date.now() >= refreshAt.getTime()) {
+      localStorage.removeItem(CONSENT_KEY);
+      return null;
+    }
     return {
       analytics: value.analytics,
       marketing: value.marketing,
-      updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+      updatedAt: value.updatedAt,
     };
   } catch {
     return null;
