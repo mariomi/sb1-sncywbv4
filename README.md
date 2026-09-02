@@ -9,8 +9,8 @@ comunicazioni email.
 
 - React 18, Vite, TypeScript, Tailwind CSS e Framer Motion
 - Supabase Database/Auth con RLS e RPC pubbliche validate
-- Express + Resend per le conferme email
-- Supabase Edge Functions per i promemoria programmati
+- Supabase Edge Functions + Resend per email e promemoria programmati
+- Supabase Edge Functions + Meta WhatsApp Cloud API per le comunicazioni WhatsApp
 
 ## Configurazione locale
 
@@ -21,22 +21,22 @@ npm install
 Copy-Item .env.example .env
 ```
 
-Compilare `.env` con i valori del proprio ambiente. Le sole variabili esposte
-al browser sono quelle con prefisso `VITE_`. `RESEND_API_KEY` e
-`SUPABASE_SERVICE_ROLE_KEY` sono segreti server-side e non devono mai usare quel
-prefisso né essere committati.
+Compilare `.env` con le sole variabili frontend `VITE_*` del proprio ambiente.
+Email e WhatsApp vengono inviati dalle Supabase Edge Functions: i relativi
+segreti server-side devono essere configurati come Supabase Function Secrets,
+non nelle variabili del frontend, e non devono mai usare il prefisso `VITE_` né
+essere committati.
 
 Avvio locale:
 
 ```powershell
-# Terminale 1: frontend
 npm run dev
-
-# Terminale 2: API email attendibile
-node server.js
 ```
 
-Per lo sviluppo locale impostare `VITE_API_BASE_URL=http://localhost:3000`.
+Il frontend usa direttamente le Edge Functions del progetto Supabase
+configurato. `server.js` è conservato soltanto come implementazione Express
+legacy e non è richiesto né dallo sviluppo corrente né dal deploy di
+produzione.
 
 ## Controlli di qualità
 

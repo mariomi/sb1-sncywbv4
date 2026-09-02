@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOHead } from '../components/SEOHead';
 import {
@@ -138,52 +138,20 @@ export function AdminPage() {
   const [showTableManagement, setShowTableManagement] = useState(false);
   const [waitlistSlot, setWaitlistSlot] = useState<{ date: string; time: string } | null>(null);
   const [availableTables, setAvailableTables] = useState<Table[]>([]);
+  const [loadingAvailableTables, setLoadingAvailableTables] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState<string>('');
   const [showFeatureFlags, setShowFeatureFlags] = useState(false);
-  // Mobile bottom nav active tab: 'list' | 'today' | 'settings' | 'logout'
-  const [mobileTab, setMobileTab] = useState<'list' | 'today' | 'settings' | 'logout'>('list');
+  const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
     typeof Notification !== 'undefined' ? Notification.permission : 'denied'
   );
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    fetchReservations();
-    fetchTimeSlots();
-    fetchClosedDates();
-    fetchRecurringClosures();
-  }, [user, selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Supabase Realtime: subscribe to new reservations
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('admin-reservations')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'reservations' },
-        (payload) => {
-          const r = payload.new as Reservation;
-          fetchReservations();
-          toast.success(`Nuova prenotazione: ${r.name} — ${r.date} alle ${r.time.slice(0, 5)}`);
-          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            new Notification('Al Gobbo — Nuova prenotazione', {
-              body: `${r.name} · ${r.date} · ${r.time.slice(0, 5)} · ${r.guests} ospiti`,
-              icon: '/favicon.svg',
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    realtimeChannelRef.current = channel;
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  const reservationsRequestIdRef = useRef(0);
+  const timeSlotsRequestIdRef = useRef(0);
+  const availableTablesRequestIdRef = useRef(0);
+  const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
+  const selectedDateKeyRef = useRef(selectedDateKey);
+  selectedDateKeyRef.current = selectedDateKey;
 
   const handleRequestNotifications = async () => {
     if (typeof Notification === 'undefined') return;
@@ -192,18 +160,43 @@ export function AdminPage() {
   };
 
   useEffect(() => {
+    const requestId = ++availableTablesRequestIdRef.current;
+
     if (!selectedReservation) {
       setAvailableTables([]);
       setSelectedTableId('');
+      setLoadingAvailableTables(false);
       return;
     }
+
+    setAvailableTables([]);
     setSelectedTableId(selectedReservation.table_id ?? '');
+    setLoadingAvailableTables(true);
     getAvailableTables(selectedReservation.date, selectedReservation.time, selectedReservation.guests)
-      .then(tables => setAvailableTables(tables))
-      .catch(err => console.error('Error loading available tables:', err));
+      .then(tables => {
+        if (availableTablesRequestIdRef.current === requestId) {
+          setAvailableTables(tables);
+        }
+      })
+      .catch(err => {
+        if (availableTablesRequestIdRef.current === requestId) {
+          console.error('Error loading available tables:', err);
+        }
+      })
+      .finally(() => {
+        if (availableTablesRequestIdRef.current === requestId) {
+          setLoadingAvailableTables(false);
+        }
+      });
+
+    return () => {
+      if (availableTablesRequestIdRef.current === requestId) {
+        availableTablesRequestIdRef.current += 1;
+      }
+    };
   }, [selectedReservation]);
 
-  const fetchRecurringClosures = async () => {
+  const fetchRecurringClosures = useCallback(async () => {
     try {
       const closures = await getRecurringClosures();
       setRecurringClosures(closures);
@@ -211,7 +204,7 @@ export function AdminPage() {
       console.error('Error fetching recurring closures:', error);
       toast.error('Failed to load recurring closures');
     }
-  };
+  }, []);
 
   const handleAddRecurringClosure = async () => {
     try {
@@ -247,7 +240,7 @@ export function AdminPage() {
     }
   };
 
-  const fetchClosedDates = async () => {
+  const fetchClosedDates = useCallback(async () => {
     try {
       const dates = await getClosedDates();
       setClosedDates(dates.map(d => d.date));
@@ -255,7 +248,7 @@ export function AdminPage() {
       console.error('Error fetching closed dates:', error);
       toast.error('Failed to load closed dates');
     }
-  };
+  }, []);
 
   const handleAddClosedDate = async () => {
     if (!newClosedDate) return;
@@ -282,28 +275,121 @@ export function AdminPage() {
     }
   };
 
-  const fetchTimeSlots = async () => {
-    try {
-      const slots = await getAvailableTimeSlots(format(selectedDate, 'yyyy-MM-dd'));
-      setTimeSlots(slots);
-    } catch (error) {
-      console.error('Error fetching time slots:', error);
-      toast.error('Failed to load time slots');
-    }
-  };
+  const fetchTimeSlots = useCallback(async (dateKey = selectedDateKeyRef.current) => {
+    const requestId = ++timeSlotsRequestIdRef.current;
 
-  const fetchReservations = async () => {
     try {
-      setLoading(true);
-      const data = await getReservations(format(selectedDate, 'yyyy-MM-dd'));
-      setReservations(data);
+      const slots = await getAvailableTimeSlots(dateKey);
+      if (
+        requestId === timeSlotsRequestIdRef.current &&
+        dateKey === selectedDateKeyRef.current
+      ) {
+        setTimeSlots(slots);
+      }
     } catch (error) {
-      console.error('Error fetching reservations:', error);
-      toast.error('Failed to load reservations');
-    } finally {
-      setLoading(false);
+      if (requestId === timeSlotsRequestIdRef.current) {
+        console.error('Error fetching time slots:', error);
+        toast.error('Failed to load time slots');
+      }
     }
-  };
+  }, []);
+
+  const fetchReservations = useCallback(async (
+    dateKey = selectedDateKeyRef.current,
+    showLoading = true
+  ) => {
+    const requestId = ++reservationsRequestIdRef.current;
+
+    try {
+      if (showLoading) setLoading(true);
+      const data = await getReservations(dateKey);
+      if (
+        requestId === reservationsRequestIdRef.current &&
+        dateKey === selectedDateKeyRef.current
+      ) {
+        setReservations(data);
+      }
+    } catch (error) {
+      if (requestId === reservationsRequestIdRef.current) {
+        console.error('Error fetching reservations:', error);
+        toast.error('Failed to load reservations');
+      }
+    } finally {
+      if (requestId === reservationsRequestIdRef.current) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      reservationsRequestIdRef.current += 1;
+      timeSlotsRequestIdRef.current += 1;
+      setReservations([]);
+      setTimeSlots([]);
+      setLoading(false);
+      return;
+    }
+
+    void fetchReservations(selectedDateKey);
+    void fetchTimeSlots(selectedDateKey);
+
+    return () => {
+      reservationsRequestIdRef.current += 1;
+      timeSlotsRequestIdRef.current += 1;
+    };
+  }, [fetchReservations, fetchTimeSlots, selectedDateKey, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    void fetchClosedDates();
+    void fetchRecurringClosures();
+  }, [fetchClosedDates, fetchRecurringClosures, user]);
+
+  // Keep both list and calendar synchronized with every reservation change.
+  // Stable callbacks read the latest selected date through selectedDateKeyRef,
+  // avoiding the stale date captured by the original subscription.
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('admin-reservations')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reservations' },
+        (payload) => {
+          const currentDateKey = selectedDateKeyRef.current;
+
+          setCalendarRefreshKey(previous => previous + 1);
+          void fetchReservations(currentDateKey, false);
+          void fetchTimeSlots(currentDateKey);
+
+          if (payload.eventType === 'INSERT') {
+            const reservation = payload.new as Reservation;
+            toast.success(
+              `Nuova prenotazione: ${reservation.name} — ${reservation.date} alle ${reservation.time.slice(0, 5)}`
+            );
+
+            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+              new Notification('Al Gobbo — Nuova prenotazione', {
+                body: `${reservation.name} · ${reservation.date} · ${reservation.time.slice(0, 5)} · ${reservation.guests} ospiti`,
+                icon: '/favicon.svg',
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      if (realtimeChannelRef.current === channel) {
+        realtimeChannelRef.current = null;
+      }
+      void supabase.removeChannel(channel);
+    };
+  }, [fetchReservations, fetchTimeSlots, user]);
 
   const handleTimeSlotUpdate = async (id: string, data: { is_active?: boolean; max_capacity?: number }) => {
     try {
@@ -624,6 +710,7 @@ export function AdminPage() {
                 <ReservationCalendar
                   selectedDate={selectedDate}
                   onSelectDate={(date) => setSelectedDate(date)}
+                  refreshKey={calendarRefreshKey}
                 />
               ) : (
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -795,7 +882,11 @@ export function AdminPage() {
       <ManualReservationModal
         isOpen={showManualModal}
         onClose={() => setShowManualModal(false)}
-        onSuccess={() => fetchReservations()}
+        onSuccess={() => {
+          void fetchReservations();
+          void fetchTimeSlots();
+          setCalendarRefreshKey(previous => previous + 1);
+        }}
       />
 
       {/* Feature Flags Modal */}
@@ -809,6 +900,10 @@ export function AdminPage() {
             onClick={() => setShowFeatureFlags(false)}
           >
             <motion.div
+              id="feature-flags-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="feature-flags-title"
               className="bg-white dark:bg-venetian-brown/90 w-full md:max-w-lg md:rounded-2xl rounded-t-2xl rounded-b-none md:rounded-b-2xl shadow-xl md:mx-4 max-h-[85vh] overflow-y-auto"
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -816,7 +911,7 @@ export function AdminPage() {
               onClick={e => e.stopPropagation()}
             >
               <div className="p-6">
-                <h3 className="text-xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-1">
+                <h3 id="feature-flags-title" className="text-xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-1">
                   ⚙️ Funzionalità
                 </h3>
                 <p className="text-sm text-venetian-brown/60 dark:text-venetian-sandstone/60 mb-5">
@@ -1386,34 +1481,75 @@ export function AdminPage() {
       </AnimatePresence>
 
       {/* Mobile Bottom Navigation — visible only on mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 block md:hidden bg-white dark:bg-venetian-brown/95 border-t border-venetian-brown/20 dark:border-venetian-sandstone/10">
-        <div className="flex h-16">
+      <nav
+        aria-label="Azioni amministrazione"
+        className="fixed bottom-0 left-0 right-0 z-50 block border-t border-venetian-brown/20 bg-white pb-[env(safe-area-inset-bottom)] dark:border-venetian-sandstone/10 dark:bg-venetian-brown/95 md:hidden"
+      >
+        <ul className="flex min-h-16">
           {[
-            { id: 'list' as const,     icon: <List size={20} />,     label: 'Prenotazioni' },
-            { id: 'today' as const,    icon: <Calendar size={20} />, label: 'Oggi' },
-            { id: 'settings' as const, icon: <Settings size={20} />, label: 'Impostazioni' },
-            { id: 'logout' as const,   icon: <LogOut size={20} />,   label: 'Esci' },
+            {
+              id: 'list' as const,
+              icon: <List size={20} />,
+              label: 'Prenotazioni',
+              accessibleLabel: 'Mostra elenco prenotazioni',
+              pressed: !calendarView,
+            },
+            {
+              id: 'today' as const,
+              icon: <Calendar size={20} />,
+              label: 'Oggi',
+              accessibleLabel: 'Mostra le prenotazioni di oggi',
+              pressed: isToday(selectedDate),
+            },
+            {
+              id: 'settings' as const,
+              icon: <Settings size={20} />,
+              label: 'Impostazioni',
+              accessibleLabel: 'Apri impostazioni funzionalità',
+              pressed: showFeatureFlags,
+            },
+            {
+              id: 'logout' as const,
+              icon: <LogOut size={20} />,
+              label: 'Esci',
+              accessibleLabel: 'Esci dall’area amministrazione',
+              pressed: false,
+            },
           ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                if (tab.id === 'settings') { setShowFeatureFlags(true); }
-                else if (tab.id === 'logout') { signOut?.(); }
-                else { setMobileTab(tab.id); }
-              }}
-              className={cn(
-                'flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors',
-                mobileTab === tab.id && tab.id !== 'logout'
-                  ? 'text-venetian-gold'
-                  : 'text-venetian-brown/40 dark:text-venetian-sandstone/40 hover:text-venetian-brown dark:hover:text-venetian-sandstone'
-              )}
-            >
-              {tab.icon}
-              <span className="text-[10px] font-medium">{tab.label}</span>
-            </button>
+            <li key={tab.id} className="flex flex-1">
+              <button
+                type="button"
+                aria-label={tab.accessibleLabel}
+                aria-pressed={tab.id === 'logout' ? undefined : tab.pressed}
+                aria-haspopup={tab.id === 'settings' ? 'dialog' : undefined}
+                aria-expanded={tab.id === 'settings' ? showFeatureFlags : undefined}
+                aria-controls={tab.id === 'settings' ? 'feature-flags-dialog' : undefined}
+                onClick={() => {
+                  if (tab.id === 'list') {
+                    setCalendarView(false);
+                  } else if (tab.id === 'today') {
+                    setSelectedDate(new Date());
+                    setCalendarView(false);
+                  } else if (tab.id === 'settings') {
+                    setShowFeatureFlags(true);
+                  } else {
+                    void signOut?.();
+                  }
+                }}
+                className={cn(
+                  'flex min-h-16 flex-1 flex-col items-center justify-center gap-1 px-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-venetian-gold',
+                  tab.pressed && tab.id !== 'logout'
+                    ? 'text-venetian-gold'
+                    : 'text-venetian-brown/60 hover:text-venetian-brown dark:text-venetian-sandstone/60 dark:hover:text-venetian-sandstone'
+                )}
+              >
+                <span aria-hidden="true">{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      </nav>
 
       {/* Reservation Details Modal */}
       <AnimatePresence>
@@ -1516,8 +1652,11 @@ export function AdminPage() {
                       <select
                         value={selectedTableId}
                         onChange={e => setSelectedTableId(e.target.value)}
+                        disabled={loadingAvailableTables}
+                        aria-busy={loadingAvailableTables}
                         className="flex-1 px-3 py-2 rounded-lg border border-venetian-brown/20 dark:border-venetian-sandstone/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50 dark:bg-venetian-brown/10 dark:text-venetian-sandstone text-sm"
                       >
+                        {loadingAvailableTables && <option value={selectedTableId}>Caricamento tavoli…</option>}
                         <option value="">Nessun tavolo</option>
                         {availableTables.map(t => (
                           <option key={t.id} value={t.id}>
@@ -1531,6 +1670,7 @@ export function AdminPage() {
                       <Button
                         size="sm"
                         className="bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90 shrink-0"
+                        disabled={loadingAvailableTables}
                         onClick={async () => {
                           try {
                             await assignTableToReservation(selectedReservation.id, selectedTableId || null);

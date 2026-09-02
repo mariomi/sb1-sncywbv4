@@ -1,161 +1,441 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { ArrowDown, ArrowRight } from 'lucide-react';
+import { motion, type MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../lib/i18n';
-import { ChevronDown } from 'lucide-react';
-const images = [
-  '/images/hero/img0.jpg',
-  '/images/hero/img1.jpg',
-  '/images/hero/img2.jpg',
-];
+import { useLanguage, type Language } from '../lib/i18n';
+import { developerLegalIdentity, restaurantLegalIdentity } from '../lib/legal';
+import heroImage from '../Img/al-gobbo-2026/interior-hero-1600.webp';
+import hero480 from '../Img/al-gobbo-2026/interior-hero-480.webp';
+import hero900 from '../Img/al-gobbo-2026/interior-hero-900.webp';
+import hero1200 from '../Img/al-gobbo-2026/interior-hero-1200.webp';
+import gardenImage from '../Img/al-gobbo-2026/bar-portrait-1200.webp';
+import garden480 from '../Img/al-gobbo-2026/bar-portrait-480.webp';
+import garden900 from '../Img/al-gobbo-2026/bar-portrait-900.webp';
+import closingImage from '../Img/al-gobbo-2026/burrata-portrait-1200.webp';
+import closing480 from '../Img/al-gobbo-2026/burrata-portrait-480.webp';
+import closing900 from '../Img/al-gobbo-2026/burrata-portrait-900.webp';
+import welcomeImage from '../Img/al-gobbo-2026/staff-wide-1600.webp';
+import welcome480 from '../Img/al-gobbo-2026/staff-wide-480.webp';
+import welcome900 from '../Img/al-gobbo-2026/staff-wide-900.webp';
+import roomImage from '../Img/al-gobbo-2026/entrance-portrait-1200.webp';
+import room480 from '../Img/al-gobbo-2026/entrance-portrait-480.webp';
+import room900 from '../Img/al-gobbo-2026/entrance-portrait-900.webp';
+import tableImage from '../Img/al-gobbo-2026/table-portrait-1200.webp';
+import table480 from '../Img/al-gobbo-2026/table-portrait-480.webp';
+import table900 from '../Img/al-gobbo-2026/table-portrait-900.webp';
 
-// Ken Burns animation: each slide slowly zooms + shifts slightly for cinematic feel
-const kenBurnsVariants = [
-  { initial: { scale: 1.12, x: 0, y: 0 }, animate: { scale: 1, x: '-2%', y: '-1%' } },
-  { initial: { scale: 1.12, x: '-2%', y: 0 }, animate: { scale: 1, x: '1%', y: '-2%' } },
-  { initial: { scale: 1.1, x: '1%', y: '-1%' }, animate: { scale: 1, x: 0, y: 0 } },
-];
+const heroCopy: Record<Language, {
+  scroll: string;
+  skip: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  interludeOne: string;
+  interludeTwo: string;
+  portalKicker: string;
+  portalTitle: string;
+  portalHint: string;
+  reserve: string;
+  place: string;
+  privacy: string;
+  legal: string;
+  developedBy: string;
+  imageAlt: string;
+}> = {
+  it: {
+    scroll: 'Scorri', skip: 'Salta introduzione', eyebrow: 'San Polo 649 · a due passi da Rialto',
+    title: 'Fuori, Rialto. Dentro, un’altra Venezia.',
+    body: 'Una porta, il profumo della cucina, un giardino nascosto. Dal 1955 accogliamo Venezia a tavola.',
+    interludeOne: 'Segui il profumo tra le calli.',
+    interludeTwo: 'Un passo ancora.\nIl giardino si rivela.',
+    portalKicker: 'Il prossimo momento è tuo', portalTitle: 'Il tuo tavolo, a Venezia.',
+    portalHint: 'Scegli il giorno. Noi prepariamo il resto.',
+    reserve: 'Prenota il tuo tavolo', place: 'Venezia · San Polo', privacy: 'Privacy', legal: 'Note legali', developedBy: 'Sito di',
+    imageAlt: 'La sala interna del Ristorante Al Gobbo di Rialto',
+  },
+  en: {
+    scroll: 'Scroll', skip: 'Skip introduction', eyebrow: 'San Polo 649 · steps from Rialto',
+    title: 'Outside, Rialto. Inside, another Venice.',
+    body: 'A doorway, the aroma of the kitchen, a hidden garden. Since 1955, we have welcomed Venice to the table.',
+    interludeOne: 'Follow the aroma through Venice’s calli.',
+    interludeTwo: 'One step further.\nThe garden reveals itself.',
+    portalKicker: 'The next moment is yours', portalTitle: 'Your table, in Venice.',
+    portalHint: 'Choose the day. We will prepare the rest.',
+    reserve: 'Reserve your table', place: 'Venice · San Polo', privacy: 'Privacy', legal: 'Legal notice', developedBy: 'Website by',
+    imageAlt: 'The dining room at Al Gobbo di Rialto restaurant',
+  },
+  fr: {
+    scroll: 'Faites défiler', skip: 'Passer l’introduction', eyebrow: 'San Polo 649 · à deux pas du Rialto',
+    title: 'Dehors, le Rialto. Dedans, une autre Venise.',
+    body: 'Une porte, les parfums de la cuisine, un jardin caché. Depuis 1955, nous accueillons Venise à table.',
+    interludeOne: 'Suivez les parfums dans les calli de Venise.',
+    interludeTwo: 'Encore un pas.\nLe jardin se dévoile.',
+    portalKicker: 'Le prochain moment est à vous', portalTitle: 'Votre table, à Venise.',
+    portalHint: 'Choisissez le jour. Nous préparons le reste.',
+    reserve: 'Réserver votre table', place: 'Venise · San Polo', privacy: 'Confidentialité', legal: 'Mentions légales', developedBy: 'Site par',
+    imageAlt: 'La salle du restaurant Al Gobbo di Rialto',
+  },
+  de: {
+    scroll: 'Scrollen', skip: 'Einführung überspringen', eyebrow: 'San Polo 649 · wenige Schritte vom Rialto',
+    title: 'Draußen Rialto. Drinnen ein anderes Venedig.',
+    body: 'Eine Tür, der Duft aus der Küche, ein versteckter Garten. Seit 1955 heißen wir Venedig am Tisch willkommen.',
+    interludeOne: 'Folgen Sie dem Duft durch Venedigs Calli.',
+    interludeTwo: 'Noch ein Schritt.\nDer Garten zeigt sich.',
+    portalKicker: 'Der nächste Moment gehört Ihnen', portalTitle: 'Ihr Tisch, in Venedig.',
+    portalHint: 'Wählen Sie den Tag. Wir bereiten den Rest vor.',
+    reserve: 'Tisch reservieren', place: 'Venedig · San Polo', privacy: 'Datenschutz', legal: 'Impressum', developedBy: 'Website von',
+    imageAlt: 'Der Gastraum des Restaurants Al Gobbo di Rialto',
+  },
+  es: {
+    scroll: 'Desliza', skip: 'Saltar introducción', eyebrow: 'San Polo 649 · a un paso de Rialto',
+    title: 'Fuera, Rialto. Dentro, otra Venecia.',
+    body: 'Una puerta, el aroma de la cocina, un jardín escondido. Desde 1955 recibimos a Venecia en la mesa.',
+    interludeOne: 'Sigue el aroma por las calli de Venecia.',
+    interludeTwo: 'Un paso más.\nEl jardín se revela.',
+    portalKicker: 'El próximo momento es tuyo', portalTitle: 'Tu mesa, en Venecia.',
+    portalHint: 'Elige el día. Nosotros preparamos el resto.',
+    reserve: 'Reserva tu mesa', place: 'Venecia · San Polo', privacy: 'Privacidad', legal: 'Aviso legal', developedBy: 'Sitio de',
+    imageAlt: 'El comedor del restaurante Al Gobbo di Rialto',
+  },
+};
 
-export function Hero() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { t } = useLanguage();
+function responsiveSources(small: string, medium: string, large: string, largeWidth = 1500) {
+  return `${small} 480w, ${medium} 900w, ${large} ${largeWidth}w`;
+}
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const scrollToStory = () => {
-    document.getElementById('story-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
+function ComposingWord({ word, index, progress }: { word: string; index: number; progress: MotionValue<number> }) {
+  const enterStart = 0.775 + index * 0.008;
+  const enterEnd = enterStart + 0.028;
+  const exitStart = 0.875 + index * 0.004;
+  const exitEnd = exitStart + 0.04;
+  const direction = index % 2 === 0 ? -1 : 1;
+  const opacity = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [0, 1, 1, 0]);
+  const x = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [direction * 28, 0, 0, direction * -55]);
+  const y = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [18, 0, 0, index % 3 === 0 ? -30 : 24]);
+  const scale = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [0.94, 1, 1, 0.97]);
+  const rotate = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [direction * 1.5, 0, 0, direction * -2]);
 
   return (
-    <div className="relative h-screen overflow-hidden">
-      {/* Ken Burns Background Slideshow */}
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={currentImageIndex}
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
-        >
-          <motion.div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
-            initial={kenBurnsVariants[currentImageIndex].initial}
-            animate={kenBurnsVariants[currentImageIndex].animate}
-            transition={{ duration: 7, ease: 'easeInOut' }}
+    <motion.span aria-hidden="true" style={{ opacity, x, y, scale, rotate }} className="inline-block will-change-[transform,opacity]">
+      {word}
+    </motion.span>
+  );
+}
+
+type HeroPhase = 'prompt' | 'reveal' | 'narrative' | 'portal';
+
+function phaseAt(progress: number): HeroPhase {
+  return progress < 0.13 ? 'prompt' : progress < 0.765 ? 'reveal' : progress < 0.965 ? 'narrative' : 'portal';
+}
+
+function assetStageAt(progress: number) {
+  return progress >= 0.48 ? 5 : progress >= 0.32 ? 4 : progress >= 0.18 ? 3 : 2;
+}
+
+function sceneAt(progress: number) {
+  return progress < 0.13 ? 0 : progress < 0.28 ? 1 : progress < 0.4 ? 2 : progress < 0.53 ? 3 : progress < 0.65 ? 4 : 5;
+}
+
+const mobileScrollSnapPoints = [0, 0.15, 0.255, 0.38, 0.53, 0.6, 0.71, 0.855, 1] as const;
+
+export function Hero() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [phase, setPhase] = useState<HeroPhase>('prompt');
+  const [assetStage, setAssetStage] = useState(2);
+  const [activeScene, setActiveScene] = useState(0);
+  const phaseRef = useRef<HeroPhase>('prompt');
+  const assetStageRef = useRef(2);
+  const activeSceneRef = useRef(0);
+  const pendingPortalFocusRef = useRef(false);
+  const portalFocusFrameRef = useRef<number | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const { language } = useLanguage();
+  const copy = heroCopy[language];
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] });
+  const followsTouchGesture = typeof window !== 'undefined'
+    && window.matchMedia('(max-width: 1023px) and (any-pointer: coarse)').matches;
+  const dormantScrollYProgress = useMotionValue(0);
+  const smoothScrollYProgress = useSpring(followsTouchGesture ? dormantScrollYProgress : scrollYProgress, {
+    stiffness: 190,
+    damping: 30,
+    mass: 0.45,
+    restDelta: 0.0001,
+    restSpeed: 0.001,
+  });
+  const visualScrollYProgress = followsTouchGesture ? scrollYProgress : smoothScrollYProgress;
+
+  const promptOpacity = useTransform(visualScrollYProgress, [0, 0.055, 0.13], [1, 1, 0]);
+
+  const firstOpacity = useTransform(visualScrollYProgress, [0.05, 0.105, 0.21, 0.27], [0, 1, 1, 0]);
+  const firstX = useTransform(visualScrollYProgress, [0.07, 0.26], ['0vw', '-12vw']);
+  const firstScale = useTransform(visualScrollYProgress, [0.07, 0.26], [0.94, 1.03]);
+
+  const secondOpacity = useTransform(visualScrollYProgress, [0.18, 0.235, 0.31, 0.37], [0, 1, 1, 0]);
+  const secondX = useTransform(visualScrollYProgress, [0.18, 0.25, 0.36], ['38vw', '5vw', '-8vw']);
+  const secondY = useTransform(visualScrollYProgress, [0.18, 0.36], ['5vh', '-2vh']);
+
+  const thirdOpacity = useTransform(visualScrollYProgress, [0.29, 0.35, 0.43, 0.49], [0, 1, 1, 0]);
+  const thirdX = useTransform(visualScrollYProgress, [0.29, 0.37, 0.48], ['-40vw', '-5vw', '8vw']);
+  const thirdY = useTransform(visualScrollYProgress, [0.29, 0.48], ['-4vh', '3vh']);
+
+  const clusterOpacity = useTransform(visualScrollYProgress, [0.42, 0.48, 0.57, 0.63], [0, 1, 1, 0]);
+  const clusterOneOpacity = useTransform(visualScrollYProgress, [0.42, 0.465, 0.575, 0.625], [0, 1, 1, 0]);
+  const clusterTwoOpacity = useTransform(visualScrollYProgress, [0.45, 0.495, 0.58, 0.63], [0, 1, 1, 0]);
+  const clusterThreeOpacity = useTransform(visualScrollYProgress, [0.48, 0.525, 0.585, 0.635], [0, 1, 1, 0]);
+  const clusterLeftX = useTransform(visualScrollYProgress, [0.42, 0.56], ['-12vw', '-24vw']);
+  const clusterRightX = useTransform(visualScrollYProgress, [0.45, 0.57], ['13vw', '25vw']);
+  const clusterBottomY = useTransform(visualScrollYProgress, [0.48, 0.59], ['18vh', '25vh']);
+
+  const mainOpacity = useTransform(visualScrollYProgress, [0.54, 0.59, 0.93, 0.99], [0, 1, 1, 0.2]);
+  const mainScale = useTransform(visualScrollYProgress, [0.54, 0.6, 0.67, 0.82], [0.28, 0.58, 1.04, 1]);
+  const shadeOpacity = useTransform(visualScrollYProgress, [0.535, 0.58], [0, 1]);
+  const interludeOneOpacity = useTransform(visualScrollYProgress, [0.545, 0.58, 0.625, 0.655], [0, 1, 1, 0]);
+  const interludeOneY = useTransform(visualScrollYProgress, [0.545, 0.58, 0.625, 0.655], [18, 0, 0, -18]);
+  const interludeTwoOpacity = useTransform(visualScrollYProgress, [0.655, 0.69, 0.735, 0.765], [0, 1, 1, 0]);
+  const interludeTwoY = useTransform(visualScrollYProgress, [0.655, 0.69, 0.735, 0.765], [18, 0, 0, -18]);
+  const narrativeOpacity = useTransform(visualScrollYProgress, [0.765, 0.785, 0.895, 0.945], [0, 1, 1, 0]);
+  const portalBackdropOpacity = useTransform(visualScrollYProgress, [0.92, 0.97], [0, 1]);
+  const portalOpacity = useTransform(visualScrollYProgress, [0.95, 0.985], [0, 1]);
+  const portalY = useTransform(visualScrollYProgress, [0.95, 0.985], [32, 0]);
+  const skipOpacity = useTransform(visualScrollYProgress, [0, 0.04, 0.11, 0.89, 0.97], [0, 0, 1, 1, 0]);
+
+  useEffect(() => {
+    const visualProgress = visualScrollYProgress.get();
+    const nextPhase = phaseAt(visualProgress);
+    const nextAssetStage = assetStageAt(scrollYProgress.get());
+    const nextScene = sceneAt(visualProgress);
+    phaseRef.current = nextPhase;
+    assetStageRef.current = nextAssetStage;
+    activeSceneRef.current = nextScene;
+    setPhase(nextPhase);
+    setAssetStage(nextAssetStage);
+    setActiveScene(nextScene);
+  }, [scrollYProgress, visualScrollYProgress]);
+
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const previousThemeColor = themeColor?.content;
+    root.dataset.homeIntroActive = 'true';
+    themeColor?.setAttribute('content', '#050505');
+    window.dispatchEvent(new CustomEvent('al-gobbo:intro-visibility', {
+      detail: { active: true },
+    }));
+    return () => {
+      delete root.dataset.homeIntroActive;
+      if (themeColor && previousThemeColor) themeColor.content = previousThemeColor;
+      pendingPortalFocusRef.current = false;
+      if (portalFocusFrameRef.current !== null) {
+        window.cancelAnimationFrame(portalFocusFrameRef.current);
+      }
+      window.dispatchEvent(new CustomEvent('al-gobbo:intro-visibility', {
+        detail: { active: false },
+      }));
+    };
+  }, []);
+
+  useMotionValueEvent(scrollYProgress, 'change', (progress) => {
+    const nextAssetStage = assetStageAt(progress);
+    if (nextAssetStage > assetStageRef.current) {
+      assetStageRef.current = nextAssetStage;
+      setAssetStage(nextAssetStage);
+    }
+  });
+
+  useMotionValueEvent(visualScrollYProgress, 'change', (progress) => {
+    const nextPhase = phaseAt(progress);
+    if (phaseRef.current !== nextPhase) {
+      phaseRef.current = nextPhase;
+      setPhase(nextPhase);
+    }
+
+    const nextScene = sceneAt(progress);
+    if (activeSceneRef.current !== nextScene) {
+      activeSceneRef.current = nextScene;
+      setActiveScene(nextScene);
+    }
+
+    if (nextPhase === 'portal' && pendingPortalFocusRef.current) {
+      pendingPortalFocusRef.current = false;
+      portalFocusFrameRef.current = window.requestAnimationFrame(() => {
+        document.getElementById('home-reservation-link')?.focus({ preventScroll: true });
+        portalFocusFrameRef.current = null;
+      });
+    }
+  });
+
+  const moveToReveal = () => {
+    const top = sectionRef.current?.offsetTop ?? 0;
+    window.scrollTo({ top: top + window.innerHeight * 0.38, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  };
+
+  const skipIntro = () => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const targetTop = section.offsetTop + section.offsetHeight - window.innerHeight;
+    pendingPortalFocusRef.current = true;
+    window.scrollTo({ top: targetTop, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  };
+
+  const heroSrcSet = `${hero480} 480w, ${hero900} 900w, ${hero1200} 1200w, ${heroImage} 1600w`;
+  const roomSrcSet = responsiveSources(room480, room900, roomImage, 1200);
+  const tableSrcSet = responsiveSources(table480, table900, tableImage, 1200);
+  const gardenSrcSet = responsiveSources(garden480, garden900, gardenImage, 1200);
+  const closingSrcSet = responsiveSources(closing480, closing900, closingImage, 1200);
+  const welcomeSrcSet = responsiveSources(welcome480, welcome900, welcomeImage, 1600);
+
+  if (prefersReducedMotion) {
+    return (
+      <section ref={sectionRef} className="relative flex min-h-[100svh] items-end overflow-hidden bg-[#050505] px-5 pb-16 pt-28 text-white sm:px-8 lg:px-12" aria-labelledby="home-title">
+        <img src={heroImage} srcSet={heroSrcSet} sizes="100vw" alt={copy.imageAlt} className="absolute inset-0 h-full w-full object-cover" loading="eager" decoding="async" />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative mx-auto w-full max-w-[1480px]">
+          <p id="home-intro-story" className="mb-7 max-w-xl font-serif text-xl italic leading-7 text-white/80 sm:text-2xl">
+            <span className="block">{copy.interludeOne}</span>
+            <span className="mt-2 block whitespace-pre-line">{copy.interludeTwo}</span>
+          </p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-venetian-gold">{copy.portalKicker}</p>
+          <h1 id="home-title" className="mt-5 max-w-[11ch] font-serif text-[clamp(2.75rem,13vw,8.8rem)] font-semibold leading-[0.82] tracking-[-0.05em] sm:leading-[0.79]">{copy.portalTitle}</h1>
+          <p className="mt-7 max-w-xl border-l border-white/50 pl-5 text-base leading-7 text-white/90 sm:text-lg">{copy.portalHint}</p>
+          <Link id="home-reservation-link" to="/book" className="mt-8 inline-flex min-h-[52px] items-center gap-3 bg-venetian-gold px-6 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#050505]">{copy.reserve}<ArrowRight className="h-4 w-4" /></Link>
+          <div className="mt-8 max-w-2xl text-[0.66rem] leading-5 text-white/55">
+            <p>{restaurantLegalIdentity.legalName} · P.IVA/C.F. IT{restaurantLegalIdentity.vatNumber}</p>
+            <p><Link to="/privacy" className="underline underline-offset-4 hover:text-white">{copy.privacy}</Link> · <Link to="/legal" className="underline underline-offset-4 hover:text-white">{copy.legal}</Link> · {copy.developedBy}{' '}<a href={developerLegalIdentity.website} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-white">{developerLegalIdentity.brand} SRLS · P.IVA IT{developerLegalIdentity.vatNumber}</a></p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section ref={sectionRef} id="home-scroll-intro" className="relative h-[510svh] touch-pan-y bg-[#050505] sm:h-[535svh] lg:h-[565svh]" aria-labelledby="home-title">
+      {mobileScrollSnapPoints.map((progress) => {
+        const offset = progress * 100;
+        return (
+          <span
+            key={progress}
+            aria-hidden="true"
+            className="home-scroll-snap-point pointer-events-none absolute left-0 h-px w-px"
+            style={{ top: `calc(${offset}% - ${offset}dvh)` }}
           />
-          {/* Gradient overlay: darker at bottom for text legibility */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/80" />
-        </motion.div>
-      </AnimatePresence>
+        );
+      })}
+      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#050505]">
+        <h1 id="home-title" className="sr-only">{copy.title}</h1>
+        <p id="home-intro-story" className="sr-only">{copy.interludeOne} {copy.interludeTwo}</p>
+        <button type="button" onClick={skipIntro} tabIndex={phase === 'prompt' ? 0 : -1} className="sr-only z-50 bg-white px-4 py-3 text-sm font-semibold text-venetian-brown focus:not-sr-only focus:absolute focus:right-4 focus:top-4">{copy.skip}</button>
+        <motion.button type="button" onClick={skipIntro} tabIndex={phase === 'reveal' || phase === 'narrative' ? 0 : -1} aria-hidden={phase === 'prompt' || phase === 'portal'} style={{ opacity: skipOpacity }} className={`absolute right-4 top-4 z-50 min-h-11 border border-white/25 bg-black/80 px-4 text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold sm:right-6 sm:top-6 ${phase === 'reveal' || phase === 'narrative' ? 'pointer-events-auto' : 'pointer-events-none'}`}>{copy.skip}</motion.button>
 
-      {/* Content */}
-      <div className="relative h-full flex flex-col items-center justify-center text-center px-4 sm:px-6">
-        {/* Tagline */}
-        <motion.p
-          initial={{ opacity: 0, letterSpacing: '0.3em' }}
-          animate={{ opacity: 1, letterSpacing: '0.2em' }}
-          transition={{ duration: 1.2, delay: 0.2 }}
-          className="text-venetian-gold/90 text-sm sm:text-base font-medium tracking-[0.2em] uppercase mb-6"
-        >
-          {t('hero.tagline')}
-        </motion.p>
+        {phase === 'prompt' ? <motion.div style={{ opacity: promptOpacity }} className="pointer-events-none absolute inset-0 z-40 grid place-items-center" aria-hidden="false">
+          <button type="button" onClick={moveToReveal} className="group pointer-events-auto flex min-h-24 min-w-24 flex-col items-center justify-center gap-4 text-white" aria-label={copy.scroll}>
+            <span className="text-xs font-bold uppercase tracking-[0.28em]">{copy.scroll}</span>
+            <motion.span animate={{ y: [0, 9, 0] }} transition={{ duration: 1.55, repeat: Infinity, ease: 'easeInOut' }} className="grid h-11 w-11 place-items-center rounded-full border border-white/25 transition-colors group-hover:border-venetian-gold group-hover:text-venetian-gold">
+              <ArrowDown className="h-4 w-4" />
+            </motion.span>
+          </button>
+        </motion.div> : null}
 
-        {/* Main Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.4, ease: 'easeOut' }}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-white mb-6 leading-tight max-w-4xl whitespace-pre-line"
-        >
-          {t('hero.title')}
-        </motion.h1>
+        {activeScene <= 1 ? <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-10 h-[58svh] w-[70vw] max-w-[430px] -translate-x-1/2 -translate-y-1/2 sm:h-[62svh] sm:w-[38vw] sm:max-w-none">
+          <motion.img src={roomImage} srcSet={roomSrcSet} sizes="(min-width: 640px) 38vw, 70vw" alt="" style={{ opacity: firstOpacity, x: firstX, scale: firstScale }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" loading="eager" decoding="async" />
+        </div> : null}
 
-        {/* Decorative divider */}
+        {assetStage >= 2 && activeScene <= 2 ? (
+          <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[11] h-[52svh] w-[64vw] max-w-[400px] -translate-x-1/2 -translate-y-1/2 sm:h-[59svh] sm:w-[34vw] sm:max-w-none">
+            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 34vw, 64vw" alt="" style={{ opacity: secondOpacity, x: secondX, y: secondY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
+          </div>
+        ) : null}
+
+        {assetStage >= 3 && activeScene >= 1 && activeScene <= 3 ? (
+          <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[12] h-[56svh] w-[66vw] max-w-[410px] -translate-x-1/2 -translate-y-1/2 sm:h-[61svh] sm:w-[36vw] sm:max-w-none">
+            <motion.img src={gardenImage} srcSet={gardenSrcSet} sizes="(min-width: 640px) 36vw, 66vw" alt="" style={{ opacity: thirdOpacity, x: thirdX, y: thirdY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
+          </div>
+        ) : null}
+
+        {assetStage >= 4 && activeScene >= 2 && activeScene <= 4 ? <motion.div aria-hidden="true" style={{ opacity: clusterOpacity }} className="absolute inset-0 z-[13] will-change-[opacity]">
+          <div className="absolute left-1/2 top-[43%] h-[39svh] w-[42vw] -translate-x-1/2 -translate-y-1/2 sm:h-[47svh] sm:w-[25vw]">
+            <motion.img src={closingImage} srcSet={closingSrcSet} sizes="(min-width: 640px) 25vw, 42vw" alt="" style={{ opacity: clusterOneOpacity, x: clusterLeftX, rotate: -3 }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
+          </div>
+          <div className="absolute left-1/2 top-[43%] h-[42svh] w-[44vw] -translate-x-1/2 -translate-y-1/2 sm:h-[50svh] sm:w-[26vw]">
+            <motion.img src={welcomeImage} srcSet={welcomeSrcSet} sizes="(min-width: 640px) 26vw, 44vw" alt="" style={{ opacity: clusterTwoOpacity, x: clusterRightX, rotate: 3 }} className="h-full w-full border border-white/10 object-cover object-[28%_center] will-change-[transform,opacity]" decoding="async" />
+          </div>
+          <div className="absolute left-1/2 top-1/2 h-[32svh] w-[50vw] -translate-x-1/2 -translate-y-1/2 sm:h-[38svh] sm:w-[28vw]">
+            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 28vw, 50vw" alt="" style={{ opacity: clusterThreeOpacity, y: clusterBottomY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
+          </div>
+        </motion.div> : null}
+
+        {assetStage >= 5 && activeScene >= 3 ? <motion.img
+          src={heroImage}
+          srcSet={heroSrcSet}
+          sizes="100vw"
+          alt={copy.imageAlt}
+          style={{ opacity: mainOpacity, scale: mainScale }}
+          className="absolute inset-0 z-20 h-full w-full object-cover will-change-[transform,opacity]"
+          loading="eager"
+          decoding="async"
+        /> : null}
+        <motion.div style={{ opacity: shadeOpacity }} className="absolute inset-0 z-20 bg-[linear-gradient(0deg,rgba(16,14,12,0.88)_0%,rgba(16,14,12,0.52)_62%,rgba(16,14,12,0.22)_100%)] lg:bg-[linear-gradient(90deg,rgba(16,14,12,0.9)_0%,rgba(16,14,12,0.48)_50%,rgba(16,14,12,0.12)_100%),linear-gradient(0deg,rgba(16,14,12,0.64)_0%,transparent_50%)]" />
+
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[29] flex items-center justify-center px-6 text-center">
+          <motion.p style={{ opacity: interludeOneOpacity, y: interludeOneY }} className="max-w-[25ch] text-balance text-[clamp(0.82rem,2.4vw,1.35rem)] font-semibold uppercase leading-[1.55] tracking-[0.2em] text-white/90 will-change-[transform,opacity]">
+            <span className="mx-auto mb-6 block h-px w-12 bg-venetian-gold/80" />
+            {copy.interludeOne}
+          </motion.p>
+        </div>
+
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[29] flex items-center justify-center px-6 text-center">
+          <motion.p style={{ opacity: interludeTwoOpacity, y: interludeTwoY }} className="max-w-[17ch] whitespace-pre-line text-balance font-serif text-[clamp(2.6rem,11vw,7.25rem)] font-medium italic leading-[0.88] tracking-[-0.035em] text-white will-change-[transform,opacity]">
+            {copy.interludeTwo}
+          </motion.p>
+        </div>
+
         <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="w-24 h-px bg-venetian-gold mb-6 origin-center"
+          style={{ opacity: narrativeOpacity }}
+          className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-5 sm:px-8 lg:px-12"
+          aria-hidden={phase !== 'narrative'}
+        >
+          <div className="mx-auto w-full max-w-[1480px] text-center">
+            <p className="mb-7 text-[0.66rem] font-bold uppercase tracking-[0.24em] text-venetian-gold sm:mb-10 sm:text-xs">{copy.eyebrow}</p>
+            <h2 aria-label={copy.title} className="mx-auto flex max-w-[12ch] flex-wrap justify-center gap-x-[0.2em] gap-y-[0.05em] font-serif text-[clamp(3.3rem,15vw,9.5rem)] font-semibold leading-[0.82] tracking-[-0.055em] text-white sm:leading-[0.78]">
+              {copy.title.split(' ').map((word, index) => (
+                <ComposingWord key={`${word}-${index}`} word={word} index={index} progress={visualScrollYProgress} />
+              ))}
+            </h2>
+          </div>
+        </motion.div>
+
+        <motion.div
+          aria-hidden="true"
+          style={{ opacity: portalBackdropOpacity }}
+          className="absolute inset-0 z-[31] bg-[radial-gradient(circle_at_50%_42%,rgba(180,71,50,0.22),transparent_34%),linear-gradient(180deg,rgba(16,15,13,0.92),#100f0d)]"
         />
 
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.0 }}
-          className="text-base sm:text-lg md:text-xl text-venetian-sandstone/90 mb-10 max-w-2xl px-4 leading-relaxed"
-        >
-          {t('hero.subtitle')}
-        </motion.p>
-
-        {/* CTA Buttons */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center px-4"
+          id="reservation-portal"
+          style={{ opacity: portalOpacity, y: portalY }}
+          className={`absolute inset-0 z-[32] flex items-center justify-center px-5 pb-[env(safe-area-inset-bottom)] text-center sm:px-8 ${phase === 'portal' ? '' : 'pointer-events-none'}`}
+          aria-hidden={phase !== 'portal'}
         >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full sm:w-auto"
-          >
-            <Link to="/book" className="inline-flex h-12 w-full sm:w-auto items-center justify-center rounded-xl bg-venetian-gold px-8 text-sm font-semibold text-[#4A3329] shadow-lg shadow-venetian-gold/30 transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-              {t('hero.reserveButton')}
+          <div className="mx-auto w-full max-w-5xl">
+            <p className="text-[0.66rem] font-bold uppercase tracking-[0.26em] text-venetian-gold sm:text-xs">{copy.portalKicker}</p>
+            <h2 className="mx-auto mt-7 max-w-[10ch] font-serif text-[clamp(3.7rem,17vw,9.8rem)] font-semibold leading-[0.8] tracking-[-0.06em] text-white">{copy.portalTitle}</h2>
+            <p className="mx-auto mt-7 max-w-md text-sm leading-6 text-white/75 sm:text-base">{copy.portalHint}</p>
+            <Link
+              id="home-reservation-link"
+              to="/book"
+              tabIndex={phase === 'portal' ? 0 : -1}
+              className="group mx-auto mt-9 inline-flex min-h-[58px] items-center justify-center gap-4 border border-venetian-gold bg-venetian-gold px-7 text-xs font-bold uppercase tracking-[0.16em] text-venetian-brown transition-colors hover:bg-transparent hover:text-venetian-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#100f0d] sm:min-h-16 sm:px-10"
+            >
+              {copy.reserve}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
-          </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-full sm:w-auto"
-          >
-            <Link to="/menu" className="inline-flex h-12 w-full sm:w-auto items-center justify-center rounded-xl border-2 border-white/80 bg-venetian-brown/35 px-8 text-sm font-semibold text-white transition-colors hover:bg-venetian-brown/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-              {t('hero.viewMenu')}
-            </Link>
-          </motion.div>
+            <p className="mt-8 text-[0.64rem] font-bold uppercase tracking-[0.22em] text-white/50">{copy.place}</p>
+            <div className="mx-auto mt-5 max-w-3xl text-[0.58rem] leading-4 text-white/40 sm:text-[0.64rem]">
+              <p>{restaurantLegalIdentity.legalName} · P.IVA/C.F. IT{restaurantLegalIdentity.vatNumber}</p>
+              <p className="mt-1"><Link to="/privacy" tabIndex={phase === 'portal' ? 0 : -1} className="underline underline-offset-4 hover:text-white">{copy.privacy}</Link> · <Link to="/legal" tabIndex={phase === 'portal' ? 0 : -1} className="underline underline-offset-4 hover:text-white">{copy.legal}</Link> · {copy.developedBy}{' '}<a href={developerLegalIdentity.website} target="_blank" rel="noopener noreferrer" tabIndex={phase === 'portal' ? 0 : -1} className="underline underline-offset-4 hover:text-white">{developerLegalIdentity.brand} SRLS · P.IVA IT{developerLegalIdentity.vatNumber}</a></p>
+            </div>
+          </div>
         </motion.div>
       </div>
-
-      {/* Slide dots */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex space-x-2">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentImageIndex(index)}
-            className={`h-1.5 rounded-full transition-all duration-500 ${
-              index === currentImageIndex
-                ? 'bg-venetian-gold w-8'
-                : 'bg-venetian-sandstone/40 hover:bg-venetian-sandstone/70 w-3'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-
-      {/* Scroll indicator */}
-      <motion.button
-        onClick={scrollToStory}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-venetian-sandstone/60 hover:text-venetian-sandstone transition-colors"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 0.8 }}
-        aria-label="Scroll to content"
-      >
-        <span className="text-xs tracking-widest uppercase">{t('hero.scrollHint')}</span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <ChevronDown className="w-5 h-5" />
-        </motion.div>
-      </motion.button>
-    </div>
+    </section>
   );
 }

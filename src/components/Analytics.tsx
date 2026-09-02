@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { captureAttribution, initializeTracking, trackEvent, trackPageView } from '../lib/analytics';
+import { captureAttribution, initializeTracking, isSensitiveAnalyticsRoute, trackEvent, trackPageView } from '../lib/analytics';
 
 export function Analytics() {
   const location = useLocation();
 
   useEffect(() => {
+    if (isSensitiveAnalyticsRoute(location.pathname)) return;
     initializeTracking();
     captureAttribution();
 
@@ -27,12 +28,13 @@ export function Analytics() {
 
     document.addEventListener('click', trackClick);
     return () => document.removeEventListener('click', trackClick);
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
-    trackPageView(`${location.pathname}${location.search}`);
+    if (isSensitiveAnalyticsRoute(location.pathname)) return;
+    trackPageView(location.pathname);
     if (location.pathname === '/menu') trackEvent('view_menu');
-  }, [location.pathname, location.search]);
+  }, [location.pathname]);
 
   return null;
 }

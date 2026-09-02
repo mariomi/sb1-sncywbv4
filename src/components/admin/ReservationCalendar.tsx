@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import {
@@ -31,9 +31,10 @@ function getDotColor(statuses: string[]): string {
 type Props = {
   onSelectDate: (date: Date) => void;
   selectedDate: Date;
+  refreshKey?: number;
 };
 
-export function ReservationCalendar({ onSelectDate, selectedDate }: Props) {
+export function ReservationCalendar({ onSelectDate, selectedDate, refreshKey = 0 }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [monthData, setMonthData] = useState<DayData[]>([]);
   const [closedDates, setClosedDates] = useState<string[]>([]);
@@ -41,9 +42,14 @@ export function ReservationCalendar({ onSelectDate, selectedDate }: Props) {
   const [dayReservations, setDayReservations] = useState<Reservation[]>([]);
   const [loadingMonth, setLoadingMonth] = useState(false);
   const [loadingDay, setLoadingDay] = useState(false);
+  const monthRequestIdRef = useRef(0);
+  const dayRequestIdRef = useRef(0);
+  const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
 
   const loadMonthData = useCallback(async () => {
+    const requestId = ++monthRequestIdRef.current;
     setLoadingMonth(true);
+
     try {
       const year = currentMonth.getFullYear();
       const month = currentMonth.getMonth() + 1;
@@ -52,37 +58,55 @@ export function ReservationCalendar({ onSelectDate, selectedDate }: Props) {
         getClosedDates(),
         getRecurringClosures(),
       ]);
-      setMonthData(data);
-      setClosedDates(closed.map(d => d.date));
-      setRecurringClosures(recurring);
+      if (requestId === monthRequestIdRef.current) {
+        setMonthData(data);
+        setClosedDates(closed.map(d => d.date));
+        setRecurringClosures(recurring);
+      }
     } catch (error) {
-      console.error('Error loading month data:', error);
+      if (requestId === monthRequestIdRef.current) {
+        console.error('Error loading month data:', error);
+      }
     } finally {
-      setLoadingMonth(false);
+      if (requestId === monthRequestIdRef.current) {
+        setLoadingMonth(false);
+      }
     }
   }, [currentMonth]);
 
-  const loadDayReservations = useCallback(async (date: Date) => {
+  const loadDayReservations = useCallback(async (dateKey: string) => {
+    const requestId = ++dayRequestIdRef.current;
     setLoadingDay(true);
+
     try {
-      const data = await getReservations(format(date, 'yyyy-MM-dd'));
-      setDayReservations(data);
+      const data = await getReservations(dateKey);
+      if (requestId === dayRequestIdRef.current) {
+        setDayReservations(data);
+      }
     } catch (error) {
-      console.error('Error loading day reservations:', error);
+      if (requestId === dayRequestIdRef.current) {
+        console.error('Error loading day reservations:', error);
+      }
     } finally {
-      setLoadingDay(false);
+      if (requestId === dayRequestIdRef.current) {
+        setLoadingDay(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadMonthData();
-  }, [loadMonthData]);
+    void loadMonthData();
+    return () => {
+      monthRequestIdRef.current += 1;
+    };
+  }, [loadMonthData, refreshKey]);
 
   useEffect(() => {
-    if (selectedDate) {
-      loadDayReservations(selectedDate);
-    }
-  }, [loadDayReservations, selectedDate]);
+    void loadDayReservations(selectedDateKey);
+    return () => {
+      dayRequestIdRef.current += 1;
+    };
+  }, [loadDayReservations, refreshKey, selectedDateKey]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);

@@ -30,8 +30,8 @@ A full-stack restaurant management web application for **Ristorante Al Gobbo di 
 | Validation | Zod 3.22.4 |
 | Notifications | React Hot Toast 2.4.1 |
 | Database / Auth | Supabase (PostgreSQL + RLS) |
-| Backend | Express 4.21.2 + Node.js |
-| Email | Resend 3.5.0 |
+| Backend | Supabase Edge Functions (Deno) |
+| Email / WhatsApp | Resend 3.5.0 / Meta WhatsApp Cloud API |
 | Language | TypeScript 5.5.3 (strict mode) |
 | Linting | ESLint 9.9.1 |
 
@@ -52,7 +52,7 @@ sb1-sncywbv4/
 │   └── main.tsx              # React entry point
 ├── supabase/
 │   └── migrations/           # 13 SQL migration files (source of truth for schema)
-├── server.js                 # Express backend — email service only
+├── server.js                 # Legacy Express email service (not used by the frontend)
 ├── .env                      # Environment variables (not committed to source)
 ├── vite.config.ts
 ├── tailwind.config.js
@@ -105,7 +105,7 @@ sb1-sncywbv4/
 | `supabase.ts` | Supabase client initialization |
 | `api.ts` | All database operations — reservation CRUD, time slots, closures (~398 lines) |
 | `validators.ts` | Zod schemas for form validation |
-| `notifications.ts` | Email sending via Express backend |
+| `notifications.ts` | Email and WhatsApp calls via Supabase Edge Functions |
 | `i18n.ts` | Translation strings (English/Italian) and context |
 | `ThemeProvider.tsx` | Theme context (also listed under components) |
 | `utils.ts` | `cn()` class name helper (clsx + tailwind-merge) |
@@ -162,14 +162,17 @@ Managed via migration files in `supabase/migrations/`. Always update migrations 
 ```
 VITE_SUPABASE_URL=      # Supabase project URL
 VITE_SUPABASE_ANON_KEY= # Supabase anonymous/public key
-VITE_API_BASE_URL=      # Trusted Express API used for confirmation emails
-RESEND_API_KEY=         # Server/Edge Function only; never prefix with VITE_
-REMINDER_CRON_SECRET=   # Secret header for scheduled reminder invocations
+VITE_SITE_URL=          # Public canonical website URL
 ```
 
 - Only values intended for the browser may use the `VITE_` prefix.
-- The Express backend reads server-only values from the local `.env` file.
-- Supabase reminder functions receive server-only values through Function Secrets.
+- Email and WhatsApp are sent by Supabase Edge Functions, not by a frontend-configured Express API.
+- Configure `RESEND_API_KEY`, `SITE_URL`, `RESERVATIONS_EMAIL`,
+  `REMINDER_CRON_SECRET`, and all `META_WHATSAPP_*` credentials as Supabase
+  Function Secrets. Deployed functions receive Supabase's built-in URL and keys
+  automatically.
+- The one-time admin bootstrap may read `SUPABASE_SERVICE_ROLE_KEY` from an
+  ignored local environment file; never expose it to the browser or frontend host.
 - **Never commit `.env` to source control**
 
 ---
@@ -180,23 +183,19 @@ REMINDER_CRON_SECRET=   # Secret header for scheduled reminder invocations
 
 ```bash
 npm install
-# Configure .env with Supabase and Resend credentials
+# Configure .env with the public VITE_* values for the selected Supabase project
 ```
 
 ### Running Locally
 
-Two processes must run concurrently:
-
 ```bash
-# Terminal 1 — Frontend (Vite dev server, port 5173)
+# Frontend (Vite dev server, port 5173)
 npm run dev
-
-# Terminal 2 — Backend (Express email server, port 3000)
-node server.js
 ```
 
-Set `VITE_API_BASE_URL=http://localhost:3000` for local development. Production
-must point it at the deployed trusted Express API.
+The frontend invokes the Edge Functions belonging to `VITE_SUPABASE_URL`; no
+separate Express process is required. `server.js` remains only for historical
+reference and is not part of the current local or production runtime.
 
 ### Available Scripts
 
@@ -274,9 +273,13 @@ This runs `src/scripts/createAdmin.ts` which creates a Supabase auth user with a
 
 ### Email Notifications
 
-- Email sending goes through `src/lib/notifications.ts` → Express server → Resend API
-- Scheduled reminders run in protected Supabase Edge Functions and use a
-  server-only `RESEND_API_KEY` plus `REMINDER_CRON_SECRET`.
+- Email sending goes through `src/lib/notifications.ts` → Supabase Edge Functions → Resend API.
+- WhatsApp sending goes through `src/lib/notifications.ts` → Supabase Edge
+  Functions → Meta WhatsApp Cloud API; the webhook is handled by its dedicated
+  Edge Function.
+- Scheduled reminders run in protected Supabase Edge Functions and use
+  server-only Function Secrets such as `RESEND_API_KEY` and
+  `REMINDER_CRON_SECRET`.
 - Email failures should never block the primary action (e.g., reservation creation)
 - Log email results with emoji prefixes: `📧`, `✅`, `❌`
 
@@ -314,8 +317,9 @@ security, scheduling, or conversion-flow bug is fixed.
 
 1. **No global state library** — Context API is sufficient for this app's complexity
 2. **Supabase RLS** handles authorization at the database level — admin checks use Supabase auth session
-3. **Express backend is email-only** — public business operations use validated
-   Supabase RPCs; scheduled reminders use Edge Functions.
+3. **Edge Functions own external communications** — email and WhatsApp use
+   trusted Supabase Edge Functions; public business operations use validated
+   Supabase RPCs. The Express server is legacy only.
 4. **Regression tests cover trusted boundaries** — extend them for every
    security-sensitive change.
 5. **Five-language design** — all new UI text must go through `i18n.ts`.
@@ -324,7 +328,8 @@ security, scheduling, or conversion-flow bug is fixed.
 
 ## Common Pitfalls
 
-- Set `VITE_API_BASE_URL` correctly for local and production environments.
+- Do not place Resend, service-role, cron, or Meta WhatsApp secrets in `VITE_*`
+  variables; manage production values through Supabase Function Secrets.
 - The `.env` file is required to run — the app will not start without Supabase credentials
 - Admin access requires a Supabase auth user created via `npm run create-admin`
 - Menu item prices are stored as numbers — display with locale formatting (`toFixed(2)`)

@@ -5,17 +5,17 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        serif: ['Veneziana', 'Playfair Display', 'serif'],
+        sans: ['Manrope', 'sans-serif'],
+        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
       },
       colors: {
         venetian: {
-          brown: '#5C4033',
-          gold: '#D4AF37',
-          sandstone: '#E6D5B8',
-          green: '#708D81',
-          terracotta: '#9E4638',
-          text: '#2D1B14',
+          brown: '#191612',
+          gold: '#C59A52',
+          sandstone: '#F1E8D8',
+          green: '#68705A',
+          terracotta: '#B44732',
+          text: '#211D18',
         },
       },
     },

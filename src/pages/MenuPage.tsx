@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import RestaurantMenu from '../components/Menu';
+import RestaurantMenu from '../components/MenuEditorial';
 import { SEOHead } from '../components/SEOHead';
 import { ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +13,7 @@ export function MenuPage() {
       setShowBackToTop(window.scrollY > 300);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -38,7 +38,7 @@ export function MenuPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={scrollToTop}
-            className="fixed bottom-24 right-8 p-3 rounded-full bg-venetian-gold text-venetian-brown shadow-lg hover:bg-venetian-gold/90 transition-colors z-50"
+            className="fixed bottom-24 right-5 z-50 grid h-12 w-12 place-items-center border border-venetian-brown bg-venetian-brown text-white shadow-lg transition-colors hover:border-venetian-terracotta hover:bg-venetian-terracotta sm:right-8"
             aria-label="Back to top"
           >
             <ChevronUp size={24} />

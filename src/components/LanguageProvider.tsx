@@ -1,21 +1,43 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LanguageContext, Language, translations } from '../lib/i18n';
+import { LanguageContext, translations, type Language } from '../lib/i18n';
+import { detectPreferredLanguage, isSupportedLanguage } from '../lib/languageDetection';
 
-const supportedLanguages = new Set<Language>(['en', 'it', 'fr', 'de', 'es']);
+const languageStorageKey = 'al-gobbo-language';
 
-function isLanguage(value: string | null): value is Language {
-  return Boolean(value && supportedLanguages.has(value as Language));
+function getQueryLanguage(): Language | null {
+  if (typeof window === 'undefined') return null;
+  const queryLanguage = new URLSearchParams(window.location.search).get('lang');
+  return isSupportedLanguage(queryLanguage) ? queryLanguage : null;
+}
+
+function getSavedLanguage(): Language | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const savedLanguage = window.localStorage.getItem(languageStorageKey);
+    return isSupportedLanguage(savedLanguage) ? savedLanguage : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveLanguage(language: Language) {
+  try {
+    window.localStorage.setItem(languageStorageKey, language);
+  } catch {
+    // The page still works when browser storage is unavailable.
+  }
+}
+
+function getBrowserLanguage(): Language {
+  if (typeof navigator === 'undefined') return 'en';
+  const languageTags = navigator.languages?.length
+    ? navigator.languages
+    : [navigator.language];
+  return detectPreferredLanguage(languageTags);
 }
 
 function getInitialLanguage(): Language {
-  const queryLanguage = new URLSearchParams(window.location.search).get('lang');
-  if (isLanguage(queryLanguage)) return queryLanguage;
-
-  const savedLanguage = localStorage.getItem('al-gobbo-language');
-  if (isLanguage(savedLanguage)) return savedLanguage;
-
-  const browserLanguage = navigator.language.split('-')[0];
-  return isLanguage(browserLanguage) ? browserLanguage : 'en';
+  return getQueryLanguage() ?? getSavedLanguage() ?? getBrowserLanguage();
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -23,11 +45,21 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     document.documentElement.lang = language;
+    if (getQueryLanguage() === language) saveLanguage(language);
   }, [language]);
+
+  useEffect(() => {
+    const handleBrowserLanguageChange = () => {
+      if (getQueryLanguage() || getSavedLanguage()) return;
+      setLanguageState(getBrowserLanguage());
+    };
+    window.addEventListener('languagechange', handleBrowserLanguageChange);
+    return () => window.removeEventListener('languagechange', handleBrowserLanguageChange);
+  }, []);
 
   const setLanguage = useCallback((nextLanguage: Language) => {
     setLanguageState(nextLanguage);
-    localStorage.setItem('al-gobbo-language', nextLanguage);
+    saveLanguage(nextLanguage);
     document.documentElement.lang = nextLanguage;
 
     const url = new URL(window.location.href);

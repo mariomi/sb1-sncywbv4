@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, CheckCircle2, Clock, Loader2, MessageSquare, Phone, Users, XCircle } from 'lucide-react';
@@ -8,8 +8,9 @@ import { Button } from '../components/Button';
 import { getReservationByToken, cancelReservationByToken, updateReservationByToken } from '../lib/api';
 import type { ReservationSummary } from '../lib/api';
 import { useLanguage, type Language } from '../lib/i18n';
+import { useFeatureFlag, useFeatureFlags } from '../lib/featureFlags';
 
-type PageState = 'loading' | 'found' | 'cancelling' | 'success' | 'already_cancelled' | 'already_completed' | 'not_found' | 'error';
+type PageState = 'loading' | 'found' | 'cancelling' | 'success' | 'already_cancelled' | 'already_completed' | 'not_found' | 'disabled' | 'error';
 
 type CancellationCopy = {
   seoTitle: string;
@@ -19,6 +20,9 @@ type CancellationCopy = {
   intro: string;
   cancel: string;
   cancelling: string;
+  confirmTitle: string;
+  confirmBody: string;
+  confirmCancel: string;
   keep: string;
   warning: string;
   changeHelp: string;
@@ -35,10 +39,13 @@ type CancellationCopy = {
   completedText: string;
   invalidTitle: string;
   invalidText: string;
+  disabledTitle: string;
+  disabledText: string;
   errorTitle: string;
   errorText: string;
   newBooking: string;
   home: string;
+  callRestaurant: string;
 };
 
 type ReservationEditCopy = {
@@ -50,6 +57,7 @@ type ReservationEditCopy = {
   later: string;
   notesLabel: string;
   notesPlaceholder: string;
+  notesPrivacy: string;
   save: string;
   saving: string;
   saved: string;
@@ -64,19 +72,19 @@ type ReservationEditCopy = {
 
 const cancellationCopy: Record<Language, CancellationCopy> = {
   en: {
-    seoTitle: 'Cancel booking', eyebrow: 'Al Gobbo di Rialto', title: 'Cancel your booking', loading: 'Loading your booking…', intro: 'Check the details, then tap the button to free the table.', cancel: 'Cancel this booking', cancelling: 'Cancelling…', keep: 'Keep my booking', warning: 'Cancellation cannot be undone.', changeHelp: 'Need to change the number of guests or want our help? Call us:', guest: 'guest', guests: 'guests', dateLabel: 'Date', timeLabel: 'Time', guestsLabel: 'Guests', successTitle: 'Booking cancelled', successText: 'The table has been released. We hope to welcome you another time.', alreadyCancelledTitle: 'Already cancelled', alreadyCancelledText: 'This booking was already cancelled. No further action is needed.', completedTitle: 'Booking already completed', completedText: 'A past or completed booking can no longer be cancelled.', invalidTitle: 'Link not valid', invalidText: 'This private link is invalid. Call us if you need help.', errorTitle: 'Could not cancel', errorText: 'Please try again or call us and we will help you.', newBooking: 'Book another table', home: 'Return to the website',
+    seoTitle: 'Cancel booking', eyebrow: 'Al Gobbo di Rialto', title: 'Cancel your booking', loading: 'Loading your booking…', intro: 'Check the details, then tap the button to free the table.', cancel: 'Cancel this booking', cancelling: 'Cancelling…', confirmTitle: 'Are you sure?', confirmBody: 'This will permanently cancel the booking and release your table.', confirmCancel: 'Yes, cancel permanently', keep: 'Keep my booking', warning: 'Cancellation cannot be undone.', changeHelp: 'Need a different date, party size or another time? Call us:', guest: 'guest', guests: 'guests', dateLabel: 'Date', timeLabel: 'Time', guestsLabel: 'Guests', successTitle: 'Booking cancelled', successText: 'The table has been released. We hope to welcome you another time.', alreadyCancelledTitle: 'Already cancelled', alreadyCancelledText: 'This booking was already cancelled. No further action is needed.', completedTitle: 'Booking already completed', completedText: 'A past or completed booking can no longer be cancelled.', invalidTitle: 'Link not valid', invalidText: 'This private link is invalid. Call us if you need help.', disabledTitle: 'Online cancellation is paused', disabledText: 'Your booking has not been changed. Call the restaurant and we will help you.', errorTitle: 'Could not cancel', errorText: 'Please try again or call us and we will help you.', newBooking: 'Book another table', home: 'Return to the website', callRestaurant: 'Call the restaurant',
   },
   it: {
-    seoTitle: 'Cancella prenotazione', eyebrow: 'Al Gobbo di Rialto', title: 'Cancella la prenotazione', loading: 'Carico la prenotazione…', intro: 'Controlla i dati e premi il pulsante per liberare il tavolo.', cancel: 'Cancella questa prenotazione', cancelling: 'Cancellazione in corso…', keep: 'Mantieni la prenotazione', warning: 'La cancellazione non può essere annullata.', changeHelp: 'Vuoi cambiare il numero di ospiti o preferisci il nostro aiuto? Chiamaci:', guest: 'ospite', guests: 'ospiti', dateLabel: 'Data', timeLabel: 'Ora', guestsLabel: 'Ospiti', successTitle: 'Prenotazione cancellata', successText: 'Il tavolo è stato liberato. Speriamo di accoglierti un’altra volta.', alreadyCancelledTitle: 'Prenotazione già cancellata', alreadyCancelledText: 'Non devi fare altro: questa prenotazione risulta già cancellata.', completedTitle: 'Prenotazione già conclusa', completedText: 'Una prenotazione passata o completata non può più essere cancellata.', invalidTitle: 'Link non valido', invalidText: 'Questo link personale non è valido. Chiamaci se hai bisogno di aiuto.', errorTitle: 'Cancellazione non riuscita', errorText: 'Riprova oppure chiamaci: ti aiutiamo noi.', newBooking: 'Prenota un altro tavolo', home: 'Torna al sito',
+    seoTitle: 'Cancella prenotazione', eyebrow: 'Al Gobbo di Rialto', title: 'Cancella la prenotazione', loading: 'Carico la prenotazione…', intro: 'Controlla i dati e premi il pulsante per liberare il tavolo.', cancel: 'Cancella questa prenotazione', cancelling: 'Cancellazione in corso…', confirmTitle: 'Sei sicuro?', confirmBody: 'La prenotazione verrà cancellata definitivamente e il tavolo sarà liberato.', confirmCancel: 'Sì, cancella definitivamente', keep: 'Mantieni la prenotazione', warning: 'La cancellazione non può essere annullata.', changeHelp: 'Vuoi cambiare data, numero di ospiti o scegliere un altro orario? Chiamaci:', guest: 'ospite', guests: 'ospiti', dateLabel: 'Data', timeLabel: 'Ora', guestsLabel: 'Ospiti', successTitle: 'Prenotazione cancellata', successText: 'Il tavolo è stato liberato. Speriamo di accoglierti un’altra volta.', alreadyCancelledTitle: 'Prenotazione già cancellata', alreadyCancelledText: 'Non devi fare altro: questa prenotazione risulta già cancellata.', completedTitle: 'Prenotazione già conclusa', completedText: 'Una prenotazione passata o completata non può più essere cancellata.', invalidTitle: 'Link non valido', invalidText: 'Questo link personale non è valido. Chiamaci se hai bisogno di aiuto.', disabledTitle: 'Cancellazione online sospesa', disabledText: 'La prenotazione non è stata modificata. Chiamaci e ti aiutiamo noi.', errorTitle: 'Cancellazione non riuscita', errorText: 'Riprova oppure chiamaci: ti aiutiamo noi.', newBooking: 'Prenota un altro tavolo', home: 'Torna al sito', callRestaurant: 'Chiama il ristorante',
   },
   fr: {
-    seoTitle: 'Annuler la réservation', eyebrow: 'Al Gobbo di Rialto', title: 'Annuler la réservation', loading: 'Chargement de la réservation…', intro: 'Vérifiez les informations puis appuyez sur le bouton pour libérer la table.', cancel: 'Annuler cette réservation', cancelling: 'Annulation…', keep: 'Garder ma réservation', warning: 'L’annulation est définitive.', changeHelp: 'Vous souhaitez changer le nombre de personnes ou obtenir notre aide ? Appelez-nous :', guest: 'personne', guests: 'personnes', dateLabel: 'Date', timeLabel: 'Heure', guestsLabel: 'Personnes', successTitle: 'Réservation annulée', successText: 'La table a été libérée. Nous espérons vous accueillir une prochaine fois.', alreadyCancelledTitle: 'Déjà annulée', alreadyCancelledText: 'Cette réservation a déjà été annulée. Aucune autre action n’est nécessaire.', completedTitle: 'Réservation terminée', completedText: 'Une réservation passée ou terminée ne peut plus être annulée.', invalidTitle: 'Lien non valide', invalidText: 'Ce lien privé n’est pas valide. Appelez-nous si vous avez besoin d’aide.', errorTitle: 'Annulation impossible', errorText: 'Réessayez ou appelez-nous : nous vous aiderons.', newBooking: 'Réserver une autre table', home: 'Retourner au site',
+    seoTitle: 'Annuler la réservation', eyebrow: 'Al Gobbo di Rialto', title: 'Annuler la réservation', loading: 'Chargement de la réservation…', intro: 'Vérifiez les informations puis appuyez sur le bouton pour libérer la table.', cancel: 'Annuler cette réservation', cancelling: 'Annulation…', confirmTitle: 'Êtes-vous sûr ?', confirmBody: 'La réservation sera définitivement annulée et la table libérée.', confirmCancel: 'Oui, annuler définitivement', keep: 'Garder ma réservation', warning: 'L’annulation est définitive.', changeHelp: 'Vous souhaitez changer la date, le nombre de personnes ou choisir un autre horaire ? Appelez-nous :', guest: 'personne', guests: 'personnes', dateLabel: 'Date', timeLabel: 'Heure', guestsLabel: 'Personnes', successTitle: 'Réservation annulée', successText: 'La table a été libérée. Nous espérons vous accueillir une prochaine fois.', alreadyCancelledTitle: 'Déjà annulée', alreadyCancelledText: 'Cette réservation a déjà été annulée. Aucune autre action n’est nécessaire.', completedTitle: 'Réservation terminée', completedText: 'Une réservation passée ou terminée ne peut plus être annulée.', invalidTitle: 'Lien non valide', invalidText: 'Ce lien privé n’est pas valide. Appelez-nous si vous avez besoin d’aide.', disabledTitle: 'Annulation en ligne suspendue', disabledText: 'Votre réservation n’a pas été modifiée. Appelez le restaurant et nous vous aiderons.', errorTitle: 'Annulation impossible', errorText: 'Réessayez ou appelez-nous : nous vous aiderons.', newBooking: 'Réserver une autre table', home: 'Retourner au site', callRestaurant: 'Appeler le restaurant',
   },
   de: {
-    seoTitle: 'Reservierung stornieren', eyebrow: 'Al Gobbo di Rialto', title: 'Reservierung stornieren', loading: 'Reservierung wird geladen…', intro: 'Prüfen Sie die Angaben und tippen Sie dann auf die Schaltfläche, um den Tisch freizugeben.', cancel: 'Diese Reservierung stornieren', cancelling: 'Wird storniert…', keep: 'Reservierung behalten', warning: 'Die Stornierung kann nicht rückgängig gemacht werden.', changeHelp: 'Möchten Sie die Gästezahl ändern oder benötigen Sie Hilfe? Rufen Sie uns an:', guest: 'Gast', guests: 'Gäste', dateLabel: 'Datum', timeLabel: 'Uhrzeit', guestsLabel: 'Gäste', successTitle: 'Reservierung storniert', successText: 'Der Tisch wurde freigegeben. Wir hoffen, Sie ein anderes Mal begrüßen zu dürfen.', alreadyCancelledTitle: 'Bereits storniert', alreadyCancelledText: 'Diese Reservierung wurde bereits storniert. Sie müssen nichts weiter tun.', completedTitle: 'Reservierung abgeschlossen', completedText: 'Eine vergangene oder abgeschlossene Reservierung kann nicht mehr storniert werden.', invalidTitle: 'Link ungültig', invalidText: 'Dieser private Link ist ungültig. Rufen Sie uns an, wenn Sie Hilfe benötigen.', errorTitle: 'Stornierung nicht möglich', errorText: 'Versuchen Sie es erneut oder rufen Sie uns an – wir helfen Ihnen.', newBooking: 'Neuen Tisch reservieren', home: 'Zur Website',
+    seoTitle: 'Reservierung stornieren', eyebrow: 'Al Gobbo di Rialto', title: 'Reservierung stornieren', loading: 'Reservierung wird geladen…', intro: 'Prüfen Sie die Angaben und tippen Sie dann auf die Schaltfläche, um den Tisch freizugeben.', cancel: 'Diese Reservierung stornieren', cancelling: 'Wird storniert…', confirmTitle: 'Sind Sie sicher?', confirmBody: 'Die Reservierung wird endgültig storniert und der Tisch freigegeben.', confirmCancel: 'Ja, endgültig stornieren', keep: 'Reservierung behalten', warning: 'Die Stornierung kann nicht rückgängig gemacht werden.', changeHelp: 'Möchten Sie Datum, Gästezahl oder eine andere Uhrzeit wählen? Rufen Sie uns an:', guest: 'Gast', guests: 'Gäste', dateLabel: 'Datum', timeLabel: 'Uhrzeit', guestsLabel: 'Gäste', successTitle: 'Reservierung storniert', successText: 'Der Tisch wurde freigegeben. Wir hoffen, Sie ein anderes Mal begrüßen zu dürfen.', alreadyCancelledTitle: 'Bereits storniert', alreadyCancelledText: 'Diese Reservierung wurde bereits storniert. Sie müssen nichts weiter tun.', completedTitle: 'Reservierung abgeschlossen', completedText: 'Eine vergangene oder abgeschlossene Reservierung kann nicht mehr storniert werden.', invalidTitle: 'Link ungültig', invalidText: 'Dieser private Link ist ungültig. Rufen Sie uns an, wenn Sie Hilfe benötigen.', disabledTitle: 'Online-Stornierung pausiert', disabledText: 'Ihre Reservierung wurde nicht geändert. Rufen Sie das Restaurant an, wir helfen Ihnen.', errorTitle: 'Stornierung nicht möglich', errorText: 'Versuchen Sie es erneut oder rufen Sie uns an – wir helfen Ihnen.', newBooking: 'Neuen Tisch reservieren', home: 'Zur Website', callRestaurant: 'Restaurant anrufen',
   },
   es: {
-    seoTitle: 'Cancelar reserva', eyebrow: 'Al Gobbo di Rialto', title: 'Cancelar la reserva', loading: 'Cargando la reserva…', intro: 'Comprueba los datos y pulsa el botón para liberar la mesa.', cancel: 'Cancelar esta reserva', cancelling: 'Cancelando…', keep: 'Mantener mi reserva', warning: 'La cancelación no se puede deshacer.', changeHelp: '¿Quieres cambiar el número de personas o necesitas ayuda? Llámanos:', guest: 'persona', guests: 'personas', dateLabel: 'Fecha', timeLabel: 'Hora', guestsLabel: 'Personas', successTitle: 'Reserva cancelada', successText: 'La mesa ha quedado libre. Esperamos recibirte en otra ocasión.', alreadyCancelledTitle: 'Ya está cancelada', alreadyCancelledText: 'Esta reserva ya fue cancelada. No tienes que hacer nada más.', completedTitle: 'Reserva finalizada', completedText: 'Una reserva pasada o finalizada ya no se puede cancelar.', invalidTitle: 'Enlace no válido', invalidText: 'Este enlace privado no es válido. Llámanos si necesitas ayuda.', errorTitle: 'No se pudo cancelar', errorText: 'Inténtalo de nuevo o llámanos: te ayudaremos.', newBooking: 'Reservar otra mesa', home: 'Volver al sitio',
+    seoTitle: 'Cancelar reserva', eyebrow: 'Al Gobbo di Rialto', title: 'Cancelar la reserva', loading: 'Cargando la reserva…', intro: 'Comprueba los datos y pulsa el botón para liberar la mesa.', cancel: 'Cancelar esta reserva', cancelling: 'Cancelando…', confirmTitle: '¿Estás seguro?', confirmBody: 'La reserva se cancelará definitivamente y la mesa quedará libre.', confirmCancel: 'Sí, cancelar definitivamente', keep: 'Mantener mi reserva', warning: 'La cancelación no se puede deshacer.', changeHelp: '¿Quieres cambiar la fecha, el número de personas o elegir otra hora? Llámanos:', guest: 'persona', guests: 'personas', dateLabel: 'Fecha', timeLabel: 'Hora', guestsLabel: 'Personas', successTitle: 'Reserva cancelada', successText: 'La mesa ha quedado libre. Esperamos recibirte en otra ocasión.', alreadyCancelledTitle: 'Ya está cancelada', alreadyCancelledText: 'Esta reserva ya fue cancelada. No tienes que hacer nada más.', completedTitle: 'Reserva finalizada', completedText: 'Una reserva pasada o finalizada ya no se puede cancelar.', invalidTitle: 'Enlace no válido', invalidText: 'Este enlace privado no es válido. Llámanos si necesitas ayuda.', disabledTitle: 'Cancelación online suspendida', disabledText: 'Tu reserva no se ha modificado. Llama al restaurante y te ayudaremos.', errorTitle: 'No se pudo cancelar', errorText: 'Inténtalo de nuevo o llámanos: te ayudaremos.', newBooking: 'Reservar otra mesa', home: 'Volver al sitio', callRestaurant: 'Llamar al restaurante',
   },
 };
 
@@ -86,7 +94,8 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editTitle: 'Change your booking',
     editIntro: 'Choose the current time or an available option 30 minutes earlier or later, and update your notes.',
     earlier: '30 min earlier', current: 'Current time', later: '30 min later',
-    notesLabel: 'Notes for the restaurant', notesPlaceholder: 'Allergies, dietary needs or other requests',
+    notesLabel: 'Notes for the restaurant', notesPlaceholder: 'Seating preferences or a note for our team',
+    notesPrivacy: 'Do not enter health or other sensitive data here. For allergies, call the restaurant before your visit.',
     save: 'Save changes', saving: 'Saving…', saved: 'Changes saved. We sent you an updated confirmation email.',
     savedEmailMissing: 'Changes saved, but the updated email could not be delivered.',
     editDeadline: 'You can change the time until 24 hours before the booking. Notes remain editable until the booking starts.',
@@ -101,7 +110,8 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editTitle: 'Modifica la prenotazione',
     editIntro: 'Scegli l’orario attuale oppure un’opzione disponibile 30 minuti prima o dopo e aggiorna le note.',
     earlier: '30 min prima', current: 'Orario attuale', later: '30 min dopo',
-    notesLabel: 'Note per il ristorante', notesPlaceholder: 'Allergie, esigenze alimentari o altre richieste',
+    notesLabel: 'Note per il ristorante', notesPlaceholder: 'Preferenze per il tavolo o una nota per lo staff',
+    notesPrivacy: 'Non inserire qui dati sanitari o altre informazioni sensibili. Per allergie chiama il ristorante prima della visita.',
     save: 'Salva le modifiche', saving: 'Salvataggio…', saved: 'Modifiche salvate. Ti abbiamo inviato una nuova email di conferma.',
     savedEmailMissing: 'Modifiche salvate, ma non è stato possibile consegnare la nuova email.',
     editDeadline: 'Puoi cambiare l’orario fino a 24 ore prima. Le note restano modificabili fino all’inizio della prenotazione.',
@@ -116,7 +126,8 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editTitle: 'Modifier la réservation',
     editIntro: 'Choisissez l’heure actuelle ou une option disponible 30 minutes avant ou après, puis modifiez vos notes.',
     earlier: '30 min avant', current: 'Heure actuelle', later: '30 min après',
-    notesLabel: 'Notes pour le restaurant', notesPlaceholder: 'Allergies, besoins alimentaires ou autres demandes',
+    notesLabel: 'Notes pour le restaurant', notesPlaceholder: 'Préférence de table ou message pour l’équipe',
+    notesPrivacy: 'N’inscrivez pas ici de données de santé ou sensibles. Pour les allergies, appelez le restaurant avant votre visite.',
     save: 'Enregistrer les modifications', saving: 'Enregistrement…', saved: 'Modifications enregistrées. Une nouvelle confirmation vous a été envoyée.',
     savedEmailMissing: 'Modifications enregistrées, mais la nouvelle confirmation n’a pas pu être envoyée.',
     editDeadline: 'Vous pouvez changer l’heure jusqu’à 24 heures avant. Les notes restent modifiables jusqu’au début de la réservation.',
@@ -131,7 +142,8 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editTitle: 'Reservierung ändern',
     editIntro: 'Wählen Sie die aktuelle Uhrzeit oder eine verfügbare Option 30 Minuten früher oder später und aktualisieren Sie Ihre Hinweise.',
     earlier: '30 Min. früher', current: 'Aktuelle Uhrzeit', later: '30 Min. später',
-    notesLabel: 'Hinweise für das Restaurant', notesPlaceholder: 'Allergien, Ernährungswünsche oder andere Anfragen',
+    notesLabel: 'Hinweise für das Restaurant', notesPlaceholder: 'Sitzplatzwunsch oder Nachricht an das Team',
+    notesPrivacy: 'Tragen Sie hier keine Gesundheits- oder sensiblen Daten ein. Bei Allergien rufen Sie das Restaurant vor Ihrem Besuch an.',
     save: 'Änderungen speichern', saving: 'Wird gespeichert…', saved: 'Änderungen gespeichert. Eine neue Bestätigung wurde gesendet.',
     savedEmailMissing: 'Änderungen gespeichert, aber die neue Bestätigung konnte nicht gesendet werden.',
     editDeadline: 'Die Uhrzeit kann bis 24 Stunden vorher geändert werden. Hinweise bleiben bis zum Reservierungsbeginn bearbeitbar.',
@@ -146,7 +158,8 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editTitle: 'Modificar la reserva',
     editIntro: 'Elige la hora actual o una opción disponible 30 minutos antes o después y actualiza las notas.',
     earlier: '30 min antes', current: 'Hora actual', later: '30 min después',
-    notesLabel: 'Notas para el restaurante', notesPlaceholder: 'Alergias, necesidades alimentarias u otras solicitudes',
+    notesLabel: 'Notas para el restaurante', notesPlaceholder: 'Preferencia de mesa o una nota para el equipo',
+    notesPrivacy: 'No introduzcas aquí datos de salud ni sensibles. Para alergias, llama al restaurante antes de tu visita.',
     save: 'Guardar cambios', saving: 'Guardando…', saved: 'Cambios guardados. Te hemos enviado una nueva confirmación.',
     savedEmailMissing: 'Cambios guardados, pero no se pudo enviar la nueva confirmación.',
     editDeadline: 'Puedes cambiar la hora hasta 24 horas antes. Las notas se pueden editar hasta que empiece la reserva.',
@@ -162,19 +175,41 @@ const dateLocales: Record<Language, string> = {
   en: 'en-GB', it: 'it-IT', fr: 'fr-FR', de: 'de-DE', es: 'es-ES',
 };
 
-const primaryLinkClass = 'inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-venetian-gold px-5 text-sm font-semibold text-venetian-brown shadow transition-colors hover:bg-venetian-gold/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-brown';
+const primaryLinkClass = 'inline-flex min-h-12 w-full items-center justify-center bg-venetian-brown px-5 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-terracotta';
 
 export function CancelReservationPage() {
   const { token } = useParams<{ token: string }>();
   const { language } = useLanguage();
   const copy = cancellationCopy[language];
   const editCopy = reservationEditCopy[language];
+  const cancellationEnabled = useFeatureFlag('cancellation_selfserve');
+  const { loading: flagsLoading, error: flagsError } = useFeatureFlags();
   const [state, setState] = useState<PageState>('loading');
   const [reservation, setReservation] = useState<ReservationSummary | null>(null);
   const [selectedTime, setSelectedTime] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveNotice, setSaveNotice] = useState<{ kind: 'success' | 'warning' | 'error'; text: string } | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const cancelTriggerRef = useRef<HTMLButtonElement>(null);
+  const keepButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isConfirming) return;
+    keepButtonRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setIsConfirming(false);
+      window.requestAnimationFrame(() => cancelTriggerRef.current?.focus());
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isConfirming]);
+
+  const closeConfirmation = () => {
+    setIsConfirming(false);
+    window.requestAnimationFrame(() => cancelTriggerRef.current?.focus());
+  };
 
   useEffect(() => {
     if (!token) {
@@ -205,6 +240,10 @@ export function CancelReservationPage() {
 
   const handleCancel = async () => {
     if (!token || state === 'cancelling') return;
+    if (flagsLoading || flagsError || !cancellationEnabled) {
+      setState('disabled');
+      return;
+    }
     setState('cancelling');
     try {
       await cancelReservationByToken(token, reservation?.id);
@@ -279,29 +318,33 @@ export function CancelReservationPage() {
     || specialRequests.trim() !== (reservation?.special_requests || '')
   );
 
-  const renderResult = (icon: ReactNode, title: string, text: string, action: 'book' | 'home') => (
+  const renderResult = (icon: ReactNode, title: string, text: string, action: 'book' | 'home' | 'call') => (
     <div className="flex flex-col items-center py-5 text-center" role="status">
       {icon}
       <h2 className="mt-4 font-serif text-2xl text-venetian-brown dark:text-venetian-sandstone">{title}</h2>
       <p className="mt-2 max-w-sm text-sm leading-6 text-venetian-brown/70 dark:text-venetian-sandstone/70">{text}</p>
-      <Link to={action === 'book' ? '/book' : '/'} className={`${primaryLinkClass} mt-6`}>
-        {action === 'book' ? copy.newBooking : copy.home}
-      </Link>
+      {action === 'call' ? (
+        <a href="tel:+390415204603" className={`${primaryLinkClass} mt-6`}>{copy.callRestaurant}</a>
+      ) : (
+        <Link to={action === 'book' ? '/book' : '/'} className={`${primaryLinkClass} mt-6`}>
+          {action === 'book' ? copy.newBooking : copy.home}
+        </Link>
+      )}
     </div>
   );
 
   return (
     <PageTransition>
       <SEOHead title={editCopy.pageTitle} noindex />
-      <main className="min-h-screen bg-venetian-sandstone/20 px-4 pb-20 pt-24 dark:bg-venetian-brown/95 sm:px-6">
+      <main className="min-h-screen bg-[#f7f3eb] px-4 pb-20 pt-32 dark:bg-venetian-brown sm:px-6">
         <motion.section
-          className="mx-auto max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-venetian-brown/60"
+          className="mx-auto max-w-lg overflow-hidden border border-venetian-brown/15 bg-white/70 dark:border-white/15 dark:bg-[#211d18]"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           aria-live="polite"
         >
-          <header className="border-b-4 border-venetian-gold bg-venetian-brown px-5 py-5 text-center sm:px-7">
+          <header className="border-b border-white/15 bg-venetian-brown px-5 py-7 text-center sm:px-7">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-venetian-gold">{copy.eyebrow}</p>
             <h1 className="mt-1 font-serif text-2xl text-white sm:text-3xl">{editCopy.pageTitle}</h1>
           </header>
@@ -392,6 +435,7 @@ export function CancelReservationPage() {
                       disabled={isSaving}
                       className="mt-2 w-full resize-y rounded-xl border border-venetian-gold/35 bg-white px-3 py-2.5 text-sm text-venetian-brown outline-none transition focus:border-venetian-gold focus:ring-2 focus:ring-venetian-gold/20 disabled:opacity-60 dark:bg-venetian-brown/40 dark:text-venetian-sandstone"
                     />
+                    <p className="mt-2 text-xs leading-5 text-venetian-brown/60 dark:text-venetian-sandstone/60">{editCopy.notesPrivacy}</p>
                     <div className="mt-1 flex items-start justify-between gap-3 text-xs text-venetian-brown/55 dark:text-venetian-sandstone/55">
                       <span>{editCopy.editDeadline}</span>
                       <span className="shrink-0">{specialRequests.length}/1000</span>
@@ -417,21 +461,50 @@ export function CancelReservationPage() {
                 )}
 
                 <div className="my-6 border-t border-venetian-gold/25" />
-                <h2 className="text-center font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">{copy.title}</h2>
-                <p className="mt-2 text-center text-sm leading-6 text-venetian-brown/75 dark:text-venetian-sandstone/75">{copy.intro}</p>
-                <Button className="min-h-12 w-full bg-red-600 px-5 font-semibold text-white hover:bg-red-700" onClick={handleCancel} disabled={state === 'cancelling' || isSaving}>
-                  {state === 'cancelling' ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{copy.cancelling}</> : copy.cancel}
-                </Button>
-                <p className="mt-2 text-center text-xs text-venetian-brown/55 dark:text-venetian-sandstone/55">{copy.warning}</p>
+                {flagsLoading ? (
+                  <div className="flex items-center justify-center gap-2 py-4 text-sm text-venetian-brown/65 dark:text-venetian-sandstone/65" role="status">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {copy.loading}
+                  </div>
+                ) : flagsError || !cancellationEnabled ? (
+                  <div className="border border-amber-300/60 bg-amber-50 p-4 text-center text-amber-900" role="status">
+                    <h2 className="font-serif text-xl">{copy.disabledTitle}</h2>
+                    <p className="mt-2 text-sm leading-6">{copy.disabledText}</p>
+                    <a href="tel:+390415204603" className="mt-3 inline-block min-h-11 py-3 font-semibold underline underline-offset-4">{copy.callRestaurant}</a>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-center font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">{copy.title}</h2>
+                    <p className="mt-2 text-center text-sm leading-6 text-venetian-brown/75 dark:text-venetian-sandstone/75">{copy.intro}</p>
+                    {isConfirming ? (
+                      <div className="mt-4 border border-red-700/25 bg-red-50 p-4 text-center dark:bg-red-950/20" role="group" aria-labelledby="cancel-confirmation-title">
+                        <h3 id="cancel-confirmation-title" className="font-serif text-2xl font-semibold text-venetian-brown dark:text-white">{copy.confirmTitle}</h3>
+                        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-venetian-brown/75 dark:text-white/75">{copy.confirmBody}</p>
+                        <button ref={keepButtonRef} type="button" onClick={closeConfirmation} disabled={state === 'cancelling' || isSaving} className="mt-5 inline-flex min-h-12 w-full items-center justify-center bg-venetian-brown px-5 text-xs font-bold uppercase tracking-[0.12em] text-white hover:bg-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold focus-visible:ring-offset-2 disabled:opacity-60">
+                          {copy.keep}
+                        </button>
+                        <Button className="mt-3 min-h-12 w-full border border-red-700 bg-transparent px-5 text-xs font-bold uppercase tracking-[0.12em] text-red-800 hover:bg-red-800 hover:text-white dark:text-red-300" onClick={handleCancel} disabled={state === 'cancelling' || isSaving}>
+                          {state === 'cancelling' ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{copy.cancelling}</> : copy.confirmCancel}
+                        </Button>
+                        <p className="mt-3 text-xs text-venetian-brown/70 dark:text-white/70">{copy.warning}</p>
+                      </div>
+                    ) : (
+                      <>
+                        <button ref={cancelTriggerRef} type="button" className="mt-4 inline-flex min-h-12 w-full items-center justify-center bg-venetian-terracotta px-5 text-xs font-bold uppercase tracking-[0.14em] text-white hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2 disabled:opacity-60" onClick={() => setIsConfirming(true)} disabled={isSaving}>
+                          {copy.cancel}
+                        </button>
+                        <Link to="/" className="mt-4 block min-h-11 py-3 text-center text-sm font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4 dark:text-venetian-sandstone">
+                          {copy.keep}
+                        </Link>
+                      </>
+                    )}
+                  </>
+                )}
 
-                <Link to="/" className="mt-4 block min-h-11 py-3 text-center text-sm font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4 dark:text-venetian-sandstone">
-                  {copy.keep}
-                </Link>
-
-                <div className="mt-5 rounded-xl bg-venetian-sandstone/25 p-4 text-center">
+                <div className="mt-5 border-t border-venetian-brown/15 p-4 text-center dark:border-white/15">
                   <Phone className="mx-auto h-5 w-5 text-venetian-gold" />
-                  <p className="mt-2 text-sm text-venetian-brown/70">{copy.changeHelp}</p>
-                  <a href="tel:+390415204603" className="mt-1 inline-block font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4">+39 041 520 4603</a>
+                  <p className="mt-2 text-sm text-venetian-brown/70 dark:text-white/70">{copy.changeHelp}</p>
+                  <a href="tel:+390415204603" className="mt-1 inline-block font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4 dark:text-white">+39 041 520 4603</a>
                 </div>
               </div>
             ) : null}
@@ -440,6 +513,7 @@ export function CancelReservationPage() {
             {state === 'already_cancelled' ? renderResult(<CheckCircle2 className="h-16 w-16 text-green-500" />, copy.alreadyCancelledTitle, copy.alreadyCancelledText, 'book') : null}
             {state === 'already_completed' ? renderResult(<XCircle className="h-16 w-16 text-venetian-brown/35 dark:text-venetian-sandstone/40" />, copy.completedTitle, copy.completedText, 'home') : null}
             {state === 'not_found' ? renderResult(<XCircle className="h-16 w-16 text-red-400" />, copy.invalidTitle, copy.invalidText, 'home') : null}
+            {state === 'disabled' ? renderResult(<Phone className="h-16 w-16 text-venetian-gold" />, copy.disabledTitle, copy.disabledText, 'call') : null}
             {state === 'error' ? renderResult(<XCircle className="h-16 w-16 text-red-400" />, copy.errorTitle, copy.errorText, 'home') : null}
           </div>
         </motion.section>

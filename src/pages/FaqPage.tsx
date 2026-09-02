@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
-import { useLanguage } from '../lib/i18n';
+import { useLanguage, type Language } from '../lib/i18n';
 import { Link } from 'react-router-dom';
 
 interface FaqItem {
@@ -35,7 +35,7 @@ const faqsIt: FaqItem[] = [
   {
     question: 'Avete opzioni vegetariane o per allergie alimentari?',
     answer:
-      'Il nostro menu include piatti vegetariani, chiaramente segnalati. Per allergie o intolleranze alimentari vi preghiamo di informarci al momento della prenotazione o all\'arrivo: lo chef adatterà i piatti alle vostre esigenze.',
+      'Il nostro menu include alcune opzioni vegetariane. Per allergie o intolleranze, segnalale durante la prenotazione e parlane sempre con il personale prima di ordinare: ti indicheremo le preparazioni adatte e le informazioni disponibili sugli allergeni.',
   },
   {
     question: 'Qual è la vostra specialità?',
@@ -73,7 +73,7 @@ const faqsEn: FaqItem[] = [
   {
     question: 'Do you have vegetarian options or cater for food allergies?',
     answer:
-      'Our menu includes vegetarian dishes, clearly marked. For allergies or food intolerances please let us know when booking or upon arrival — our chef will be happy to adapt dishes to your needs.',
+      'Our menu includes some vegetarian options. If you have allergies or food intolerances, tell us when booking and always speak with our team before ordering so we can explain suitable dishes and the available allergen information.',
   },
   {
     question: "What is your restaurant's speciality?",
@@ -87,24 +87,65 @@ const faqsEn: FaqItem[] = [
   },
 ];
 
+const faqsFr: FaqItem[] = [
+  { question: 'Comment réserver une table ?', answer: 'Réservez directement sur la page Réserver de notre site ou appelez le +39 041 520 4603. Les réservations sont possibles pour le déjeuner (12:00–14:30) et le dîner (19:00–22:00), tous les jours sauf le mardi.' },
+  { question: 'Quels jours êtes-vous ouverts ?', answer: 'Nous sommes ouverts lundi, mercredi, jeudi, vendredi, samedi et dimanche. Fermé le mardi. Horaires : déjeuner 12:00–14:30, dîner 19:00–22:00.' },
+  { question: 'Où se trouve le restaurant ?', answer: 'Nous sommes à San Polo 649, à quelques pas du pont du Rialto à Venise. L’arrêt de vaporetto Rialto Mercato se trouve à environ deux minutes à pied.' },
+  { question: 'Le restaurant accueille-t-il les familles ?', answer: 'Oui. Nous disposons de chaises hautes et accueillons volontiers les familles avec enfants.' },
+  { question: 'Proposez-vous des options végétariennes ou adaptées aux allergies ?', answer: 'Notre carte comprend quelques options végétariennes. Pour toute allergie ou intolérance, signalez-la lors de la réservation et parlez-en toujours à notre équipe avant de commander : elle vous indiquera les plats adaptés et les informations disponibles sur les allergènes.' },
+  { question: 'Quelles sont vos spécialités ?', answer: 'Nous sommes connus pour les poissons de la lagune, les risottos aux fruits de mer, les pâtes et les pizzas artisanales, dans l’esprit de la cuisine vénitienne.' },
+  { question: 'Organisez-vous des événements privés ou des repas de groupe ?', answer: 'Oui. Contactez-nous via le formulaire ou appelez le +39 041 520 4603 pour nous parler de votre événement et vérifier les possibilités.' },
+];
+
+const faqsDe: FaqItem[] = [
+  { question: 'Wie kann ich einen Tisch reservieren?', answer: 'Reservieren Sie direkt über unsere Reservierungsseite oder telefonisch unter +39 041 520 4603. Reservierungen sind zum Mittagessen (12:00–14:30) und Abendessen (19:00–22:00) möglich, täglich außer Dienstag.' },
+  { question: 'An welchen Tagen ist das Restaurant geöffnet?', answer: 'Wir sind montags, mittwochs, donnerstags, freitags, samstags und sonntags geöffnet. Dienstag ist Ruhetag. Mittagessen 12:00–14:30, Abendessen 19:00–22:00.' },
+  { question: 'Wo befindet sich das Restaurant?', answer: 'Sie finden uns in San Polo 649, nur wenige Schritte von der Rialtobrücke entfernt. Von der Vaporetto-Haltestelle Rialto Mercato sind es etwa zwei Minuten zu Fuß.' },
+  { question: 'Ist das Restaurant familienfreundlich?', answer: 'Ja. Hochstühle sind vorhanden und Familien mit Kindern sind bei uns herzlich willkommen.' },
+  { question: 'Gibt es vegetarische Gerichte oder Hilfe bei Allergien?', answer: 'Unsere Speisekarte enthält einige vegetarische Gerichte. Bitte teilen Sie Allergien oder Unverträglichkeiten bei der Reservierung mit und sprechen Sie vor der Bestellung mit unserem Team. Es erklärt Ihnen geeignete Gerichte und die verfügbaren Allergeninformationen.' },
+  { question: 'Was sind Ihre Spezialitäten?', answer: 'Bekannt sind wir für Fisch aus der Lagune, Meeresfrüchte-Risotto, Pasta und handwerklich zubereitete Pizza im Stil der venezianischen Küche.' },
+  { question: 'Sind private Feiern oder Gruppenessen möglich?', answer: 'Ja. Schreiben Sie uns über das Kontaktformular oder rufen Sie +39 041 520 4603 an, damit wir die Möglichkeiten für Ihre Veranstaltung besprechen können.' },
+];
+
+const faqsEs: FaqItem[] = [
+  { question: '¿Cómo puedo reservar una mesa?', answer: 'Reserva directamente desde la página Reservar de nuestra web o llama al +39 041 520 4603. Aceptamos reservas para comida (12:00–14:30) y cena (19:00–22:00), todos los días excepto el martes.' },
+  { question: '¿Qué días está abierto el restaurante?', answer: 'Abrimos lunes, miércoles, jueves, viernes, sábado y domingo. Cerramos los martes. Horario: comida 12:00–14:30 y cena 19:00–22:00.' },
+  { question: '¿Dónde está el restaurante?', answer: 'Estamos en San Polo 649, a pocos pasos del puente de Rialto. Desde la parada de vaporetto Rialto Mercato se llega andando en unos dos minutos.' },
+  { question: '¿El restaurante es adecuado para familias?', answer: 'Sí. Disponemos de tronas y recibimos con mucho gusto a las familias con niños.' },
+  { question: '¿Hay opciones vegetarianas o información para alergias?', answer: 'La carta incluye algunas opciones vegetarianas. Si tienes alergias o intolerancias, indícalo al reservar y habla siempre con nuestro equipo antes de pedir. Te explicará qué platos son adecuados y la información disponible sobre alérgenos.' },
+  { question: '¿Cuáles son vuestras especialidades?', answer: 'Somos conocidos por el pescado de la laguna, los risottos de marisco, la pasta y las pizzas artesanales, con el sabor de la cocina veneciana.' },
+  { question: '¿Organizáis eventos privados o comidas de grupo?', answer: 'Sí. Escríbenos mediante el formulario de contacto o llama al +39 041 520 4603 para explicarnos tu evento y consultar las opciones disponibles.' },
+];
+
+const faqCollections: Record<Language, FaqItem[]> = { it: faqsIt, en: faqsEn, fr: faqsFr, de: faqsDe, es: faqsEs };
+
+const pageCopy: Record<Language, { seoTitle: string; seoDescription: string; kicker: string; title: string; intro: string; ctaTitle: string; ctaBody: string; contact: string; reserve: string; filtersLabel: string }> = {
+  it: { seoTitle: 'Domande frequenti', seoDescription: 'Tutto quello che serve sapere su orari, prenotazioni, allergie ed eventi da Al Gobbo di Rialto.', kicker: 'Hai domande?', title: 'Domande frequenti', intro: 'Le risposte essenziali per organizzare la tua visita.', ctaTitle: 'Ti serve altro?', ctaBody: 'Scrivici o chiamaci: saremo felici di aiutarti.', contact: 'Scrivici', reserve: 'Prenota un tavolo', filtersLabel: 'Domande frequenti' },
+  en: { seoTitle: 'Frequently asked questions', seoDescription: 'Everything you need to know about opening times, reservations, allergies and events at Al Gobbo di Rialto.', kicker: 'Have questions?', title: 'Frequently asked questions', intro: 'The essential answers for planning your visit.', ctaTitle: 'Still need help?', ctaBody: 'Message or call us — we will be happy to help.', contact: 'Contact us', reserve: 'Book a table', filtersLabel: 'Frequently asked questions' },
+  fr: { seoTitle: 'Questions fréquentes', seoDescription: 'Tout savoir sur les horaires, les réservations, les allergies et les événements chez Al Gobbo di Rialto.', kicker: 'Une question ?', title: 'Questions fréquentes', intro: 'Les réponses essentielles pour préparer votre visite.', ctaTitle: 'Besoin d’aide ?', ctaBody: 'Écrivez-nous ou appelez-nous, nous vous répondrons avec plaisir.', contact: 'Nous contacter', reserve: 'Réserver une table', filtersLabel: 'Questions fréquentes' },
+  de: { seoTitle: 'Häufige Fragen', seoDescription: 'Alles Wichtige zu Öffnungszeiten, Reservierungen, Allergien und Veranstaltungen im Al Gobbo di Rialto.', kicker: 'Noch Fragen?', title: 'Häufige Fragen', intro: 'Die wichtigsten Antworten für Ihren Besuch.', ctaTitle: 'Weitere Hilfe benötigt?', ctaBody: 'Schreiben Sie uns oder rufen Sie an – wir helfen Ihnen gern.', contact: 'Kontakt', reserve: 'Tisch reservieren', filtersLabel: 'Häufige Fragen' },
+  es: { seoTitle: 'Preguntas frecuentes', seoDescription: 'Todo lo que necesitas saber sobre horarios, reservas, alergias y eventos en Al Gobbo di Rialto.', kicker: '¿Tienes preguntas?', title: 'Preguntas frecuentes', intro: 'Las respuestas esenciales para preparar tu visita.', ctaTitle: '¿Necesitas más ayuda?', ctaBody: 'Escríbenos o llámanos; estaremos encantados de ayudarte.', contact: 'Contactar', reserve: 'Reservar una mesa', filtersLabel: 'Preguntas frecuentes' },
+};
+
 function AccordionItem({ item, index }: { item: FaqItem; index: number }) {
   const [open, setOpen] = useState(false);
+  const contentId = useId();
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.4 }}
-      className="border border-venetian-brown/20 dark:border-venetian-sandstone/20 rounded-xl overflow-hidden"
+      className="overflow-hidden border-t border-venetian-brown/20 last:border-b dark:border-white/15"
     >
       <button
+        type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left bg-white dark:bg-venetian-brown/40 hover:bg-venetian-sandstone/30 dark:hover:bg-venetian-brown/60 transition-colors"
+        className="flex min-h-20 w-full items-center justify-between gap-4 bg-transparent py-5 text-left transition-colors hover:text-venetian-terracotta"
         aria-expanded={open}
+        aria-controls={contentId}
       >
-        <span className="font-serif text-base sm:text-lg text-venetian-brown dark:text-venetian-sandstone font-medium">
-          {item.question}
-        </span>
+        <span className="flex items-start gap-4"><span className="mt-1 text-[0.62rem] font-bold tracking-[0.14em] text-venetian-terracotta">{String(index + 1).padStart(2, '0')}</span><span className="font-serif text-xl font-semibold text-venetian-brown sm:text-2xl dark:text-white">{item.question}</span></span>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.25 }}
@@ -117,6 +158,7 @@ function AccordionItem({ item, index }: { item: FaqItem; index: number }) {
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
+            id={contentId}
             key="content"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -124,7 +166,7 @@ function AccordionItem({ item, index }: { item: FaqItem; index: number }) {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <p className="px-6 py-5 text-venetian-brown/80 dark:text-venetian-sandstone/80 leading-relaxed bg-venetian-sandstone/20 dark:bg-venetian-brown/20 text-sm sm:text-base">
+            <p className="pb-7 pl-10 pr-12 text-sm leading-7 text-venetian-brown/70 sm:pl-12 sm:text-base dark:text-white/60">
               {item.answer}
             </p>
           </motion.div>
@@ -136,7 +178,8 @@ function AccordionItem({ item, index }: { item: FaqItem; index: number }) {
 
 export function FaqPage() {
   const { language } = useLanguage();
-  const faqs = language === 'it' ? faqsIt : faqsEn;
+  const faqs = faqCollections[language];
+  const text = pageCopy[language];
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -150,39 +193,29 @@ export function FaqPage() {
   return (
     <PageTransition>
       <SEOHead
-        title="Domande Frequenti – FAQ"
+        title={text.seoTitle}
         canonical="/faq"
-        description="Domande frequenti sul Ristorante Al Gobbo di Rialto a Venezia. Orari, prenotazioni, menu, allergie, eventi privati e molto altro."
-        availableLanguages={['en', 'it']}
+        description={text.seoDescription}
         structuredData={faqSchema}
       />
 
-      <div className="min-h-screen bg-venetian-sandstone/20 dark:bg-venetian-brown/95 pt-24 pb-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#f7f3eb] pb-20 pt-[84px] dark:bg-venetian-brown">
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-7 sm:py-24">
 
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-14"
+            className="mb-10 border-t border-venetian-brown pt-6 text-left dark:border-white sm:mb-16 sm:pt-7"
           >
-            <p className="text-venetian-gold text-sm font-medium tracking-[0.2em] uppercase mb-3">
-              {language === 'it' ? 'Hai domande?' : 'Have questions?'}
-            </p>
-            <h1 className="font-serif text-4xl sm:text-5xl text-venetian-brown dark:text-venetian-sandstone mb-4">
-              {language === 'it' ? 'Domande Frequenti' : 'Frequently Asked Questions'}
-            </h1>
-            <div className="w-16 h-px bg-venetian-gold mx-auto mb-6" />
-            <p className="text-venetian-brown/70 dark:text-venetian-sandstone/70 text-base sm:text-lg max-w-xl mx-auto">
-              {language === 'it'
-                ? 'Trova le risposte alle domande più comuni sul nostro ristorante.'
-                : 'Find answers to the most common questions about our restaurant.'}
-            </p>
+            <p className="editorial-kicker">{text.kicker}</p>
+            <h1 className="mt-4 max-w-[11ch] font-serif text-5xl font-semibold leading-[0.86] text-venetian-brown dark:text-white sm:mt-5 sm:text-8xl">{text.title}</h1>
+            <p className="mt-5 max-w-xl text-sm leading-6 text-venetian-brown/70 dark:text-white/70 sm:mt-7 sm:text-base sm:leading-7">{text.intro}</p>
           </motion.div>
 
           {/* Accordion */}
-          <div className="space-y-3">
+          <div aria-label={text.filtersLabel}>
             {faqs.map((item, index) => (
               <AccordionItem key={index} item={item} index={index} />
             ))}
@@ -193,28 +226,26 @@ export function FaqPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="mt-16 text-center bg-venetian-brown dark:bg-venetian-brown/80 rounded-2xl p-8 sm:p-10"
+            className="mt-14 bg-venetian-terracotta p-7 text-center text-white sm:mt-20 sm:p-12"
           >
-            <h2 className="font-serif text-2xl sm:text-3xl text-venetian-sandstone mb-3">
-              {language === 'it' ? 'Non hai trovato la risposta?' : "Didn't find your answer?"}
+            <h2 className="mb-3 font-serif text-4xl font-semibold sm:text-5xl">
+              {text.ctaTitle}
             </h2>
-            <p className="text-venetian-sandstone/70 mb-6 text-sm sm:text-base">
-              {language === 'it'
-                ? 'Contattaci direttamente — saremo felici di aiutarti.'
-                : 'Contact us directly — we will be happy to help.'}
+            <p className="mb-7 text-sm text-white/70 sm:text-base">
+              {text.ctaBody}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/contact"
-                className="inline-block px-6 py-3 rounded-xl bg-venetian-gold text-venetian-brown font-semibold text-sm hover:bg-venetian-gold/90 transition-colors"
+                className="inline-flex min-h-12 items-center justify-center bg-white px-6 text-xs font-bold uppercase tracking-[0.14em] text-venetian-terracotta hover:bg-venetian-gold hover:text-venetian-brown"
               >
-                {language === 'it' ? 'Scrivici' : 'Contact Us'}
+                {text.contact}
               </Link>
               <Link
                 to="/book"
-                className="inline-block px-6 py-3 rounded-xl border-2 border-venetian-sandstone/40 text-venetian-sandstone font-semibold text-sm hover:bg-venetian-sandstone/10 transition-colors"
+                className="inline-flex min-h-12 items-center justify-center border border-white/35 px-6 text-xs font-bold uppercase tracking-[0.14em] text-white hover:border-white"
               >
-                {language === 'it' ? 'Prenota un tavolo' : 'Book a Table'}
+                {text.reserve}
               </Link>
             </div>
           </motion.div>

@@ -31,31 +31,32 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-venetian-sandstone/20 pt-24">
+    <div className="min-h-screen bg-[#F7F3EB] px-4 pb-20 pt-32 sm:pt-40">
       <SEOHead title="Accesso Admin" noindex />
-      <div className="max-w-md mx-auto px-4">
+      <div className="mx-auto max-w-md">
         <motion.div
-          className="bg-white/95 rounded-2xl shadow-xl p-8"
+          className="border-t-4 border-venetian-terracotta bg-white p-7 shadow-[0_24px_70px_rgba(25,22,18,0.10)] sm:p-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-serif text-venetian-brown mb-2">
+          <div className="mb-10 border-b border-venetian-brown/15 pb-8 text-center">
+            <p className="editorial-kicker mb-4">Area riservata</p>
+            <h1 className="mb-3 font-serif text-4xl font-semibold leading-none text-venetian-brown sm:text-5xl">
               Accesso amministrazione
             </h1>
-            <p className="text-venetian-brown/70">
+            <p className="text-sm leading-6 text-venetian-brown/65">
               Inserisci le credenziali per gestire prenotazioni e tavoli
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-7">
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-venetian-brown/80 mb-2"
+                className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-venetian-brown/70"
               >
-                <Mail className="w-4 h-4 inline-block mr-2" />
+                <Mail className="mr-2 inline-block h-4 w-4" />
                 Email
               </label>
               <input
@@ -63,7 +64,7 @@ export function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                className="min-h-12 w-full border border-venetian-brown/25 bg-white px-4 py-3 outline-none transition focus:border-venetian-terracotta focus:ring-1 focus:ring-venetian-terracotta"
                 required
                 placeholder="admin@ristorantealgobbodirialto.it"
               />
@@ -72,9 +73,9 @@ export function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-venetian-brown/80 mb-2"
+                className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-venetian-brown/70"
               >
-                <Lock className="w-4 h-4 inline-block mr-2" />
+                <Lock className="mr-2 inline-block h-4 w-4" />
                 Password
               </label>
               <input
@@ -82,24 +83,21 @@ export function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-venetian-brown/20 focus:border-venetian-gold focus:ring-1 focus:ring-venetian-gold bg-white/50"
+                className="min-h-12 w-full border border-venetian-brown/25 bg-white px-4 py-3 outline-none transition focus:border-venetian-terracotta focus:ring-1 focus:ring-venetian-terracotta"
                 required
                 placeholder="Password"
               />
             </div>
 
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
+            <div>
               <Button
                 type="submit"
-                className="w-full bg-venetian-gold text-venetian-brown hover:bg-venetian-gold/90"
+                className="min-h-12 w-full bg-venetian-brown text-white hover:bg-venetian-terracotta"
                 disabled={isLoading}
               >
                 {isLoading ? 'Accesso in corso…' : 'Accedi'}
               </Button>
-            </motion.div>
+            </div>
           </form>
         </motion.div>
       </div>

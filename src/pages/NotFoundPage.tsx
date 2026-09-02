@@ -6,11 +6,11 @@ export function NotFoundPage() {
   return (
     <PageTransition>
       <SEOHead title="Page not found" noindex />
-      <main className="min-h-screen bg-venetian-sandstone/20 pt-32 px-4 text-center">
-        <p className="text-venetian-gold font-semibold tracking-widest uppercase mb-4">404</p>
-        <h1 className="font-serif text-4xl text-venetian-brown mb-4">This calle leads somewhere else</h1>
-        <p className="text-venetian-brown/70 mb-8">The page you requested is not available.</p>
-        <Link to="/" className="inline-block rounded-xl bg-venetian-brown px-7 py-3 text-white font-semibold hover:bg-venetian-brown/90">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#f7f3eb] px-4 pb-20 pt-32 text-center dark:bg-venetian-brown">
+        <p className="editorial-kicker mb-5">404 · Venezia</p>
+        <h1 className="max-w-3xl font-serif text-6xl font-semibold leading-[0.82] text-venetian-brown sm:text-8xl dark:text-white">This calle leads somewhere else</h1>
+        <p className="mb-9 mt-6 text-venetian-brown/65 dark:text-white/60">The page you requested is not available.</p>
+        <Link to="/" className="editorial-link">
           Return home
         </Link>
       </main>
