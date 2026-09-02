@@ -34,6 +34,25 @@ const photos = [
   { source: '04-tavoli-e-mise-en-place/al-gobbo-di-rialto-tavolo-010.jpg', name: 'reserved-table-wide', widths: [1600] },
 ];
 
+const galleryNames = new Set([
+  'bar-detail-wide',
+  'bar-wide',
+  'brand-detail-wide',
+  'brand-table-wide',
+  'burrata-wide',
+  'exterior-wide',
+  'fish-wide',
+  'interior-bar-wide',
+  'interior-hero',
+  'interior-wide',
+  'pasta-wide',
+  'reserved-table-wide',
+  'risotto-wide',
+  'staff-wide',
+  'table-wide',
+  'wine-wall-portrait',
+]);
+
 await Promise.all([mkdir(outputRoot, { recursive: true }), mkdir(publicHeroRoot, { recursive: true })]);
 
 let written = 0;
@@ -45,6 +64,15 @@ for (const photo of photos) {
       .resize({ width, withoutEnlargement: true })
       .webp({ quality: width <= 480 ? 70 : 76, effort: 5, smartSubsample: true })
       .toFile(path.join(outputRoot, `${photo.name}-${width}.webp`));
+    written += 1;
+  }
+
+  if (galleryNames.has(photo.name)) {
+    await sharp(input, { limitInputPixels: false })
+      .rotate()
+      .resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 90, effort: 5, smartSubsample: true })
+      .toFile(path.join(outputRoot, `${photo.name}-lightbox-2400.webp`));
     written += 1;
   }
 }
