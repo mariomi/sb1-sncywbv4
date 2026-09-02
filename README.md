@@ -69,6 +69,10 @@ La configurazione di Google Business Profile, Google Ads, Meta/Instagram,
 tracking UTM e dashboard marketing è descritta in
 [docs/MARKETING_PLAYBOOK.md](docs/MARKETING_PLAYBOOK.md).
 
+La struttura per conferme e conversazioni tramite Meta WhatsApp Cloud API,
+inclusi consenso, modelli, webhook e attivazione, è descritta in
+[docs/WHATSAPP_META_SETUP.md](docs/WHATSAPP_META_SETUP.md).
+
 La separazione degli account cliente, i ruoli di Netawebs, la verifica
 inserzionista, il modello di pagamento e il flusso di onboarding sono definiti
 in [docs/NETAWEBS_AGENCY_MODEL.md](docs/NETAWEBS_AGENCY_MODEL.md).

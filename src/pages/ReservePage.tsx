@@ -91,6 +91,8 @@ type ReservationCopy = {
   privacyLink: string;
   privacySuffix: string;
   marketing: string;
+  whatsapp: string;
+  whatsappSent: string;
   processing: string;
   confirm: string;
   policyTitle: string;
@@ -132,7 +134,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     occasion: 'Occasion (Optional)', chooseOccasion: 'Select an occasion', occasions: { birthday: 'Birthday', anniversary: 'Anniversary', business: 'Business Dinner', date: 'Date Night', other: 'Other Special Occasion' },
     requests: 'Special Requests (Optional)', requestsPlaceholder: 'Dietary restrictions, allergies, seating preferences...',
     privacyPrefix: 'I have read and agree to the', privacyLink: 'Privacy Policy', privacySuffix: '. I understand how my personal data will be processed. *',
-    marketing: 'I would like to receive marketing communications about special offers, events and news. I can unsubscribe at any time.', processing: 'Processing...', confirm: 'Confirm Reservation',
+    marketing: 'I would like to receive marketing communications about special offers, events and news. I can unsubscribe at any time.', whatsapp: 'I would like to receive WhatsApp service confirmations and updates for this reservation from Al Gobbo di Rialto. I can opt out at any time by replying STOP.', whatsappSent: 'We also sent the reservation confirmation on WhatsApp.', processing: 'Processing...', confirm: 'Confirm Reservation',
     policyTitle: 'Reservation Policy', policyItems: ['Reservations can be made up to 3 months in advance', 'For last-minute requests, call us if online times are unavailable', 'Large group bookings (9+ guests) require direct contact'],
     importantTitle: 'Important Information', importantItems: ['Use the private link in your confirmation email to cancel', 'For same-day changes, please call +39 041 520 4603', 'Tell us about allergies or dietary requirements before ordering'],
     helpTitle: 'Need help booking?', helpBody: 'Call the restaurant for groups of nine or more, same-day questions or accessibility needs.',
@@ -149,7 +151,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     occasion: 'Occasione (Facoltativa)', chooseOccasion: 'Seleziona un’occasione', occasions: { birthday: 'Compleanno', anniversary: 'Anniversario', business: 'Cena di Lavoro', date: 'Cena Romantica', other: 'Altra Occasione Speciale' },
     requests: 'Richieste Speciali (Facoltative)', requestsPlaceholder: 'Intolleranze, allergie, preferenze per il tavolo...',
     privacyPrefix: 'Ho letto e accetto la', privacyLink: 'Privacy Policy', privacySuffix: '. Ho compreso come saranno trattati i miei dati personali. *',
-    marketing: 'Desidero ricevere comunicazioni su offerte, eventi e novità. Posso annullare l’iscrizione in qualsiasi momento.', processing: 'Invio in corso...', confirm: 'Conferma Prenotazione',
+    marketing: 'Desidero ricevere comunicazioni su offerte, eventi e novità. Posso annullare l’iscrizione in qualsiasi momento.', whatsapp: 'Desidero ricevere da Al Gobbo di Rialto su WhatsApp conferme e aggiornamenti di servizio relativi a questa prenotazione. Posso revocare in qualsiasi momento rispondendo STOP.', whatsappSent: 'Abbiamo inviato la conferma della prenotazione anche su WhatsApp.', processing: 'Invio in corso...', confirm: 'Conferma Prenotazione',
     policyTitle: 'Politica di Prenotazione', policyItems: ['Puoi prenotare fino a 3 mesi in anticipo', 'Per richieste all’ultimo momento chiamaci se non trovi orari online', 'Per gruppi di 9 o più persone è necessario contattarci direttamente'],
     importantTitle: 'Informazioni Importanti', importantItems: ['Per cancellare usa il link personale ricevuto via email', 'Per modifiche in giornata chiama il +39 041 520 4603', 'Segnalaci allergie o esigenze alimentari prima di ordinare'],
     helpTitle: 'Serve aiuto?', helpBody: 'Chiamaci per gruppi di almeno nove persone, richieste in giornata o esigenze di accessibilità.',
@@ -166,7 +168,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     occasion: 'Occasion (Facultatif)', chooseOccasion: 'Choisir une occasion', occasions: { birthday: 'Anniversaire', anniversary: 'Anniversaire de Mariage', business: 'Dîner d’Affaires', date: 'Dîner en Amoureux', other: 'Autre Occasion' },
     requests: 'Demandes Spéciales (Facultatif)', requestsPlaceholder: 'Régime alimentaire, allergies, préférence de table...',
     privacyPrefix: 'J’ai lu et j’accepte la', privacyLink: 'Politique de Confidentialité', privacySuffix: '. Je comprends comment mes données seront traitées. *',
-    marketing: 'Je souhaite recevoir des nouvelles sur les offres et événements. Je peux me désinscrire à tout moment.', processing: 'Traitement...', confirm: 'Confirmer la Réservation',
+    marketing: 'Je souhaite recevoir des nouvelles sur les offres et événements. Je peux me désinscrire à tout moment.', whatsapp: 'Je souhaite recevoir sur WhatsApp les confirmations et mises à jour de service d’Al Gobbo di Rialto concernant cette réservation. Je peux me désinscrire à tout moment en répondant STOP.', whatsappSent: 'La confirmation de réservation a également été envoyée sur WhatsApp.', processing: 'Traitement...', confirm: 'Confirmer la Réservation',
     policyTitle: 'Conditions de Réservation', policyItems: ['Réservation possible jusqu’à 3 mois à l’avance', 'Pour une demande de dernière minute, appelez-nous si aucun horaire n’est disponible', 'Les groupes de 9 personnes ou plus doivent nous contacter'],
     importantTitle: 'Informations Importantes', importantItems: ['Utilisez le lien personnel reçu par e-mail pour annuler', 'Pour une modification le jour même, appelez le +39 041 520 4603', 'Signalez toute allergie ou exigence alimentaire avant de commander'],
     helpTitle: 'Besoin d’aide ?', helpBody: 'Appelez-nous pour les groupes de neuf personnes ou plus, les demandes du jour ou l’accessibilité.',
@@ -183,7 +185,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     occasion: 'Anlass (Optional)', chooseOccasion: 'Anlass auswählen', occasions: { birthday: 'Geburtstag', anniversary: 'Jahrestag', business: 'Geschäftsessen', date: 'Romantisches Dinner', other: 'Anderer Besonderer Anlass' },
     requests: 'Besondere Wünsche (Optional)', requestsPlaceholder: 'Ernährungswünsche, Allergien, Sitzplatzwünsche...',
     privacyPrefix: 'Ich habe die', privacyLink: 'Datenschutzerklärung', privacySuffix: ' gelesen und akzeptiert. Ich verstehe die Verarbeitung meiner Daten. *',
-    marketing: 'Ich möchte Neuigkeiten zu Angeboten und Veranstaltungen erhalten. Eine Abmeldung ist jederzeit möglich.', processing: 'Wird verarbeitet...', confirm: 'Reservierung Bestätigen',
+    marketing: 'Ich möchte Neuigkeiten zu Angeboten und Veranstaltungen erhalten. Eine Abmeldung ist jederzeit möglich.', whatsapp: 'Ich möchte Bestätigungen und Service-Updates zu dieser Reservierung von Al Gobbo di Rialto über WhatsApp erhalten. Ich kann mich jederzeit mit der Antwort STOP abmelden.', whatsappSent: 'Die Reservierungsbestätigung wurde auch über WhatsApp gesendet.', processing: 'Wird verarbeitet...', confirm: 'Reservierung Bestätigen',
     policyTitle: 'Reservierungsbedingungen', policyItems: ['Reservierungen sind bis zu 3 Monate im Voraus möglich', 'Rufen Sie uns kurzfristig an, wenn online keine Uhrzeit verfügbar ist', 'Gruppen ab 9 Personen müssen uns direkt kontaktieren'],
     importantTitle: 'Wichtige Informationen', importantItems: ['Zum Stornieren den persönlichen Link aus der E-Mail verwenden', 'Für Änderungen am selben Tag: +39 041 520 4603', 'Bitte Allergien oder Ernährungswünsche vor der Bestellung mitteilen'],
     helpTitle: 'Hilfe bei der Reservierung?', helpBody: 'Rufen Sie uns bei Gruppen ab neun Personen, kurzfristigen Fragen oder Barrierefreiheitsbedarf an.',
@@ -200,7 +202,7 @@ const reservationCopy: Record<Language, ReservationCopy> = {
     occasion: 'Ocasión (Opcional)', chooseOccasion: 'Selecciona una ocasión', occasions: { birthday: 'Cumpleaños', anniversary: 'Aniversario', business: 'Cena de Negocios', date: 'Cena Romántica', other: 'Otra Ocasión Especial' },
     requests: 'Peticiones Especiales (Opcional)', requestsPlaceholder: 'Restricciones alimentarias, alergias, preferencia de mesa...',
     privacyPrefix: 'He leído y acepto la', privacyLink: 'Política de Privacidad', privacySuffix: '. Entiendo cómo se tratarán mis datos personales. *',
-    marketing: 'Deseo recibir noticias sobre ofertas y eventos. Puedo darme de baja en cualquier momento.', processing: 'Procesando...', confirm: 'Confirmar Reserva',
+    marketing: 'Deseo recibir noticias sobre ofertas y eventos. Puedo darme de baja en cualquier momento.', whatsapp: 'Deseo recibir por WhatsApp confirmaciones y actualizaciones de servicio de Al Gobbo di Rialto sobre esta reserva. Puedo darme de baja en cualquier momento respondiendo STOP.', whatsappSent: 'También hemos enviado la confirmación de la reserva por WhatsApp.', processing: 'Procesando...', confirm: 'Confirmar Reserva',
     policyTitle: 'Política de Reservas', policyItems: ['Puedes reservar con hasta 3 meses de antelación', 'Para peticiones de última hora, llámanos si no hay horarios online', 'Los grupos de 9 o más personas deben contactar directamente'],
     importantTitle: 'Información Importante', importantItems: ['Usa el enlace personal del correo de confirmación para cancelar', 'Para cambios el mismo día, llama al +39 041 520 4603', 'Informa de alergias o necesidades alimentarias antes de pedir'],
     helpTitle: '¿Necesitas ayuda?', helpBody: 'Llámanos para grupos de nueve o más personas, dudas del mismo día o necesidades de accesibilidad.',
@@ -236,6 +238,7 @@ export function ReservePage() {
   const flowCopy = bookingFlowCopy[language];
   const waitlistEnabled = useFeatureFlag('waitlist');
   const onlineReservationsEnabled = useFeatureFlag('online_reservations');
+  const whatsappNotificationsEnabled = useFeatureFlag('whatsapp_notifications', false);
   const [formData, setFormData] = useState<ReservationFormData>({
     date: '',
     time: '',
@@ -245,7 +248,8 @@ export function ReservePage() {
     phone: '',
     occasion: '',
     special_requests: '',
-    marketing_consent: false
+    marketing_consent: false,
+    whatsapp_opt_in: false,
   });
   const [phonePrefix, setPhonePrefix] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -254,12 +258,14 @@ export function ReservePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
+  const [confirmationWhatsAppSent, setConfirmationWhatsAppSent] = useState(false);
   const [cancellationToken, setCancellationToken] = useState('');
   const [isLoadingTimeSlots, setIsLoadingTimeSlots] = useState(false);
   const [closedDates, setClosedDates] = useState<string[]>([]);
   const [closedDatesLoaded, setClosedDatesLoaded] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [whatsappConsent, setWhatsappConsent] = useState(false);
   const [showWaitlistBanner, setShowWaitlistBanner] = useState(false);
   const [isJoiningWaitlist, setIsJoiningWaitlist] = useState(false);
   const [waitlistSuccess, setWaitlistSuccess] = useState(false);
@@ -416,11 +422,13 @@ export function ReservePage() {
     try {
       const reservationData = {
         ...formData,
-        marketing_consent: marketingConsent
+        marketing_consent: marketingConsent,
+        whatsapp_opt_in: whatsappNotificationsEnabled && whatsappConsent,
       };
 
       const reservation = await createReservation(reservationData, language);
       setConfirmationEmailSent(reservation.confirmation_email_sent);
+      setConfirmationWhatsAppSent(reservation.confirmation_whatsapp_sent);
       setCancellationToken(reservation.cancellation_token);
       trackEvent('booking_completed', {
         reservation_id: reservation.id,
@@ -492,9 +500,10 @@ export function ReservePage() {
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
-      marketing_consent: marketingConsent
+      marketing_consent: marketingConsent,
+      whatsapp_opt_in: whatsappNotificationsEnabled && whatsappConsent,
     }));
-  }, [marketingConsent]);
+  }, [marketingConsent, whatsappConsent, whatsappNotificationsEnabled]);
 
   return (
     <PageTransition>
@@ -833,6 +842,12 @@ export function ReservePage() {
                         <input type="checkbox" id="marketingConsent" checked={marketingConsent} onChange={(event) => setMarketingConsent(event.target.checked)} className="mt-1 h-4 w-4" />
                         <label htmlFor="marketingConsent" className="text-sm text-venetian-brown/90">{copy.marketing}</label>
                       </div>
+                      {whatsappNotificationsEnabled ? (
+                        <div className="flex items-start gap-3 rounded-lg bg-green-50 p-3">
+                          <input type="checkbox" id="whatsappConsent" checked={whatsappConsent} onChange={(event) => setWhatsappConsent(event.target.checked)} className="mt-1 h-4 w-4" />
+                          <label htmlFor="whatsappConsent" className="text-sm text-venetian-brown/90">{copy.whatsapp}</label>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
@@ -948,6 +963,9 @@ export function ReservePage() {
                       ? `${copy.emailSent} ${formData.email}.`
                       : copy.emailMissing}
                   </p>
+                  {confirmationWhatsAppSent ? (
+                    <p className="-mt-3 mb-6 text-sm font-medium text-green-700">{copy.whatsappSent}</p>
+                  ) : null}
                   {cancellationToken ? (
                     <div className="mb-5">
                       <Link

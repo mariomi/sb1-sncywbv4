@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { Mail, Clock, User, MessageSquare, Loader2, Search, Filter } from 'lucide-react';
 import { Button } from '../components/Button';
 import toast from 'react-hot-toast';
+import { WhatsAppInboxPanel } from '../components/admin/WhatsAppInboxPanel';
 
 type Message = {
   id: string;
@@ -24,6 +25,7 @@ export function MessagesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Message['status'] | 'all'>('all');
+  const [activeChannel, setActiveChannel] = useState<'contact' | 'whatsapp'>('contact');
 
   useEffect(() => {
     fetchMessages();
@@ -87,14 +89,18 @@ export function MessagesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-4xl font-serif text-venetian-brown mb-2">Contact Messages</h1>
+              <h1 className="text-4xl font-serif text-venetian-brown mb-2">Comunicazioni</h1>
               <p className="text-venetian-brown/70">
-                View and manage messages from the contact form
+                Gestisci i messaggi dal sito e le conversazioni WhatsApp
               </p>
+              <div className="mt-4 flex gap-2">
+                <button type="button" onClick={() => setActiveChannel('contact')} className={`rounded-lg px-4 py-2 text-sm font-semibold ${activeChannel === 'contact' ? 'bg-venetian-brown text-white' : 'bg-white text-venetian-brown'}`}>Email e sito</button>
+                <button type="button" onClick={() => setActiveChannel('whatsapp')} className={`rounded-lg px-4 py-2 text-sm font-semibold ${activeChannel === 'whatsapp' ? 'bg-green-700 text-white' : 'bg-white text-venetian-brown'}`}>WhatsApp</button>
+              </div>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            {activeChannel === 'contact' ? <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-venetian-brown/40" />
                 <input
@@ -120,11 +126,13 @@ export function MessagesPage() {
                   <option value="archived">Archived</option>
                 </select>
               </div>
-            </div>
+            </div> : null}
           </div>
 
           {/* Messages List */}
-          {isLoading ? (
+          {activeChannel === 'whatsapp' ? (
+            <WhatsAppInboxPanel />
+          ) : isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 text-venetian-brown animate-spin" />
             </div>

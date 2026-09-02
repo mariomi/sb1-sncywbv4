@@ -17,7 +17,7 @@ export function PrivacyPage() {
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white/95 dark:bg-venetian-brown/90 rounded-2xl shadow-xl p-6 sm:p-10">
             <h1 className="text-4xl font-serif text-venetian-brown dark:text-venetian-sandstone mb-3">Privacy and Cookie Policy</h1>
-            <p className="text-sm text-venetian-brown/60 dark:text-venetian-sandstone/60 mb-10">Last updated: 31 August 2026</p>
+            <p className="text-sm text-venetian-brown/60 dark:text-venetian-sandstone/60 mb-10">Last updated: 2 September 2026</p>
 
             <div className="space-y-10 text-venetian-brown/75 dark:text-venetian-sandstone/75 leading-relaxed">
               <section>
@@ -29,6 +29,7 @@ export function PrivacyPage() {
                 <div className="flex items-center gap-3 mb-4"><Database className="w-6 h-6 text-venetian-gold" /><h2 className="text-2xl font-serif text-venetian-brown dark:text-venetian-sandstone">Data and purposes</h2></div>
                 <ul className="list-disc pl-5 space-y-2">
                   <li>Reservation details: name, email, phone, date, time, party size, notes and booking status, used to manage the requested reservation.</li>
+                  <li>Optional WhatsApp service messages: if you select the separate WhatsApp option, the booking phone number and essential reservation details are used to send confirmations, updates and reminders. Special requests and allergy notes are not included in WhatsApp templates.</li>
                   <li>Contact messages: name, email, subject and message, used to answer the request.</li>
                   <li>Technical security data, such as request time and network information, used to protect the service from misuse.</li>
                   <li>Campaign and website interaction data, used only when the relevant consent is given, to measure visits and completed bookings.</li>
@@ -44,12 +45,12 @@ export function PrivacyPage() {
 
               <section>
                 <div className="flex items-center gap-3 mb-4"><Mail className="w-6 h-6 text-venetian-gold" /><h2 className="text-2xl font-serif text-venetian-brown dark:text-venetian-sandstone">Service providers and transfers</h2></div>
-                <p>The website uses Supabase for application data and authentication and Resend for transactional emails. If you enable optional measurement, Google and Meta technologies may also be used. Providers process data under their contractual safeguards; some processing may occur outside the European Economic Area using the safeguards made available by those providers.</p>
+                <p>The website uses Supabase for application data and authentication and Resend for transactional emails. If you request WhatsApp service messages, Meta Platforms and its WhatsApp Business Platform process the phone number and message delivery data needed to provide that channel. If you enable optional measurement, Google and Meta measurement technologies may also be used. Providers process data under their contractual safeguards; some processing may occur outside the European Economic Area using the safeguards made available by those providers.</p>
               </section>
 
               <section>
                 <div className="flex items-center gap-3 mb-4"><Download className="w-6 h-6 text-venetian-gold" /><h2 className="text-2xl font-serif text-venetian-brown dark:text-venetian-sandstone">Retention and your rights</h2></div>
-                <p>Data is retained only for as long as needed to handle the request, meet applicable legal obligations and resolve disputes. You may request access, correction, deletion, restriction, portability or object to processing where applicable. You may withdraw optional consent at any time through cookie settings, without affecting prior lawful processing. You may also complain to the competent data-protection authority.</p>
+                <p>Data is retained only for as long as needed to handle the request, meet applicable legal obligations and resolve disputes. You may request access, correction, deletion, restriction, portability or object to processing where applicable. You may withdraw optional consent at any time, without affecting prior lawful processing. WhatsApp service messages can be stopped by replying STOP; cookie choices remain available through cookie settings. You may also complain to the competent data-protection authority.</p>
               </section>
             </div>
           </div>

@@ -14,6 +14,7 @@ import {
 const RESEND_KEY = Deno.env.get('RESEND_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')
 const CRON_SECRET = Deno.env.get('REMINDER_CRON_SECRET')
 const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://www.ristorantealgobbodirialto.it').replace(/\/$/, '')
 const SEND_HOUR_IN_ROME = 9
@@ -68,6 +69,14 @@ Deno.serve(async (request) => {
   if (reminderFlag?.enabled === false) {
     return jsonResponse({ skipped: true, reason: 'feature_disabled' })
   }
+
+  const { data: whatsappFlag, error: whatsappFlagError } = await supabase
+    .from('feature_flags')
+    .select('enabled')
+    .eq('key', 'whatsapp_notifications')
+    .maybeSingle()
+  if (whatsappFlagError) console.error('Could not read WhatsApp feature flag:', whatsappFlagError)
+  const whatsappEnabled = !whatsappFlagError && whatsappFlag?.enabled === true
 
   const tomorrow = getTomorrowDateInRome(now)
   const { data: reservations, error } = await supabase
@@ -129,6 +138,9 @@ Deno.serve(async (request) => {
         .is('reminder_sent_at', null)
 
       if (updateError) throw updateError
+      if (whatsappEnabled) {
+        await sendWhatsAppReminder(reservation.id, reservation.cancellation_token, 'reminder_24h')
+      }
       sent += 1
     } catch (sendError) {
       console.error(`Day-before reminder failed for reservation ${reservation.id}:`, sendError)
@@ -141,6 +153,31 @@ Deno.serve(async (request) => {
     failed > 0 ? 502 : 200,
   )
 })
+
+async function sendWhatsAppReminder(reservationId: string, cancellationToken: string, purpose: string) {
+  if (!SUPABASE_URL || !ANON_KEY) {
+    console.error('WhatsApp reminder endpoint is not configured')
+    return
+  }
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/send-whatsapp-notification`, {
+      method: 'POST',
+      headers: {
+        apikey: ANON_KEY,
+        Authorization: `Bearer ${ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        reservation_id: reservationId,
+        cancellation_token: cancellationToken,
+        purpose,
+      }),
+    })
+    if (!response.ok) console.error(`WhatsApp reminder returned HTTP ${response.status}`)
+  } catch (error) {
+    console.error('WhatsApp reminder failed', error)
+  }
+}
 
 function buildReminderHtml({
   name,

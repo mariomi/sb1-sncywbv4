@@ -5,6 +5,9 @@ confirmation, contact-message receipt, waitlist notification, day-before
 reminder, and two-hour reminder. Never place Resend or service-role credentials in a `VITE_*`
 variable: Vite exposes those values to browsers.
 
+The separate Meta WhatsApp Cloud API setup, template copy, signed webhook, and
+activation checklist are in [WHATSAPP_META_SETUP.md](WHATSAPP_META_SETUP.md).
+
 ## Required secrets
 
 The Supabase Edge Functions use the automatically provided `SUPABASE_URL` and
@@ -30,6 +33,14 @@ who can trigger bulk email even if a public Supabase key is known.
 
 ```powershell
 npx supabase functions deploy send-reservation-confirmation send-contact-confirmation send-waitlist-notification send-reminders send-2h-reminders --use-api
+```
+
+WhatsApp uses separate deployments because the external Meta webhook must have
+Supabase JWT verification disabled while verifying Meta's signature itself:
+
+```powershell
+npx supabase functions deploy send-whatsapp-notification send-whatsapp-reply --use-api
+npx supabase functions deploy meta-whatsapp-webhook --no-verify-jwt --use-api
 ```
 
 The public booking form invokes `send-reservation-confirmation` through the

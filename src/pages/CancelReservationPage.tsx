@@ -207,7 +207,7 @@ export function CancelReservationPage() {
     if (!token || state === 'cancelling') return;
     setState('cancelling');
     try {
-      await cancelReservationByToken(token);
+      await cancelReservationByToken(token, reservation?.id);
       setState('success');
     } catch (error) {
       const message = error instanceof Error ? error.message : '';
