@@ -36,6 +36,7 @@ const heroCopy: Record<Language, {
   portalTitle: string;
   portalHint: string;
   reserve: string;
+  menu: string;
   place: string;
   privacy: string;
   legal: string;
@@ -50,7 +51,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'Un passo ancora.\nIl giardino si rivela.',
     portalKicker: 'Il prossimo momento è tuo', portalTitle: 'Il tuo tavolo, a Venezia.',
     portalHint: 'Scegli il giorno. Noi prepariamo il resto.',
-    reserve: 'Prenota il tuo tavolo', place: 'Venezia · San Polo', privacy: 'Privacy', legal: 'Note legali', developedBy: 'Sito di',
+    reserve: 'Prenota il tuo tavolo', menu: 'Scopri il menu', place: 'Venezia · San Polo', privacy: 'Privacy', legal: 'Note legali', developedBy: 'Sito di',
     imageAlt: 'La sala interna del Ristorante Al Gobbo di Rialto',
   },
   en: {
@@ -61,7 +62,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'One step further.\nThe garden reveals itself.',
     portalKicker: 'The next moment is yours', portalTitle: 'Your table, in Venice.',
     portalHint: 'Choose the day. We will prepare the rest.',
-    reserve: 'Reserve your table', place: 'Venice · San Polo', privacy: 'Privacy', legal: 'Legal notice', developedBy: 'Website by',
+    reserve: 'Reserve your table', menu: 'View the menu', place: 'Venice · San Polo', privacy: 'Privacy', legal: 'Legal notice', developedBy: 'Website by',
     imageAlt: 'The dining room at Al Gobbo di Rialto restaurant',
   },
   fr: {
@@ -72,7 +73,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'Encore un pas.\nLe jardin se dévoile.',
     portalKicker: 'Le prochain moment est à vous', portalTitle: 'Votre table, à Venise.',
     portalHint: 'Choisissez le jour. Nous préparons le reste.',
-    reserve: 'Réserver votre table', place: 'Venise · San Polo', privacy: 'Confidentialité', legal: 'Mentions légales', developedBy: 'Site par',
+    reserve: 'Réserver votre table', menu: 'Voir le menu', place: 'Venise · San Polo', privacy: 'Confidentialité', legal: 'Mentions légales', developedBy: 'Site par',
     imageAlt: 'La salle du restaurant Al Gobbo di Rialto',
   },
   de: {
@@ -83,7 +84,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'Noch ein Schritt.\nDer Garten zeigt sich.',
     portalKicker: 'Der nächste Moment gehört Ihnen', portalTitle: 'Ihr Tisch, in Venedig.',
     portalHint: 'Wählen Sie den Tag. Wir bereiten den Rest vor.',
-    reserve: 'Tisch reservieren', place: 'Venedig · San Polo', privacy: 'Datenschutz', legal: 'Impressum', developedBy: 'Website von',
+    reserve: 'Tisch reservieren', menu: 'Menü ansehen', place: 'Venedig · San Polo', privacy: 'Datenschutz', legal: 'Impressum', developedBy: 'Website von',
     imageAlt: 'Der Gastraum des Restaurants Al Gobbo di Rialto',
   },
   es: {
@@ -94,7 +95,7 @@ const heroCopy: Record<Language, {
     interludeTwo: 'Un paso más.\nEl jardín se revela.',
     portalKicker: 'El próximo momento es tuyo', portalTitle: 'Tu mesa, en Venecia.',
     portalHint: 'Elige el día. Nosotros preparamos el resto.',
-    reserve: 'Reserva tu mesa', place: 'Venecia · San Polo', privacy: 'Privacidad', legal: 'Aviso legal', developedBy: 'Sitio de',
+    reserve: 'Reserva tu mesa', menu: 'Ver el menú', place: 'Venecia · San Polo', privacy: 'Privacidad', legal: 'Aviso legal', developedBy: 'Sitio de',
     imageAlt: 'El comedor del restaurante Al Gobbo di Rialto',
   },
 };
@@ -297,7 +298,10 @@ export function Hero() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-venetian-gold">{copy.portalKicker}</p>
           <h1 id="home-title" className="mt-5 max-w-[11ch] font-serif text-[clamp(2.75rem,13vw,8.8rem)] font-semibold leading-[0.82] tracking-[-0.05em] sm:leading-[0.79]">{copy.portalTitle}</h1>
           <p className="mt-7 max-w-xl border-l border-white/50 pl-5 text-base leading-7 text-white/90 sm:text-lg">{copy.portalHint}</p>
-          <Link id="home-reservation-link" to="/book" className="mt-8 inline-flex min-h-[52px] items-center gap-3 bg-venetian-gold px-6 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#050505]">{copy.reserve}<ArrowRight className="h-4 w-4" /></Link>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link id="home-reservation-link" to="/book" className="inline-flex min-h-[52px] items-center gap-3 bg-venetian-gold px-6 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#050505]">{copy.reserve}<ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/menu" className="inline-flex min-h-11 items-center gap-2 border border-white/40 px-5 text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#050505]">{copy.menu}<ArrowRight className="h-3.5 w-3.5" /></Link>
+          </div>
           <div className="mt-8 max-w-2xl text-[0.66rem] leading-5 text-white/55">
             <p>{restaurantLegalIdentity.legalName} · P.IVA/C.F. IT{restaurantLegalIdentity.vatNumber}</p>
             <p><Link to="/privacy" className="underline underline-offset-4 hover:text-white">{copy.privacy}</Link> · <Link to="/legal" className="underline underline-offset-4 hover:text-white">{copy.legal}</Link> · {copy.developedBy}{' '}<a href={developerLegalIdentity.website} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-white">{developerLegalIdentity.brand} SRLS · P.IVA IT{developerLegalIdentity.vatNumber}</a></p>
@@ -419,15 +423,25 @@ export function Hero() {
             <p className="text-[0.66rem] font-bold uppercase tracking-[0.26em] text-venetian-gold sm:text-xs">{copy.portalKicker}</p>
             <h2 className="mx-auto mt-7 max-w-[10ch] font-serif text-[clamp(3.7rem,17vw,9.8rem)] font-semibold leading-[0.8] tracking-[-0.06em] text-white">{copy.portalTitle}</h2>
             <p className="mx-auto mt-7 max-w-md text-sm leading-6 text-white/75 sm:text-base">{copy.portalHint}</p>
-            <Link
-              id="home-reservation-link"
-              to="/book"
-              tabIndex={phase === 'portal' ? 0 : -1}
-              className="group mx-auto mt-9 inline-flex min-h-[58px] items-center justify-center gap-4 border border-venetian-gold bg-venetian-gold px-7 text-xs font-bold uppercase tracking-[0.16em] text-venetian-brown transition-colors hover:bg-transparent hover:text-venetian-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#100f0d] sm:min-h-16 sm:px-10"
-            >
-              {copy.reserve}
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                id="home-reservation-link"
+                to="/book"
+                tabIndex={phase === 'portal' ? 0 : -1}
+                className="group inline-flex min-h-[58px] items-center justify-center gap-4 border border-venetian-gold bg-venetian-gold px-7 text-xs font-bold uppercase tracking-[0.16em] text-venetian-brown transition-colors hover:bg-transparent hover:text-venetian-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#100f0d] sm:min-h-16 sm:px-10"
+              >
+                {copy.reserve}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link
+                to="/menu"
+                tabIndex={phase === 'portal' ? 0 : -1}
+                className="group inline-flex min-h-11 items-center justify-center gap-2 border border-white/35 px-5 text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#100f0d]"
+              >
+                {copy.menu}
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
             <p className="mt-8 text-[0.64rem] font-bold uppercase tracking-[0.22em] text-white/50">{copy.place}</p>
             <div className="mx-auto mt-5 max-w-3xl text-[0.58rem] leading-4 text-white/40 sm:text-[0.64rem]">
               <p>{restaurantLegalIdentity.legalName} · P.IVA/C.F. IT{restaurantLegalIdentity.vatNumber}</p>
