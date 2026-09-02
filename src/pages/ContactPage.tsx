@@ -36,14 +36,18 @@ export function ContactPage() {
     setIsSubmitting(true);
     
     try {
-      await createContactMessage({
+      const result = await createContactMessage({
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
         subject: formData.subject,
         message: formData.message,
       });
-      toast.success('Message sent successfully!');
+      if (result.confirmation_email_sent) {
+        toast.success('Message received! Check your email for confirmation.');
+      } else {
+        toast.success('Message received. The confirmation email could not be delivered.');
+      }
       setFormData({
         firstName: '',
         lastName: '',

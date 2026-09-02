@@ -1,8 +1,8 @@
 # Production operations
 
-This guide covers the four trusted Supabase email functions: booking
-confirmation, waitlist notification, day-before reminder, and two-hour
-reminder. Never place Resend or service-role credentials in a `VITE_*`
+This guide covers the five trusted Supabase email functions: booking
+confirmation, contact-message receipt, waitlist notification, day-before
+reminder, and two-hour reminder. Never place Resend or service-role credentials in a `VITE_*`
 variable: Vite exposes those values to browsers.
 
 ## Required secrets
@@ -29,12 +29,14 @@ Keep JWT verification enabled. The additional `x-reminder-secret` check limits
 who can trigger bulk email even if a public Supabase key is known.
 
 ```powershell
-npx supabase functions deploy send-reservation-confirmation send-waitlist-notification send-reminders send-2h-reminders --use-api
+npx supabase functions deploy send-reservation-confirmation send-contact-confirmation send-waitlist-notification send-reminders send-2h-reminders --use-api
 ```
 
 The public booking form invokes `send-reservation-confirmation` through the
 Supabase client after the reservation is stored. The admin waitlist action
 invokes `send-waitlist-notification` with the signed-in administrator session.
+The contact form invokes `send-contact-confirmation` after the message is stored;
+the function reloads the recipient from the database and sends at most once.
 No browser request depends on a localhost or Express email server.
 
 ## Create schedules
