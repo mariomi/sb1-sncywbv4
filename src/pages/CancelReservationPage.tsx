@@ -5,7 +5,7 @@ import { Calendar, CheckCircle2, Clock, Loader2, MessageSquare, Phone, Users, XC
 import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
-import { getReservationByToken, cancelReservationByToken, updateReservationByToken } from '../lib/api';
+import { getAvailableTimeSlots, getReservationByToken, cancelReservationByToken, updateReservationByToken } from '../lib/api';
 import type { ReservationSummary } from '../lib/api';
 import { useLanguage, type Language } from '../lib/i18n';
 import { useFeatureFlag, useFeatureFlags } from '../lib/featureFlags';
@@ -52,9 +52,9 @@ type ReservationEditCopy = {
   pageTitle: string;
   editTitle: string;
   editIntro: string;
-  earlier: string;
+  available: string;
   current: string;
-  later: string;
+  availabilityError: string;
   notesLabel: string;
   notesPlaceholder: string;
   notesPrivacy: string;
@@ -92,8 +92,8 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
   en: {
     pageTitle: 'Manage your booking',
     editTitle: 'Change your booking',
-    editIntro: 'Choose the current time or an available option 30 minutes earlier or later, and update your notes.',
-    earlier: '30 min earlier', current: 'Current time', later: '30 min later',
+    editIntro: 'Choose any available time on the same day and update your notes.',
+    available: 'Available', current: 'Current time', availabilityError: 'Available times could not be loaded. Reload the page or call us.',
     notesLabel: 'Notes for the restaurant', notesPlaceholder: 'Seating preferences or a note for our team',
     notesPrivacy: 'Do not enter health or other sensitive data here. For allergies, call the restaurant before your visit.',
     save: 'Save changes', saving: 'Saving…', saved: 'Changes saved. We sent you an updated confirmation email.',
@@ -101,15 +101,15 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editDeadline: 'You can change the time until 24 hours before the booking. Notes remain editable until the booking starts.',
     editClosed: 'The time can no longer be changed online, but you can still update the notes.',
     unavailable: 'That time is no longer available. Choose another option or call us.',
-    invalidTime: 'You can only move the booking 30 minutes earlier or later.',
+    invalidTime: 'Choose one of the available times for the same day.',
     notesTooLong: 'Notes can contain up to 1,000 characters.',
     saveError: 'Could not save the changes. Please try again or call us.',
   },
   it: {
     pageTitle: 'Gestisci la prenotazione',
     editTitle: 'Modifica la prenotazione',
-    editIntro: 'Scegli l’orario attuale oppure un’opzione disponibile 30 minuti prima o dopo e aggiorna le note.',
-    earlier: '30 min prima', current: 'Orario attuale', later: '30 min dopo',
+    editIntro: 'Scegli qualsiasi orario disponibile dello stesso giorno e aggiorna le note.',
+    available: 'Disponibile', current: 'Orario attuale', availabilityError: 'Non è stato possibile caricare gli orari disponibili. Ricarica la pagina o chiamaci.',
     notesLabel: 'Note per il ristorante', notesPlaceholder: 'Preferenze per il tavolo o una nota per lo staff',
     notesPrivacy: 'Non inserire qui dati sanitari o altre informazioni sensibili. Per allergie chiama il ristorante prima della visita.',
     save: 'Salva le modifiche', saving: 'Salvataggio…', saved: 'Modifiche salvate. Ti abbiamo inviato una nuova email di conferma.',
@@ -117,15 +117,15 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editDeadline: 'Puoi cambiare l’orario fino a 24 ore prima. Le note restano modificabili fino all’inizio della prenotazione.',
     editClosed: 'Non puoi più cambiare l’orario online, ma puoi ancora aggiornare le note.',
     unavailable: 'Questo orario non è più disponibile. Scegli un’altra opzione o chiamaci.',
-    invalidTime: 'Puoi spostare la prenotazione soltanto di 30 minuti prima o dopo.',
+    invalidTime: 'Scegli uno degli orari disponibili dello stesso giorno.',
     notesTooLong: 'Le note possono contenere al massimo 1.000 caratteri.',
     saveError: 'Non è stato possibile salvare le modifiche. Riprova oppure chiamaci.',
   },
   fr: {
     pageTitle: 'Gérer la réservation',
     editTitle: 'Modifier la réservation',
-    editIntro: 'Choisissez l’heure actuelle ou une option disponible 30 minutes avant ou après, puis modifiez vos notes.',
-    earlier: '30 min avant', current: 'Heure actuelle', later: '30 min après',
+    editIntro: 'Choisissez n’importe quelle heure disponible le même jour, puis modifiez vos notes.',
+    available: 'Disponible', current: 'Heure actuelle', availabilityError: 'Impossible de charger les horaires disponibles. Rechargez la page ou appelez-nous.',
     notesLabel: 'Notes pour le restaurant', notesPlaceholder: 'Préférence de table ou message pour l’équipe',
     notesPrivacy: 'N’inscrivez pas ici de données de santé ou sensibles. Pour les allergies, appelez le restaurant avant votre visite.',
     save: 'Enregistrer les modifications', saving: 'Enregistrement…', saved: 'Modifications enregistrées. Une nouvelle confirmation vous a été envoyée.',
@@ -133,15 +133,15 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editDeadline: 'Vous pouvez changer l’heure jusqu’à 24 heures avant. Les notes restent modifiables jusqu’au début de la réservation.',
     editClosed: 'L’heure ne peut plus être modifiée en ligne, mais vous pouvez encore mettre à jour les notes.',
     unavailable: 'Cette heure n’est plus disponible. Choisissez une autre option ou appelez-nous.',
-    invalidTime: 'Vous pouvez déplacer la réservation de 30 minutes avant ou après uniquement.',
+    invalidTime: 'Choisissez l’un des horaires disponibles le même jour.',
     notesTooLong: 'Les notes sont limitées à 1 000 caractères.',
     saveError: 'Impossible d’enregistrer les modifications. Réessayez ou appelez-nous.',
   },
   de: {
     pageTitle: 'Reservierung verwalten',
     editTitle: 'Reservierung ändern',
-    editIntro: 'Wählen Sie die aktuelle Uhrzeit oder eine verfügbare Option 30 Minuten früher oder später und aktualisieren Sie Ihre Hinweise.',
-    earlier: '30 Min. früher', current: 'Aktuelle Uhrzeit', later: '30 Min. später',
+    editIntro: 'Wählen Sie eine beliebige verfügbare Uhrzeit am selben Tag und aktualisieren Sie Ihre Hinweise.',
+    available: 'Verfügbar', current: 'Aktuelle Uhrzeit', availabilityError: 'Die verfügbaren Uhrzeiten konnten nicht geladen werden. Laden Sie die Seite neu oder rufen Sie uns an.',
     notesLabel: 'Hinweise für das Restaurant', notesPlaceholder: 'Sitzplatzwunsch oder Nachricht an das Team',
     notesPrivacy: 'Tragen Sie hier keine Gesundheits- oder sensiblen Daten ein. Bei Allergien rufen Sie das Restaurant vor Ihrem Besuch an.',
     save: 'Änderungen speichern', saving: 'Wird gespeichert…', saved: 'Änderungen gespeichert. Eine neue Bestätigung wurde gesendet.',
@@ -149,15 +149,15 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editDeadline: 'Die Uhrzeit kann bis 24 Stunden vorher geändert werden. Hinweise bleiben bis zum Reservierungsbeginn bearbeitbar.',
     editClosed: 'Die Uhrzeit kann online nicht mehr geändert werden, aber Sie können die Hinweise weiterhin aktualisieren.',
     unavailable: 'Diese Uhrzeit ist nicht mehr verfügbar. Wählen Sie eine andere Option oder rufen Sie uns an.',
-    invalidTime: 'Sie können die Reservierung nur um 30 Minuten vor- oder zurückverlegen.',
+    invalidTime: 'Wählen Sie eine der verfügbaren Uhrzeiten am selben Tag.',
     notesTooLong: 'Hinweise dürfen höchstens 1.000 Zeichen enthalten.',
     saveError: 'Die Änderungen konnten nicht gespeichert werden. Versuchen Sie es erneut oder rufen Sie uns an.',
   },
   es: {
     pageTitle: 'Gestionar la reserva',
     editTitle: 'Modificar la reserva',
-    editIntro: 'Elige la hora actual o una opción disponible 30 minutos antes o después y actualiza las notas.',
-    earlier: '30 min antes', current: 'Hora actual', later: '30 min después',
+    editIntro: 'Elige cualquier hora disponible del mismo día y actualiza las notas.',
+    available: 'Disponible', current: 'Hora actual', availabilityError: 'No se pudieron cargar las horas disponibles. Recarga la página o llámanos.',
     notesLabel: 'Notas para el restaurante', notesPlaceholder: 'Preferencia de mesa o una nota para el equipo',
     notesPrivacy: 'No introduzcas aquí datos de salud ni sensibles. Para alergias, llama al restaurante antes de tu visita.',
     save: 'Guardar cambios', saving: 'Guardando…', saved: 'Cambios guardados. Te hemos enviado una nueva confirmación.',
@@ -165,7 +165,7 @@ const reservationEditCopy: Record<Language, ReservationEditCopy> = {
     editDeadline: 'Puedes cambiar la hora hasta 24 horas antes. Las notas se pueden editar hasta que empiece la reserva.',
     editClosed: 'Ya no puedes cambiar la hora en línea, pero todavía puedes actualizar las notas.',
     unavailable: 'Esa hora ya no está disponible. Elige otra opción o llámanos.',
-    invalidTime: 'Solo puedes mover la reserva 30 minutos antes o después.',
+    invalidTime: 'Elige una de las horas disponibles del mismo día.',
     notesTooLong: 'Las notas pueden contener hasta 1.000 caracteres.',
     saveError: 'No se pudieron guardar los cambios. Inténtalo de nuevo o llámanos.',
   },
@@ -186,6 +186,8 @@ export function CancelReservationPage() {
   const { loading: flagsLoading, error: flagsError } = useFeatureFlags();
   const [state, setState] = useState<PageState>('loading');
   const [reservation, setReservation] = useState<ReservationSummary | null>(null);
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [timeOptionsFailed, setTimeOptionsFailed] = useState(false);
   const [selectedTime, setSelectedTime] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -219,14 +221,33 @@ export function CancelReservationPage() {
 
     let active = true;
     getReservationByToken(token)
-      .then((result) => {
+      .then(async (result) => {
         if (!active) return;
         if (!result) setState('not_found');
         else if (result.status === 'cancelled') setState('already_cancelled');
         else if (result.status === 'completed' || result.status === 'no_show' || !result.can_modify) setState('already_completed');
         else {
+          const currentTime = result.time.slice(0, 5);
+          let nextAvailableTimes = [currentTime];
+
+          if (result.can_modify_time) {
+            try {
+              const slots = await getAvailableTimeSlots(result.date);
+              nextAvailableTimes = Array.from(new Set([
+                currentTime,
+                ...slots
+                  .filter((slot) => slot.available && slot.remainingCapacity >= result.guests)
+                  .map((slot) => slot.time.slice(0, 5)),
+              ])).sort((left, right) => left.localeCompare(right));
+            } catch {
+              if (active) setTimeOptionsFailed(true);
+            }
+          }
+
+          if (!active) return;
           setReservation(result);
-          setSelectedTime(result.time.slice(0, 5));
+          setAvailableTimes(nextAvailableTimes);
+          setSelectedTime(currentTime);
           setSpecialRequests(result.special_requests || '');
           setState('found');
         }
@@ -307,12 +328,6 @@ export function CancelReservationPage() {
       })
     : '';
 
-  const timeOptions = reservation ? [
-    reservation.earlier_time ? { value: reservation.earlier_time.slice(0, 5), label: editCopy.earlier } : null,
-    { value: reservation.time.slice(0, 5), label: editCopy.current },
-    reservation.later_time ? { value: reservation.later_time.slice(0, 5), label: editCopy.later } : null,
-  ].filter((option): option is { value: string; label: string } => Boolean(option)) : [];
-
   const hasChanges = Boolean(reservation) && (
     selectedTime !== reservation?.time.slice(0, 5)
     || specialRequests.trim() !== (reservation?.special_requests || '')
@@ -392,25 +407,31 @@ export function CancelReservationPage() {
 
                     {reservation.can_modify_time ? (
                       <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3" role="group" aria-label={copy.timeLabel}>
-                        {timeOptions.map((option) => {
-                          const selected = selectedTime === option.value;
+                        {availableTimes.map((time) => {
+                          const selected = selectedTime === time;
+                          const isCurrent = reservation.time.slice(0, 5) === time;
                           return (
                             <button
-                              key={`${option.label}-${option.value}`}
+                              key={time}
                               type="button"
                               className={`min-h-14 rounded-xl border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold ${selected ? 'border-venetian-brown bg-venetian-brown font-semibold text-white' : 'border-venetian-gold/40 bg-white text-venetian-brown hover:border-venetian-gold dark:bg-venetian-brown/40 dark:text-venetian-sandstone'}`}
                               onClick={() => {
-                                setSelectedTime(option.value);
+                                setSelectedTime(time);
                                 setSaveNotice(null);
                               }}
                               disabled={isSaving}
                               aria-pressed={selected}
                             >
-                              <span className="block text-xs opacity-75">{option.label}</span>
-                              <span className="mt-0.5 block text-base">{option.value}</span>
+                              <span className="block text-xs opacity-75">{isCurrent ? editCopy.current : editCopy.available}</span>
+                              <span className="mt-0.5 block text-base">{time}</span>
                             </button>
                           );
                         })}
+                        {timeOptionsFailed ? (
+                          <p className="rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-900 sm:col-span-3" role="status">
+                            {editCopy.availabilityError}
+                          </p>
+                        ) : null}
                       </div>
                     ) : (
                       <div className="mt-4 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-900" role="status">
