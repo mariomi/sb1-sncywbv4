@@ -28,6 +28,11 @@
     text-rendering: optimizeLegibility;
   }
 
+  html[data-home-intro-active='true'],
+  html[data-home-intro-active='true'] body {
+    background: #050505;
+  }
+
   h1,
   h2,
   h3,

@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowRight } from 'lucide-react';
-import { motion, type MotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { motion, type MotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage, type Language } from '../lib/i18n';
 import heroImage from '../Img/G1/IMG_2922.webp';
@@ -96,86 +96,146 @@ function ComposingWord({ word, index, progress }: { word: string; index: number;
   const opacity = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [0, 1, 1, 0]);
   const x = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [direction * 28, 0, 0, direction * -55]);
   const y = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [18, 0, 0, index % 3 === 0 ? -30 : 24]);
-  const filter = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], ['blur(12px)', 'blur(0px)', 'blur(0px)', 'blur(14px)']);
+  const scale = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [0.94, 1, 1, 0.97]);
+  const rotate = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [direction * 1.5, 0, 0, direction * -2]);
 
   return (
-    <motion.span aria-hidden="true" style={{ opacity, x, y, filter }} className="inline-block will-change-[transform,filter,opacity]">
+    <motion.span aria-hidden="true" style={{ opacity, x, y, scale, rotate }} className="inline-block will-change-[transform,opacity]">
       {word}
     </motion.span>
   );
 }
 
+type HeroPhase = 'prompt' | 'reveal' | 'narrative' | 'portal';
+
+function phaseAt(progress: number): HeroPhase {
+  return progress < 0.13 ? 'prompt' : progress < 0.64 ? 'reveal' : progress < 0.92 ? 'narrative' : 'portal';
+}
+
+function assetStageAt(progress: number) {
+  return progress >= 0.48 ? 5 : progress >= 0.32 ? 4 : progress >= 0.18 ? 3 : 2;
+}
+
+function sceneAt(progress: number) {
+  return progress < 0.13 ? 0 : progress < 0.28 ? 1 : progress < 0.4 ? 2 : progress < 0.53 ? 3 : progress < 0.65 ? 4 : 5;
+}
+
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [phase, setPhase] = useState<'prompt' | 'reveal' | 'narrative' | 'portal'>('prompt');
+  const [phase, setPhase] = useState<HeroPhase>('prompt');
   const [assetStage, setAssetStage] = useState(2);
   const [activeScene, setActiveScene] = useState(0);
+  const phaseRef = useRef<HeroPhase>('prompt');
+  const assetStageRef = useRef(2);
+  const activeSceneRef = useRef(0);
+  const pendingPortalFocusRef = useRef(false);
+  const portalFocusFrameRef = useRef<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
   const { language } = useLanguage();
   const copy = heroCopy[language];
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] });
+  const smoothScrollYProgress = useSpring(scrollYProgress, {
+    stiffness: 190,
+    damping: 30,
+    mass: 0.45,
+    restDelta: 0.0001,
+    restSpeed: 0.001,
+  });
 
-  const promptOpacity = useTransform(scrollYProgress, [0, 0.055, 0.13], [1, 1, 0]);
+  const promptOpacity = useTransform(smoothScrollYProgress, [0, 0.055, 0.13], [1, 1, 0]);
 
-  const firstOpacity = useTransform(scrollYProgress, [0.05, 0.105, 0.21, 0.27], [0, 1, 1, 0]);
-  const firstX = useTransform(scrollYProgress, [0.07, 0.26], ['0vw', '-12vw']);
-  const firstScale = useTransform(scrollYProgress, [0.07, 0.26], [0.94, 1.03]);
+  const firstOpacity = useTransform(smoothScrollYProgress, [0.05, 0.105, 0.21, 0.27], [0, 1, 1, 0]);
+  const firstX = useTransform(smoothScrollYProgress, [0.07, 0.26], ['0vw', '-12vw']);
+  const firstScale = useTransform(smoothScrollYProgress, [0.07, 0.26], [0.94, 1.03]);
 
-  const secondOpacity = useTransform(scrollYProgress, [0.18, 0.235, 0.31, 0.37], [0, 1, 1, 0]);
-  const secondX = useTransform(scrollYProgress, [0.18, 0.25, 0.36], ['38vw', '5vw', '-8vw']);
-  const secondY = useTransform(scrollYProgress, [0.18, 0.36], ['5vh', '-2vh']);
+  const secondOpacity = useTransform(smoothScrollYProgress, [0.18, 0.235, 0.31, 0.37], [0, 1, 1, 0]);
+  const secondX = useTransform(smoothScrollYProgress, [0.18, 0.25, 0.36], ['38vw', '5vw', '-8vw']);
+  const secondY = useTransform(smoothScrollYProgress, [0.18, 0.36], ['5vh', '-2vh']);
 
-  const thirdOpacity = useTransform(scrollYProgress, [0.29, 0.35, 0.43, 0.49], [0, 1, 1, 0]);
-  const thirdX = useTransform(scrollYProgress, [0.29, 0.37, 0.48], ['-40vw', '-5vw', '8vw']);
-  const thirdY = useTransform(scrollYProgress, [0.29, 0.48], ['-4vh', '3vh']);
+  const thirdOpacity = useTransform(smoothScrollYProgress, [0.29, 0.35, 0.43, 0.49], [0, 1, 1, 0]);
+  const thirdX = useTransform(smoothScrollYProgress, [0.29, 0.37, 0.48], ['-40vw', '-5vw', '8vw']);
+  const thirdY = useTransform(smoothScrollYProgress, [0.29, 0.48], ['-4vh', '3vh']);
 
-  const clusterOpacity = useTransform(scrollYProgress, [0.42, 0.48, 0.57, 0.63], [0, 1, 1, 0]);
-  const clusterOneOpacity = useTransform(scrollYProgress, [0.42, 0.465, 0.575, 0.625], [0, 1, 1, 0]);
-  const clusterTwoOpacity = useTransform(scrollYProgress, [0.45, 0.495, 0.58, 0.63], [0, 1, 1, 0]);
-  const clusterThreeOpacity = useTransform(scrollYProgress, [0.48, 0.525, 0.585, 0.635], [0, 1, 1, 0]);
-  const clusterLeftX = useTransform(scrollYProgress, [0.42, 0.56], ['-12vw', '-24vw']);
-  const clusterRightX = useTransform(scrollYProgress, [0.45, 0.57], ['13vw', '25vw']);
-  const clusterBottomY = useTransform(scrollYProgress, [0.48, 0.59], ['18vh', '25vh']);
+  const clusterOpacity = useTransform(smoothScrollYProgress, [0.42, 0.48, 0.57, 0.63], [0, 1, 1, 0]);
+  const clusterOneOpacity = useTransform(smoothScrollYProgress, [0.42, 0.465, 0.575, 0.625], [0, 1, 1, 0]);
+  const clusterTwoOpacity = useTransform(smoothScrollYProgress, [0.45, 0.495, 0.58, 0.63], [0, 1, 1, 0]);
+  const clusterThreeOpacity = useTransform(smoothScrollYProgress, [0.48, 0.525, 0.585, 0.635], [0, 1, 1, 0]);
+  const clusterLeftX = useTransform(smoothScrollYProgress, [0.42, 0.56], ['-12vw', '-24vw']);
+  const clusterRightX = useTransform(smoothScrollYProgress, [0.45, 0.57], ['13vw', '25vw']);
+  const clusterBottomY = useTransform(smoothScrollYProgress, [0.48, 0.59], ['18vh', '25vh']);
 
-  const mainOpacity = useTransform(scrollYProgress, [0.54, 0.59, 0.9, 0.97], [0, 1, 1, 0.2]);
-  const mainClip = useTransform(scrollYProgress, [0.54, 0.6, 0.67], [
-    'inset(49% 49% 49% 49%)',
-    'inset(24% 31% 24% 31%)',
-    'inset(0% 0% 0% 0%)',
-  ]);
-  const mainScale = useTransform(scrollYProgress, [0.54, 0.82], [1.12, 1]);
-  const shadeOpacity = useTransform(scrollYProgress, [0.61, 0.69], [0, 1]);
-  const narrativeOpacity = useTransform(scrollYProgress, [0.64, 0.675, 0.88, 0.925], [0, 1, 1, 0]);
-  const portalBackdropOpacity = useTransform(scrollYProgress, [0.87, 0.95], [0, 1]);
-  const portalOpacity = useTransform(scrollYProgress, [0.91, 0.965], [0, 1]);
-  const portalY = useTransform(scrollYProgress, [0.91, 0.98], [32, 0]);
-  const skipOpacity = useTransform(scrollYProgress, [0, 0.04, 0.11, 0.86, 0.92], [0, 0, 1, 1, 0]);
-
-  useEffect(() => {
-    const progress = scrollYProgress.get();
-    setPhase(progress < 0.13 ? 'prompt' : progress < 0.64 ? 'reveal' : progress < 0.92 ? 'narrative' : 'portal');
-    setAssetStage(progress >= 0.48 ? 5 : progress >= 0.32 ? 4 : progress >= 0.18 ? 3 : 2);
-    setActiveScene(progress < 0.13 ? 0 : progress < 0.28 ? 1 : progress < 0.4 ? 2 : progress < 0.53 ? 3 : progress < 0.65 ? 4 : 5);
-  }, [scrollYProgress]);
+  const mainOpacity = useTransform(smoothScrollYProgress, [0.54, 0.59, 0.9, 0.97], [0, 1, 1, 0.2]);
+  const mainScale = useTransform(smoothScrollYProgress, [0.54, 0.6, 0.67, 0.82], [0.28, 0.58, 1.04, 1]);
+  const shadeOpacity = useTransform(smoothScrollYProgress, [0.61, 0.69], [0, 1]);
+  const narrativeOpacity = useTransform(smoothScrollYProgress, [0.64, 0.675, 0.88, 0.925], [0, 1, 1, 0]);
+  const portalBackdropOpacity = useTransform(smoothScrollYProgress, [0.87, 0.95], [0, 1]);
+  const portalOpacity = useTransform(smoothScrollYProgress, [0.91, 0.965], [0, 1]);
+  const portalY = useTransform(smoothScrollYProgress, [0.91, 0.98], [32, 0]);
+  const skipOpacity = useTransform(smoothScrollYProgress, [0, 0.04, 0.11, 0.86, 0.92], [0, 0, 1, 1, 0]);
 
   useEffect(() => {
-    document.documentElement.dataset.homeIntroActive = 'true';
+    const visualProgress = smoothScrollYProgress.get();
+    const nextPhase = phaseAt(visualProgress);
+    const nextAssetStage = assetStageAt(scrollYProgress.get());
+    const nextScene = sceneAt(visualProgress);
+    phaseRef.current = nextPhase;
+    assetStageRef.current = nextAssetStage;
+    activeSceneRef.current = nextScene;
+    setPhase(nextPhase);
+    setAssetStage(nextAssetStage);
+    setActiveScene(nextScene);
+  }, [scrollYProgress, smoothScrollYProgress]);
+
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const previousThemeColor = themeColor?.content;
+    root.dataset.homeIntroActive = 'true';
+    themeColor?.setAttribute('content', '#050505');
     window.dispatchEvent(new CustomEvent('al-gobbo:intro-visibility', {
       detail: { active: true },
     }));
-  }, []);
-
-  useEffect(() => () => {
-    delete document.documentElement.dataset.homeIntroActive;
+    return () => {
+      delete root.dataset.homeIntroActive;
+      if (themeColor && previousThemeColor) themeColor.content = previousThemeColor;
+      pendingPortalFocusRef.current = false;
+      if (portalFocusFrameRef.current !== null) {
+        window.cancelAnimationFrame(portalFocusFrameRef.current);
+      }
+      window.dispatchEvent(new CustomEvent('al-gobbo:intro-visibility', {
+        detail: { active: false },
+      }));
+    };
   }, []);
 
   useMotionValueEvent(scrollYProgress, 'change', (progress) => {
-    const nextPhase = progress < 0.13 ? 'prompt' : progress < 0.64 ? 'reveal' : progress < 0.92 ? 'narrative' : 'portal';
-    setPhase((currentPhase) => currentPhase === nextPhase ? currentPhase : nextPhase);
-    const nextAssetStage = progress >= 0.48 ? 5 : progress >= 0.32 ? 4 : progress >= 0.18 ? 3 : 2;
-    setAssetStage((currentStage) => Math.max(currentStage, nextAssetStage));
-    const nextScene = progress < 0.13 ? 0 : progress < 0.28 ? 1 : progress < 0.4 ? 2 : progress < 0.53 ? 3 : progress < 0.65 ? 4 : 5;
-    setActiveScene((currentScene) => currentScene === nextScene ? currentScene : nextScene);
+    const nextAssetStage = assetStageAt(progress);
+    if (nextAssetStage > assetStageRef.current) {
+      assetStageRef.current = nextAssetStage;
+      setAssetStage(nextAssetStage);
+    }
+  });
+
+  useMotionValueEvent(smoothScrollYProgress, 'change', (progress) => {
+    const nextPhase = phaseAt(progress);
+    if (phaseRef.current !== nextPhase) {
+      phaseRef.current = nextPhase;
+      setPhase(nextPhase);
+    }
+
+    const nextScene = sceneAt(progress);
+    if (activeSceneRef.current !== nextScene) {
+      activeSceneRef.current = nextScene;
+      setActiveScene(nextScene);
+    }
+
+    if (nextPhase === 'portal' && pendingPortalFocusRef.current) {
+      pendingPortalFocusRef.current = false;
+      portalFocusFrameRef.current = window.requestAnimationFrame(() => {
+        document.getElementById('home-reservation-link')?.focus({ preventScroll: true });
+        portalFocusFrameRef.current = null;
+      });
+    }
   });
 
   const moveToReveal = () => {
@@ -187,8 +247,8 @@ export function Hero() {
     const section = sectionRef.current;
     if (!section) return;
     const targetTop = section.offsetTop + section.offsetHeight - window.innerHeight;
+    pendingPortalFocusRef.current = true;
     window.scrollTo({ top: targetTop, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-    window.setTimeout(() => document.getElementById('home-reservation-link')?.focus({ preventScroll: true }), prefersReducedMotion ? 0 : 850);
   };
 
   const heroSrcSet = `${hero480} 480w, ${hero900} 900w, ${hero1200} 1200w, ${heroImage} 1500w`;
@@ -200,60 +260,60 @@ export function Hero() {
 
   if (prefersReducedMotion) {
     return (
-      <section ref={sectionRef} className="relative flex min-h-[100svh] items-end overflow-hidden bg-venetian-brown px-5 pb-16 pt-28 text-white sm:px-8 lg:px-12" aria-labelledby="home-title">
+      <section ref={sectionRef} className="relative flex min-h-[100svh] items-end overflow-hidden bg-[#050505] px-5 pb-16 pt-28 text-white sm:px-8 lg:px-12" aria-labelledby="home-title">
         <img src={heroImage} srcSet={heroSrcSet} sizes="100vw" alt={copy.imageAlt} className="absolute inset-0 h-full w-full object-cover" loading="eager" decoding="async" />
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative mx-auto w-full max-w-[1480px]">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-venetian-gold">{copy.portalKicker}</p>
           <h1 id="home-title" className="mt-5 max-w-[11ch] font-serif text-[clamp(2.75rem,13vw,8.8rem)] font-semibold leading-[0.82] tracking-[-0.05em] sm:leading-[0.79]">{copy.portalTitle}</h1>
           <p className="mt-7 max-w-xl border-l border-white/50 pl-5 text-base leading-7 text-white/90 sm:text-lg">{copy.portalHint}</p>
-          <Link id="home-reservation-link" to="/book" className="mt-8 inline-flex min-h-[52px] items-center gap-3 bg-venetian-gold px-6 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-venetian-brown">{copy.reserve}<ArrowRight className="h-4 w-4" /></Link>
+          <Link id="home-reservation-link" to="/book" className="mt-8 inline-flex min-h-[52px] items-center gap-3 bg-venetian-gold px-6 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#050505]">{copy.reserve}<ArrowRight className="h-4 w-4" /></Link>
         </div>
       </section>
     );
   }
 
   return (
-    <section ref={sectionRef} id="home-scroll-intro" className="relative h-[455svh] bg-[#faf8f3] sm:h-[480svh] lg:h-[510svh]" aria-label={copy.title}>
-      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#faf8f3]">
+    <section ref={sectionRef} id="home-scroll-intro" className="relative h-[455svh] touch-pan-y bg-[#050505] sm:h-[480svh] lg:h-[510svh]" aria-label={copy.title}>
+      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#050505]">
         <h1 id="home-title" className="sr-only">{copy.title}</h1>
         <button type="button" onClick={skipIntro} tabIndex={phase === 'prompt' ? 0 : -1} className="sr-only z-50 bg-white px-4 py-3 text-sm font-semibold text-venetian-brown focus:not-sr-only focus:absolute focus:right-4 focus:top-4">{copy.skip}</button>
-        <motion.button type="button" onClick={skipIntro} tabIndex={phase === 'reveal' || phase === 'narrative' ? 0 : -1} aria-hidden={phase === 'prompt' || phase === 'portal'} style={{ opacity: skipOpacity }} className={`absolute right-4 top-4 z-50 min-h-11 border border-white/25 bg-black/55 px-4 text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white shadow-sm backdrop-blur-md transition-colors hover:border-venetian-gold hover:text-venetian-gold sm:right-6 sm:top-6 ${phase === 'reveal' || phase === 'narrative' ? 'pointer-events-auto' : 'pointer-events-none'}`}>{copy.skip}</motion.button>
+        <motion.button type="button" onClick={skipIntro} tabIndex={phase === 'reveal' || phase === 'narrative' ? 0 : -1} aria-hidden={phase === 'prompt' || phase === 'portal'} style={{ opacity: skipOpacity }} className={`absolute right-4 top-4 z-50 min-h-11 border border-white/25 bg-black/80 px-4 text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold sm:right-6 sm:top-6 ${phase === 'reveal' || phase === 'narrative' ? 'pointer-events-auto' : 'pointer-events-none'}`}>{copy.skip}</motion.button>
 
-        <motion.div style={{ opacity: promptOpacity }} className="pointer-events-none absolute inset-0 z-40 grid place-items-center" aria-hidden={phase !== 'prompt'}>
-          <button type="button" onClick={moveToReveal} tabIndex={phase === 'prompt' ? 0 : -1} className={`group flex min-h-24 min-w-24 flex-col items-center justify-center gap-4 text-venetian-brown ${phase === 'prompt' ? 'pointer-events-auto' : 'pointer-events-none'}`} aria-label={copy.scroll}>
+        {phase === 'prompt' ? <motion.div style={{ opacity: promptOpacity }} className="pointer-events-none absolute inset-0 z-40 grid place-items-center" aria-hidden="false">
+          <button type="button" onClick={moveToReveal} className="group pointer-events-auto flex min-h-24 min-w-24 flex-col items-center justify-center gap-4 text-white" aria-label={copy.scroll}>
             <span className="text-xs font-bold uppercase tracking-[0.28em]">{copy.scroll}</span>
-            <motion.span animate={{ y: [0, 9, 0] }} transition={{ duration: 1.55, repeat: Infinity, ease: 'easeInOut' }} className="grid h-11 w-11 place-items-center rounded-full border border-venetian-brown/25 transition-colors group-hover:border-venetian-terracotta group-hover:text-venetian-terracotta">
+            <motion.span animate={{ y: [0, 9, 0] }} transition={{ duration: 1.55, repeat: Infinity, ease: 'easeInOut' }} className="grid h-11 w-11 place-items-center rounded-full border border-white/25 transition-colors group-hover:border-venetian-gold group-hover:text-venetian-gold">
               <ArrowDown className="h-4 w-4" />
             </motion.span>
           </button>
-        </motion.div>
+        </motion.div> : null}
 
         {activeScene <= 1 ? <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-10 h-[58svh] w-[70vw] max-w-[430px] -translate-x-1/2 -translate-y-1/2 sm:h-[62svh] sm:w-[38vw] sm:max-w-none">
-          <motion.img src={roomImage} srcSet={roomSrcSet} sizes="(min-width: 640px) 38vw, 70vw" alt="" style={{ opacity: firstOpacity, x: firstX, scale: firstScale }} className="h-full w-full object-cover shadow-[0_30px_90px_rgba(24,20,16,0.2)] will-change-[transform,opacity]" loading="eager" decoding="async" />
+          <motion.img src={roomImage} srcSet={roomSrcSet} sizes="(min-width: 640px) 38vw, 70vw" alt="" style={{ opacity: firstOpacity, x: firstX, scale: firstScale }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" loading="eager" decoding="async" />
         </div> : null}
 
         {assetStage >= 2 && activeScene <= 2 ? (
           <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[11] h-[52svh] w-[64vw] max-w-[400px] -translate-x-1/2 -translate-y-1/2 sm:h-[59svh] sm:w-[34vw] sm:max-w-none">
-            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 34vw, 64vw" alt="" style={{ opacity: secondOpacity, x: secondX, y: secondY }} className="h-full w-full object-cover shadow-[0_30px_90px_rgba(24,20,16,0.2)] will-change-[transform,opacity]" decoding="async" />
+            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 34vw, 64vw" alt="" style={{ opacity: secondOpacity, x: secondX, y: secondY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
           </div>
         ) : null}
 
         {assetStage >= 3 && activeScene >= 1 && activeScene <= 3 ? (
           <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[12] h-[56svh] w-[66vw] max-w-[410px] -translate-x-1/2 -translate-y-1/2 sm:h-[61svh] sm:w-[36vw] sm:max-w-none">
-            <motion.img src={gardenImage} srcSet={gardenSrcSet} sizes="(min-width: 640px) 36vw, 66vw" alt="" style={{ opacity: thirdOpacity, x: thirdX, y: thirdY }} className="h-full w-full object-cover shadow-[0_30px_90px_rgba(24,20,16,0.2)] will-change-[transform,opacity]" decoding="async" />
+            <motion.img src={gardenImage} srcSet={gardenSrcSet} sizes="(min-width: 640px) 36vw, 66vw" alt="" style={{ opacity: thirdOpacity, x: thirdX, y: thirdY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
           </div>
         ) : null}
 
         {assetStage >= 4 && activeScene >= 2 && activeScene <= 4 ? <motion.div aria-hidden="true" style={{ opacity: clusterOpacity }} className="absolute inset-0 z-[13] will-change-[opacity]">
           <div className="absolute left-1/2 top-[43%] h-[39svh] w-[42vw] -translate-x-1/2 -translate-y-1/2 sm:h-[47svh] sm:w-[25vw]">
-            <motion.img src={closingImage} srcSet={closingSrcSet} sizes="(min-width: 640px) 25vw, 42vw" alt="" style={{ opacity: clusterOneOpacity, x: clusterLeftX, rotate: -3 }} className="h-full w-full object-cover shadow-[0_22px_65px_rgba(24,20,16,0.2)] will-change-[transform,opacity]" decoding="async" />
+            <motion.img src={closingImage} srcSet={closingSrcSet} sizes="(min-width: 640px) 25vw, 42vw" alt="" style={{ opacity: clusterOneOpacity, x: clusterLeftX, rotate: -3 }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
           </div>
           <div className="absolute left-1/2 top-[43%] h-[42svh] w-[44vw] -translate-x-1/2 -translate-y-1/2 sm:h-[50svh] sm:w-[26vw]">
-            <motion.img src={welcomeImage} srcSet={welcomeSrcSet} sizes="(min-width: 640px) 26vw, 44vw" alt="" style={{ opacity: clusterTwoOpacity, x: clusterRightX, rotate: 3 }} className="h-full w-full object-cover shadow-[0_22px_65px_rgba(24,20,16,0.2)] will-change-[transform,opacity]" decoding="async" />
+            <motion.img src={welcomeImage} srcSet={welcomeSrcSet} sizes="(min-width: 640px) 26vw, 44vw" alt="" style={{ opacity: clusterTwoOpacity, x: clusterRightX, rotate: 3 }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
           </div>
           <div className="absolute left-1/2 top-1/2 h-[32svh] w-[50vw] -translate-x-1/2 -translate-y-1/2 sm:h-[38svh] sm:w-[28vw]">
-            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 28vw, 50vw" alt="" style={{ opacity: clusterThreeOpacity, y: clusterBottomY }} className="h-full w-full object-cover shadow-[0_22px_65px_rgba(24,20,16,0.2)] will-change-[transform,opacity]" decoding="async" />
+            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 28vw, 50vw" alt="" style={{ opacity: clusterThreeOpacity, y: clusterBottomY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
           </div>
         </motion.div> : null}
 
@@ -262,8 +322,8 @@ export function Hero() {
           srcSet={heroSrcSet}
           sizes="100vw"
           alt={copy.imageAlt}
-          style={{ opacity: mainOpacity, clipPath: mainClip, scale: mainScale }}
-          className="absolute inset-0 z-20 h-full w-full object-cover will-change-[clip-path,transform,opacity]"
+          style={{ opacity: mainOpacity, scale: mainScale }}
+          className="absolute inset-0 z-20 h-full w-full object-cover will-change-[transform,opacity]"
           loading="eager"
           decoding="async"
         /> : null}
@@ -278,7 +338,7 @@ export function Hero() {
             <p className="mb-7 text-[0.66rem] font-bold uppercase tracking-[0.24em] text-venetian-gold sm:mb-10 sm:text-xs">{copy.eyebrow}</p>
             <h2 aria-label={copy.title} className="mx-auto flex max-w-[12ch] flex-wrap justify-center gap-x-[0.2em] gap-y-[0.05em] font-serif text-[clamp(3.3rem,15vw,9.5rem)] font-semibold leading-[0.82] tracking-[-0.055em] text-white sm:leading-[0.78]">
               {copy.title.split(' ').map((word, index) => (
-                <ComposingWord key={`${word}-${index}`} word={word} index={index} progress={scrollYProgress} />
+                <ComposingWord key={`${word}-${index}`} word={word} index={index} progress={smoothScrollYProgress} />
               ))}
             </h2>
           </div>

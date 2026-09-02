@@ -9,7 +9,7 @@ export function Home() {
         canonical="/"
         description="Ristorante storico a Venezia dal 1955. Cucina veneziana e un giardino nascosto a San Polo, vicino a Rialto. Prenota online."
       />
-      <main className="overflow-x-clip bg-[#faf8f3]">
+      <main className="overflow-x-clip bg-[#050505]">
         <Hero />
       </main>
     </PageTransition>

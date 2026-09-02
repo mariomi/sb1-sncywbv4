@@ -27,6 +27,7 @@ const navbarCopy: Record<Language, {
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolledRef = useRef(false);
   const [isHomeIntroActive, setIsHomeIntroActive] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.location.pathname === '/';
@@ -40,7 +41,10 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24);
+      const nextIsScrolled = window.scrollY > 24;
+      if (isScrolledRef.current === nextIsScrolled) return;
+      isScrolledRef.current = nextIsScrolled;
+      setIsScrolled(nextIsScrolled);
     };
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
