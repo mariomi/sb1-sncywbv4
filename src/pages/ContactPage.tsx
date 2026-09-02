@@ -30,6 +30,7 @@ const copy: Record<Language, {
   send: string;
   sending: string;
   success: string;
+  successEmailMissing: string;
   failure: string;
   address: string;
   hours: string;
@@ -47,7 +48,7 @@ const copy: Record<Language, {
     formTitle: 'Scrivici un messaggio', firstName: 'Nome', lastName: 'Cognome', email: 'Email', subject: 'Motivo del contatto', message: 'Messaggio',
     subjects: { reservation: 'Prenotazione', event: 'Evento privato', feedback: 'Feedback', other: 'Altro' },
     privacyBefore: 'Confermo di aver letto la', privacyAfter: 'relativa al trattamento dei miei dati personali.', privacyError: 'Conferma di aver letto l’informativa privacy.',
-    send: 'Invia messaggio', sending: 'Invio in corso…', success: 'Messaggio inviato. Ti risponderemo appena possibile.', failure: 'Non siamo riusciti a inviare il messaggio. Riprova o chiamaci.',
+    send: 'Invia messaggio', sending: 'Invio in corso…', success: 'Messaggio ricevuto. Controlla la tua email per la conferma.', successEmailMissing: 'Messaggio ricevuto, ma non è stato possibile consegnare l’email di conferma.', failure: 'Non siamo riusciti a inviare il messaggio. Riprova o chiamaci.',
     address: 'Indirizzo', hours: 'Orari', hoursValue: 'Pranzo e cena\nChiuso il martedì', phone: 'Telefono', directions: 'Apri indicazioni', call: 'Chiama ora',
     mapTitle: 'Mappa di Al Gobbo di Rialto a Venezia', follow: 'Seguici', help: 'Per prenotazioni in giornata o richieste urgenti, chiamaci direttamente.',
   },
@@ -57,7 +58,7 @@ const copy: Record<Language, {
     formTitle: 'Send us a message', firstName: 'First name', lastName: 'Last name', email: 'Email', subject: 'What can we help with?', message: 'Message',
     subjects: { reservation: 'Reservation', event: 'Private event', feedback: 'Feedback', other: 'Other' },
     privacyBefore: 'I confirm that I have read the', privacyAfter: 'about the processing of my personal data.', privacyError: 'Confirm that you have read the privacy notice.',
-    send: 'Send message', sending: 'Sending…', success: 'Message sent. We will reply as soon as possible.', failure: 'We could not send your message. Please try again or call us.',
+    send: 'Send message', sending: 'Sending…', success: 'Message received. Check your email for confirmation.', successEmailMissing: 'Message received, but the confirmation email could not be delivered.', failure: 'We could not send your message. Please try again or call us.',
     address: 'Address', hours: 'Opening hours', hoursValue: 'Lunch and dinner\nClosed on Tuesday', phone: 'Phone', directions: 'Open directions', call: 'Call now',
     mapTitle: 'Map of Al Gobbo di Rialto in Venice', follow: 'Follow us', help: 'For same-day bookings or urgent requests, please call us directly.',
   },
@@ -67,7 +68,7 @@ const copy: Record<Language, {
     formTitle: 'Écrivez-nous', firstName: 'Prénom', lastName: 'Nom', email: 'E-mail', subject: 'Objet de votre demande', message: 'Message',
     subjects: { reservation: 'Réservation', event: 'Événement privé', feedback: 'Votre avis', other: 'Autre' },
     privacyBefore: 'Je confirme avoir lu la', privacyAfter: 'relative au traitement de mes données personnelles.', privacyError: 'Confirmez avoir lu la politique de confidentialité.',
-    send: 'Envoyer le message', sending: 'Envoi…', success: 'Message envoyé. Nous vous répondrons au plus vite.', failure: 'Votre message n’a pas pu être envoyé. Réessayez ou appelez-nous.',
+    send: 'Envoyer le message', sending: 'Envoi…', success: 'Message reçu. Consultez votre e-mail pour la confirmation.', successEmailMissing: 'Message reçu, mais l’e-mail de confirmation n’a pas pu être envoyé.', failure: 'Votre message n’a pas pu être envoyé. Réessayez ou appelez-nous.',
     address: 'Adresse', hours: 'Horaires', hoursValue: 'Déjeuner et dîner\nFermé le mardi', phone: 'Téléphone', directions: 'Itinéraire', call: 'Appeler',
     mapTitle: 'Plan d’Al Gobbo di Rialto à Venise', follow: 'Suivez-nous', help: 'Pour une réservation le jour même ou une demande urgente, appelez-nous directement.',
   },
@@ -77,7 +78,7 @@ const copy: Record<Language, {
     formTitle: 'Schreiben Sie uns', firstName: 'Vorname', lastName: 'Nachname', email: 'E-Mail', subject: 'Worum geht es?', message: 'Nachricht',
     subjects: { reservation: 'Reservierung', event: 'Private Veranstaltung', feedback: 'Feedback', other: 'Sonstiges' },
     privacyBefore: 'Ich bestätige, die', privacyAfter: 'zur Verarbeitung meiner personenbezogenen Daten gelesen zu haben.', privacyError: 'Bestätigen Sie, die Datenschutzhinweise gelesen zu haben.',
-    send: 'Nachricht senden', sending: 'Wird gesendet…', success: 'Nachricht gesendet. Wir antworten so bald wie möglich.', failure: 'Die Nachricht konnte nicht gesendet werden. Versuchen Sie es erneut oder rufen Sie uns an.',
+    send: 'Nachricht senden', sending: 'Wird gesendet…', success: 'Nachricht erhalten. Prüfen Sie Ihre E-Mail für die Bestätigung.', successEmailMissing: 'Nachricht erhalten, aber die Bestätigungs-E-Mail konnte nicht zugestellt werden.', failure: 'Die Nachricht konnte nicht gesendet werden. Versuchen Sie es erneut oder rufen Sie uns an.',
     address: 'Adresse', hours: 'Öffnungszeiten', hoursValue: 'Mittag- und Abendessen\nDienstags geschlossen', phone: 'Telefon', directions: 'Route öffnen', call: 'Jetzt anrufen',
     mapTitle: 'Karte von Al Gobbo di Rialto in Venedig', follow: 'Folgen Sie uns', help: 'Für Reservierungen am selben Tag oder dringende Anfragen rufen Sie uns bitte direkt an.',
   },
@@ -87,7 +88,7 @@ const copy: Record<Language, {
     formTitle: 'Escríbenos', firstName: 'Nombre', lastName: 'Apellidos', email: 'Correo electrónico', subject: 'Motivo de contacto', message: 'Mensaje',
     subjects: { reservation: 'Reserva', event: 'Evento privado', feedback: 'Opinión', other: 'Otro' },
     privacyBefore: 'Confirmo que he leído la', privacyAfter: 'sobre el tratamiento de mis datos personales.', privacyError: 'Confirma que has leído la política de privacidad.',
-    send: 'Enviar mensaje', sending: 'Enviando…', success: 'Mensaje enviado. Te responderemos lo antes posible.', failure: 'No se ha podido enviar el mensaje. Inténtalo de nuevo o llámanos.',
+    send: 'Enviar mensaje', sending: 'Enviando…', success: 'Mensaje recibido. Revisa tu correo para ver la confirmación.', successEmailMissing: 'Mensaje recibido, pero no se pudo entregar el correo de confirmación.', failure: 'No se ha podido enviar el mensaje. Inténtalo de nuevo o llámanos.',
     address: 'Dirección', hours: 'Horario', hoursValue: 'Comida y cena\nCerrado los martes', phone: 'Teléfono', directions: 'Abrir indicaciones', call: 'Llamar ahora',
     mapTitle: 'Mapa de Al Gobbo di Rialto en Venecia', follow: 'Síguenos', help: 'Para reservas en el mismo día o solicitudes urgentes, llámanos directamente.',
   },
@@ -112,11 +113,11 @@ export function ContactPage() {
 
     setIsSubmitting(true);
     try {
-      await createContactMessage({
+      const result = await createContactMessage({
         first_name: formData.firstName.trim(), last_name: formData.lastName.trim(), email: formData.email.trim(),
         subject: formData.subject, message: formData.message.trim(),
       });
-      toast.success(text.success);
+      toast.success(result.confirmation_email_sent ? text.success : text.successEmailMissing);
       setFormData({ firstName: '', lastName: '', email: '', subject: 'reservation', message: '' });
       setPrivacyConsent(false);
     } catch {

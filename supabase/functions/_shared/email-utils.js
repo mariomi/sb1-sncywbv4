@@ -89,11 +89,12 @@ export function buildReservationCustomerEmail(reservation, siteUrl) {
   const manageUrl = `${siteUrl.replace(/\/$/, '')}/cancella/${reservation.cancellation_token}?lang=${locale}`
   const dateLabel = formatReservationDate(reservation.date)
   const timeLabel = formatReservationTime(reservation.time)
+  const isUpdate = Boolean(reservation.self_service_updated_at)
   const content = `
-    <p style="margin:0;color:#a07814;font-weight:700">✓ PRENOTAZIONE CONFERMATA</p>
+    <p style="margin:0;color:#a07814;font-weight:700">✓ ${isUpdate ? 'PRENOTAZIONE AGGIORNATA' : 'PRENOTAZIONE CONFERMATA'}</p>
     <h2 style="font-family:Georgia,serif;font-size:25px;margin:10px 0 18px">A presto a Venezia, ${safeName}</h2>
-    <p style="line-height:1.7;margin:0">La sua prenotazione è confermata. Conservi questa email per gestire la prenotazione.</p>
-    <p style="line-height:1.7;color:#856d5f;margin:8px 0 0"><em>Your reservation is confirmed. Keep this email to manage your booking.</em></p>
+    <p style="line-height:1.7;margin:0">${isUpdate ? 'Le modifiche alla sua prenotazione sono state salvate.' : 'La sua prenotazione è confermata.'} Conservi questa email per gestire la prenotazione.</p>
+    <p style="line-height:1.7;color:#856d5f;margin:8px 0 0"><em>${isUpdate ? 'Your booking changes have been saved.' : 'Your reservation is confirmed.'} Keep this email to manage your booking.</em></p>
     ${detailsBox({
       date: reservation.date,
       time: reservation.time,
@@ -101,19 +102,19 @@ export function buildReservationCustomerEmail(reservation, siteUrl) {
       occasion: reservation.occasion,
       specialRequests: reservation.special_requests,
     })}
-    <p style="text-align:center;margin:26px 0 12px"><a href="${manageUrl}" style="display:inline-block;background:#9e4638;color:#fff;text-decoration:none;padding:13px 22px;border-radius:10px;font-weight:700">Cancella prenotazione / Cancel booking</a></p>
+    <p style="text-align:center;margin:26px 0 12px"><a href="${manageUrl}" style="display:inline-block;background:#9e4638;color:#fff;text-decoration:none;padding:13px 22px;border-radius:10px;font-weight:700">Gestisci o cancella / Manage or cancel</a></p>
     <p style="font-size:13px;line-height:1.6;color:#856d5f;text-align:center">Per modifiche, ritardi o esigenze di accessibilità ci chiami al <strong>+39 041 520 4603</strong>.</p>`
 
   return {
-    subject: `Prenotazione confermata — ${dateLabel.it} alle ${timeLabel}`,
-    html: emailShell('Prenotazione confermata', 'Conferma prenotazione', content),
+    subject: `${isUpdate ? 'Prenotazione aggiornata' : 'Prenotazione confermata'} — ${dateLabel.it} alle ${timeLabel}`,
+    html: emailShell(isUpdate ? 'Prenotazione aggiornata' : 'Prenotazione confermata', isUpdate ? 'Modifica prenotazione' : 'Conferma prenotazione', content),
     text: [
       'RISTORANTE AL GOBBO DI RIALTO',
-      `Gentile ${reservation.name}, la sua prenotazione è confermata.`,
+      `Gentile ${reservation.name}, ${isUpdate ? 'le modifiche alla sua prenotazione sono state salvate.' : 'la sua prenotazione è confermata.'}`,
       `${dateLabel.it} (${dateLabel.en}) alle ${timeLabel}`,
       `${reservation.guests} ospiti`,
       reservation.special_requests ? `Richieste: ${reservation.special_requests}` : '',
-      `Cancella prenotazione: ${manageUrl}`,
+      `Gestisci o cancella la prenotazione: ${manageUrl}`,
       'Per modifiche: +39 041 520 4603',
     ].filter(Boolean).join('\n'),
   }
@@ -122,8 +123,9 @@ export function buildReservationCustomerEmail(reservation, siteUrl) {
 export function buildReservationAdminEmail(reservation) {
   const dateLabel = formatReservationDate(reservation.date)
   const timeLabel = formatReservationTime(reservation.time)
+  const isUpdate = Boolean(reservation.self_service_updated_at)
   const content = `
-    <p style="margin:0;color:#a07814;font-weight:700">NUOVA PRENOTAZIONE DAL SITO</p>
+    <p style="margin:0;color:#a07814;font-weight:700">${isUpdate ? 'PRENOTAZIONE MODIFICATA DAL CLIENTE' : 'NUOVA PRENOTAZIONE DAL SITO'}</p>
     <h2 style="font-family:Georgia,serif;font-size:25px;margin:10px 0 18px">${escapeHtml(reservation.name)}</h2>
     ${detailsBox({
       date: reservation.date,
@@ -135,8 +137,45 @@ export function buildReservationAdminEmail(reservation) {
     <p style="line-height:1.8"><strong>Email:</strong> ${escapeHtml(reservation.email)}<br><strong>Telefono:</strong> ${escapeHtml(reservation.phone)}</p>`
 
   return {
-    subject: `Nuova prenotazione — ${safeHeader(reservation.name)} · ${dateLabel.it} ${timeLabel}`,
-    html: emailShell('Nuova prenotazione', 'Avviso amministratore', content),
+    subject: `${isUpdate ? 'Prenotazione modificata' : 'Nuova prenotazione'} — ${safeHeader(reservation.name)} · ${dateLabel.it} ${timeLabel}`,
+    html: emailShell(isUpdate ? 'Prenotazione modificata' : 'Nuova prenotazione', 'Avviso amministratore', content),
+  }
+}
+
+export function buildContactCustomerEmail(message) {
+  const safeName = escapeHtml(`${message.first_name} ${message.last_name}`.trim())
+  const subjectLabels = {
+    reservation: 'Prenotazione / Reservation',
+    event: 'Evento privato / Private event',
+    feedback: 'Feedback',
+    other: 'Altro / Other',
+  }
+  const subjectLabel = subjectLabels[message.subject] ?? message.subject
+  const content = `
+    <p style="margin:0;color:#a07814;font-weight:700">✓ MESSAGGIO RICEVUTO</p>
+    <h2 style="font-family:Georgia,serif;font-size:25px;margin:10px 0 18px">Grazie, ${safeName}</h2>
+    <p style="line-height:1.7;margin:0">Abbiamo ricevuto il suo messaggio e le risponderemo appena possibile.</p>
+    <p style="line-height:1.7;color:#856d5f;margin:8px 0 0"><em>We received your message and will reply as soon as possible.</em></p>
+    <div style="margin:24px 0;padding:20px;border:1px solid #e2cf9f;border-radius:12px;background:#fbf7ed;line-height:1.7">
+      <strong>${escapeHtml(subjectLabel)}</strong>
+      <p style="margin:10px 0 0;white-space:pre-wrap;color:#6b5244">${escapeHtml(message.message)}</p>
+    </div>
+    <p style="font-size:13px;line-height:1.6;color:#856d5f">Per richieste urgenti o prenotazioni per oggi ci chiami al <strong>+39 041 520 4603</strong>.</p>`
+
+  return {
+    subject: 'Abbiamo ricevuto il suo messaggio — Al Gobbo di Rialto',
+    html: emailShell('Messaggio ricevuto', 'Contatti', content),
+    text: [
+      'RISTORANTE AL GOBBO DI RIALTO',
+      `Gentile ${message.first_name} ${message.last_name},`,
+      'abbiamo ricevuto il suo messaggio e le risponderemo appena possibile.',
+      'We received your message and will reply as soon as possible.',
+      '',
+      `Oggetto / Subject: ${subjectLabel}`,
+      message.message,
+      '',
+      'Per richieste urgenti: +39 041 520 4603',
+    ].join('\n'),
   }
 }
 

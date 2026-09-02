@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { getDaysInMonth } from 'date-fns';
 import { ReservationFormData } from './validators';
-import { sendReservationConfirmation } from './notifications';
+import { sendContactConfirmation, sendReservationConfirmation } from './notifications';
 import type { Database } from './database.types';
 import { getAttribution } from './analytics';
 import { reservationChannel } from './reservationAttribution';
@@ -628,7 +628,12 @@ export async function updateReservationDetails(id: string, data: ReservationUpda
 // ─── Reservation by cancellation token ──────────────────────────────────────
 
 export type Reservation = Database['public']['Tables']['reservations']['Row'];
-export type ReservationSummary = Pick<Reservation, 'id' | 'name' | 'date' | 'time' | 'guests' | 'status'>;
+export type ReservationSummary = Pick<Reservation, 'id' | 'name' | 'date' | 'time' | 'guests' | 'status' | 'special_requests'> & {
+  can_modify: boolean;
+  can_modify_time: boolean;
+  earlier_time: string | null;
+  later_time: string | null;
+};
 export type MarketingCampaignMetric = Database['public']['Tables']['marketing_campaign_metrics']['Row'];
 export type MarketingCampaignMetricInput = Pick<
   Database['public']['Tables']['marketing_campaign_metrics']['Insert'],
@@ -637,13 +642,58 @@ export type MarketingCampaignMetricInput = Pick<
 
 export async function getReservationByToken(token: string): Promise<ReservationSummary | null> {
   try {
-    const { data, error } = await supabase.rpc('get_reservation_summary_by_token', {
+    const { data, error } = await supabase.rpc('get_reservation_management_by_token', {
       p_token: token,
     });
     if (error) throw error;
     return data?.[0] || null;
   } catch (error) {
     console.error('Error fetching reservation by token:', error);
+    throw error;
+  }
+}
+
+export async function updateReservationByToken(
+  token: string,
+  reservationId: string,
+  time: string,
+  specialRequests: string,
+): Promise<{
+  reservation: ReservationSummary;
+  changed: boolean;
+  confirmationEmailSent: boolean;
+}> {
+  try {
+    const { data, error } = await supabase.rpc('update_reservation_by_token', {
+      p_token: token,
+      p_time: time,
+      p_special_requests: specialRequests,
+    });
+    if (error) throw error;
+    if (data !== 'updated' && data !== 'unchanged') {
+      throw new Error(data || 'update_failed');
+    }
+
+    let confirmationEmailSent = true;
+    if (data === 'updated') {
+      try {
+        await sendReservationConfirmation(reservationId, token);
+      } catch (emailError) {
+        confirmationEmailSent = false;
+        console.error('Failed to send updated reservation confirmation:', emailError);
+      }
+    }
+
+    const reservation = await getReservationByToken(token);
+    if (!reservation) throw new Error('not_found');
+
+    return {
+      reservation,
+      changed: data === 'updated',
+      confirmationEmailSent,
+    };
+  } catch (error) {
+    console.error('Error updating reservation by token:', error);
     throw error;
   }
 }
@@ -766,7 +816,7 @@ export async function createContactMessage(data: {
   message: string;
 }) {
   try {
-    const { error } = await supabase.rpc('create_contact_message', {
+    const { data: messageId, error } = await supabase.rpc('create_contact_message', {
       p_first_name: data.first_name,
       p_last_name: data.last_name,
       p_email: data.email,
@@ -775,6 +825,20 @@ export async function createContactMessage(data: {
     });
 
     if (error) throw error;
+    if (!messageId) throw new Error('Contact message was not saved');
+
+    let confirmationEmailSent = true;
+    try {
+      await sendContactConfirmation(messageId);
+    } catch (emailError) {
+      confirmationEmailSent = false;
+      console.error('Failed to send contact confirmation email:', emailError);
+    }
+
+    return {
+      id: messageId,
+      confirmation_email_sent: confirmationEmailSent,
+    };
   } catch (error) {
     console.error('Error saving contact message:', error);
     throw error;

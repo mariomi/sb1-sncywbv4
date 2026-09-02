@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  buildContactCustomerEmail,
+  buildReservationAdminEmail,
   buildReservationCustomerEmail,
   buildWaitlistEmail,
   formatReservationDate,
@@ -47,4 +49,34 @@ test('reservation and waitlist templates escape customer-controlled HTML', () =>
   const waitlist = buildWaitlistEmail(reservation, 'https://www.ristorantealgobbodirialto.it');
   assert.doesNotMatch(waitlist.html, /<Mario/);
   assert.match(waitlist.html, /book\?date=2026-09-02&amp;time=19%3A30|book\?date=2026-09-02&time=19%3A30/);
+});
+
+test('contact receipt confirms delivery and escapes the submitted message', () => {
+  const receipt = buildContactCustomerEmail({
+    first_name: '<Mario>',
+    last_name: 'Rossi & Co',
+    subject: 'event',
+    message: '<img src=x onerror=alert(1)>\nA private dinner',
+  });
+
+  assert.match(receipt.subject, /ricevuto il suo messaggio/i);
+  assert.match(receipt.html, /MESSAGGIO RICEVUTO/);
+  assert.match(receipt.html, /Evento privato \/ Private event/);
+  assert.doesNotMatch(receipt.html, /<img src=/);
+  assert.match(receipt.html, /&lt;img src=x onerror=alert\(1\)&gt;/);
+});
+
+test('updated reservations use update-specific customer and admin subjects', () => {
+  const updatedReservation = {
+    ...reservation,
+    self_service_updated_at: '2026-09-01T10:00:00Z',
+  };
+  const customerEmail = buildReservationCustomerEmail(updatedReservation, 'https://www.ristorantealgobbodirialto.it');
+  const adminEmail = buildReservationAdminEmail(updatedReservation);
+
+  assert.match(customerEmail.subject, /^Prenotazione aggiornata/);
+  assert.match(customerEmail.html, /PRENOTAZIONE AGGIORNATA/);
+  assert.match(customerEmail.html, /Gestisci o cancella/);
+  assert.match(adminEmail.subject, /^Prenotazione modificata/);
+  assert.match(adminEmail.html, /PRENOTAZIONE MODIFICATA DAL CLIENTE/);
 });

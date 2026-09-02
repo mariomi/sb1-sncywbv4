@@ -34,6 +34,7 @@ export type Database = {
       }
       contact_messages: {
         Row: {
+          confirmation_sent_at: string | null
           created_at: string | null
           email: string
           first_name: string
@@ -44,6 +45,7 @@ export type Database = {
           subject: string
         }
         Insert: {
+          confirmation_sent_at?: string | null
           created_at?: string | null
           email: string
           first_name: string
@@ -54,6 +56,7 @@ export type Database = {
           subject: string
         }
         Update: {
+          confirmation_sent_at?: string | null
           created_at?: string | null
           email?: string
           first_name?: string
@@ -328,6 +331,7 @@ export type Database = {
           reminder_2h_sent_at: string | null
           reminder_sent_at: string | null
           restaurant_id: string | null
+          self_service_updated_at: string | null
           source: string | null
           special_requests: string | null
           status: string
@@ -360,6 +364,7 @@ export type Database = {
           reminder_2h_sent_at?: string | null
           reminder_sent_at?: string | null
           restaurant_id?: string | null
+          self_service_updated_at?: string | null
           source?: string | null
           special_requests?: string | null
           status?: string
@@ -392,6 +397,7 @@ export type Database = {
           reminder_2h_sent_at?: string | null
           reminder_sent_at?: string | null
           restaurant_id?: string | null
+          self_service_updated_at?: string | null
           source?: string | null
           special_requests?: string | null
           status?: string
@@ -640,6 +646,22 @@ export type Database = {
           slot_time: string
         }[]
       }
+      get_reservation_management_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          can_modify: boolean
+          can_modify_time: boolean
+          date: string
+          earlier_time: string | null
+          guests: number
+          id: string
+          later_time: string | null
+          name: string
+          special_requests: string | null
+          status: string
+          time: string
+        }[]
+      }
       get_reservation_summary_by_token: {
         Args: { p_token: string }
         Returns: {
@@ -650,6 +672,14 @@ export type Database = {
           status: string
           time: string
         }[]
+      }
+      update_reservation_by_token: {
+        Args: {
+          p_special_requests?: string
+          p_time: string
+          p_token: string
+        }
+        Returns: string
       }
       join_public_waitlist: {
         Args: {

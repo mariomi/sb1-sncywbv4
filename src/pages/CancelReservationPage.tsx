@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, CheckCircle2, Clock, Loader2, Phone, Users, XCircle } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock, Loader2, MessageSquare, Phone, Users, XCircle } from 'lucide-react';
 import { PageTransition } from '../components/PageTransition';
 import { SEOHead } from '../components/SEOHead';
 import { Button } from '../components/Button';
-import { getReservationByToken, cancelReservationByToken } from '../lib/api';
+import { getReservationByToken, cancelReservationByToken, updateReservationByToken } from '../lib/api';
 import type { ReservationSummary } from '../lib/api';
 import { useLanguage, type Language } from '../lib/i18n';
 import { useFeatureFlag, useFeatureFlags } from '../lib/featureFlags';
@@ -48,6 +48,28 @@ type CancellationCopy = {
   callRestaurant: string;
 };
 
+type ReservationEditCopy = {
+  pageTitle: string;
+  editTitle: string;
+  editIntro: string;
+  earlier: string;
+  current: string;
+  later: string;
+  notesLabel: string;
+  notesPlaceholder: string;
+  notesPrivacy: string;
+  save: string;
+  saving: string;
+  saved: string;
+  savedEmailMissing: string;
+  editDeadline: string;
+  editClosed: string;
+  unavailable: string;
+  invalidTime: string;
+  notesTooLong: string;
+  saveError: string;
+};
+
 const cancellationCopy: Record<Language, CancellationCopy> = {
   en: {
     seoTitle: 'Cancel booking', eyebrow: 'Al Gobbo di Rialto', title: 'Cancel your booking', loading: 'Loading your booking…', intro: 'Check the details, then tap the button to free the table.', cancel: 'Cancel this booking', cancelling: 'Cancelling…', confirmTitle: 'Are you sure?', confirmBody: 'This will permanently cancel the booking and release your table.', confirmCancel: 'Yes, cancel permanently', keep: 'Keep my booking', warning: 'Cancellation cannot be undone.', changeHelp: 'Need to change the time or number of guests? Call us:', guest: 'guest', guests: 'guests', dateLabel: 'Date', timeLabel: 'Time', guestsLabel: 'Guests', successTitle: 'Booking cancelled', successText: 'The table has been released. We hope to welcome you another time.', alreadyCancelledTitle: 'Already cancelled', alreadyCancelledText: 'This booking was already cancelled. No further action is needed.', completedTitle: 'Booking already completed', completedText: 'A past or completed booking can no longer be cancelled.', invalidTitle: 'Link not valid', invalidText: 'This private link is invalid. Call us if you need help.', disabledTitle: 'Online cancellation is paused', disabledText: 'Your booking has not been changed. Call the restaurant and we will help you.', errorTitle: 'Could not cancel', errorText: 'Please try again or call us and we will help you.', newBooking: 'Book another table', home: 'Return to the website', callRestaurant: 'Call the restaurant',
@@ -66,6 +88,89 @@ const cancellationCopy: Record<Language, CancellationCopy> = {
   },
 };
 
+const reservationEditCopy: Record<Language, ReservationEditCopy> = {
+  en: {
+    pageTitle: 'Manage your booking',
+    editTitle: 'Change your booking',
+    editIntro: 'Choose the current time or an available option 30 minutes earlier or later, and update your notes.',
+    earlier: '30 min earlier', current: 'Current time', later: '30 min later',
+    notesLabel: 'Notes for the restaurant', notesPlaceholder: 'Seating preferences or a note for our team',
+    notesPrivacy: 'Do not enter health or other sensitive data here. For allergies, call the restaurant before your visit.',
+    save: 'Save changes', saving: 'Saving…', saved: 'Changes saved. We sent you an updated confirmation email.',
+    savedEmailMissing: 'Changes saved, but the updated email could not be delivered.',
+    editDeadline: 'You can change the time until 24 hours before the booking. Notes remain editable until the booking starts.',
+    editClosed: 'The time can no longer be changed online, but you can still update the notes.',
+    unavailable: 'That time is no longer available. Choose another option or call us.',
+    invalidTime: 'You can only move the booking 30 minutes earlier or later.',
+    notesTooLong: 'Notes can contain up to 1,000 characters.',
+    saveError: 'Could not save the changes. Please try again or call us.',
+  },
+  it: {
+    pageTitle: 'Gestisci la prenotazione',
+    editTitle: 'Modifica la prenotazione',
+    editIntro: 'Scegli l’orario attuale oppure un’opzione disponibile 30 minuti prima o dopo e aggiorna le note.',
+    earlier: '30 min prima', current: 'Orario attuale', later: '30 min dopo',
+    notesLabel: 'Note per il ristorante', notesPlaceholder: 'Preferenze per il tavolo o una nota per lo staff',
+    notesPrivacy: 'Non inserire qui dati sanitari o altre informazioni sensibili. Per allergie chiama il ristorante prima della visita.',
+    save: 'Salva le modifiche', saving: 'Salvataggio…', saved: 'Modifiche salvate. Ti abbiamo inviato una nuova email di conferma.',
+    savedEmailMissing: 'Modifiche salvate, ma non è stato possibile consegnare la nuova email.',
+    editDeadline: 'Puoi cambiare l’orario fino a 24 ore prima. Le note restano modificabili fino all’inizio della prenotazione.',
+    editClosed: 'Non puoi più cambiare l’orario online, ma puoi ancora aggiornare le note.',
+    unavailable: 'Questo orario non è più disponibile. Scegli un’altra opzione o chiamaci.',
+    invalidTime: 'Puoi spostare la prenotazione soltanto di 30 minuti prima o dopo.',
+    notesTooLong: 'Le note possono contenere al massimo 1.000 caratteri.',
+    saveError: 'Non è stato possibile salvare le modifiche. Riprova oppure chiamaci.',
+  },
+  fr: {
+    pageTitle: 'Gérer la réservation',
+    editTitle: 'Modifier la réservation',
+    editIntro: 'Choisissez l’heure actuelle ou une option disponible 30 minutes avant ou après, puis modifiez vos notes.',
+    earlier: '30 min avant', current: 'Heure actuelle', later: '30 min après',
+    notesLabel: 'Notes pour le restaurant', notesPlaceholder: 'Préférence de table ou message pour l’équipe',
+    notesPrivacy: 'N’inscrivez pas ici de données de santé ou sensibles. Pour les allergies, appelez le restaurant avant votre visite.',
+    save: 'Enregistrer les modifications', saving: 'Enregistrement…', saved: 'Modifications enregistrées. Une nouvelle confirmation vous a été envoyée.',
+    savedEmailMissing: 'Modifications enregistrées, mais la nouvelle confirmation n’a pas pu être envoyée.',
+    editDeadline: 'Vous pouvez changer l’heure jusqu’à 24 heures avant. Les notes restent modifiables jusqu’au début de la réservation.',
+    editClosed: 'L’heure ne peut plus être modifiée en ligne, mais vous pouvez encore mettre à jour les notes.',
+    unavailable: 'Cette heure n’est plus disponible. Choisissez une autre option ou appelez-nous.',
+    invalidTime: 'Vous pouvez déplacer la réservation de 30 minutes avant ou après uniquement.',
+    notesTooLong: 'Les notes sont limitées à 1 000 caractères.',
+    saveError: 'Impossible d’enregistrer les modifications. Réessayez ou appelez-nous.',
+  },
+  de: {
+    pageTitle: 'Reservierung verwalten',
+    editTitle: 'Reservierung ändern',
+    editIntro: 'Wählen Sie die aktuelle Uhrzeit oder eine verfügbare Option 30 Minuten früher oder später und aktualisieren Sie Ihre Hinweise.',
+    earlier: '30 Min. früher', current: 'Aktuelle Uhrzeit', later: '30 Min. später',
+    notesLabel: 'Hinweise für das Restaurant', notesPlaceholder: 'Sitzplatzwunsch oder Nachricht an das Team',
+    notesPrivacy: 'Tragen Sie hier keine Gesundheits- oder sensiblen Daten ein. Bei Allergien rufen Sie das Restaurant vor Ihrem Besuch an.',
+    save: 'Änderungen speichern', saving: 'Wird gespeichert…', saved: 'Änderungen gespeichert. Eine neue Bestätigung wurde gesendet.',
+    savedEmailMissing: 'Änderungen gespeichert, aber die neue Bestätigung konnte nicht gesendet werden.',
+    editDeadline: 'Die Uhrzeit kann bis 24 Stunden vorher geändert werden. Hinweise bleiben bis zum Reservierungsbeginn bearbeitbar.',
+    editClosed: 'Die Uhrzeit kann online nicht mehr geändert werden, aber Sie können die Hinweise weiterhin aktualisieren.',
+    unavailable: 'Diese Uhrzeit ist nicht mehr verfügbar. Wählen Sie eine andere Option oder rufen Sie uns an.',
+    invalidTime: 'Sie können die Reservierung nur um 30 Minuten vor- oder zurückverlegen.',
+    notesTooLong: 'Hinweise dürfen höchstens 1.000 Zeichen enthalten.',
+    saveError: 'Die Änderungen konnten nicht gespeichert werden. Versuchen Sie es erneut oder rufen Sie uns an.',
+  },
+  es: {
+    pageTitle: 'Gestionar la reserva',
+    editTitle: 'Modificar la reserva',
+    editIntro: 'Elige la hora actual o una opción disponible 30 minutos antes o después y actualiza las notas.',
+    earlier: '30 min antes', current: 'Hora actual', later: '30 min después',
+    notesLabel: 'Notas para el restaurante', notesPlaceholder: 'Preferencia de mesa o una nota para el equipo',
+    notesPrivacy: 'No introduzcas aquí datos de salud ni sensibles. Para alergias, llama al restaurante antes de tu visita.',
+    save: 'Guardar cambios', saving: 'Guardando…', saved: 'Cambios guardados. Te hemos enviado una nueva confirmación.',
+    savedEmailMissing: 'Cambios guardados, pero no se pudo enviar la nueva confirmación.',
+    editDeadline: 'Puedes cambiar la hora hasta 24 horas antes. Las notas se pueden editar hasta que empiece la reserva.',
+    editClosed: 'Ya no puedes cambiar la hora en línea, pero todavía puedes actualizar las notas.',
+    unavailable: 'Esa hora ya no está disponible. Elige otra opción o llámanos.',
+    invalidTime: 'Solo puedes mover la reserva 30 minutos antes o después.',
+    notesTooLong: 'Las notas pueden contener hasta 1.000 caracteres.',
+    saveError: 'No se pudieron guardar los cambios. Inténtalo de nuevo o llámanos.',
+  },
+};
+
 const dateLocales: Record<Language, string> = {
   en: 'en-GB', it: 'it-IT', fr: 'fr-FR', de: 'de-DE', es: 'es-ES',
 };
@@ -76,10 +181,15 @@ export function CancelReservationPage() {
   const { token } = useParams<{ token: string }>();
   const { language } = useLanguage();
   const copy = cancellationCopy[language];
+  const editCopy = reservationEditCopy[language];
   const cancellationEnabled = useFeatureFlag('cancellation_selfserve');
   const { loading: flagsLoading, error: flagsError } = useFeatureFlags();
   const [state, setState] = useState<PageState>('loading');
   const [reservation, setReservation] = useState<ReservationSummary | null>(null);
+  const [selectedTime, setSelectedTime] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveNotice, setSaveNotice] = useState<{ kind: 'success' | 'warning' | 'error'; text: string } | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const cancelTriggerRef = useRef<HTMLButtonElement>(null);
   const keepButtonRef = useRef<HTMLButtonElement>(null);
@@ -102,11 +212,6 @@ export function CancelReservationPage() {
   };
 
   useEffect(() => {
-    if (flagsLoading) return;
-    if (flagsError || !cancellationEnabled) {
-      setState('disabled');
-      return;
-    }
     if (!token) {
       setState('not_found');
       return;
@@ -118,9 +223,11 @@ export function CancelReservationPage() {
         if (!active) return;
         if (!result) setState('not_found');
         else if (result.status === 'cancelled') setState('already_cancelled');
-        else if (result.status === 'completed' || result.status === 'no_show') setState('already_completed');
+        else if (result.status === 'completed' || result.status === 'no_show' || !result.can_modify) setState('already_completed');
         else {
           setReservation(result);
+          setSelectedTime(result.time.slice(0, 5));
+          setSpecialRequests(result.special_requests || '');
           setState('found');
         }
       })
@@ -129,7 +236,7 @@ export function CancelReservationPage() {
     return () => {
       active = false;
     };
-  }, [cancellationEnabled, flagsError, flagsLoading, token]);
+  }, [token]);
 
   const handleCancel = async () => {
     if (!token || state === 'cancelling') return;
@@ -149,11 +256,67 @@ export function CancelReservationPage() {
     }
   };
 
+  const handleSave = async () => {
+    if (!token || !reservation || !reservation.can_modify || isSaving) return;
+    setIsSaving(true);
+    setSaveNotice(null);
+
+    try {
+      const result = await updateReservationByToken(
+        token,
+        reservation.id,
+        selectedTime,
+        specialRequests,
+      );
+      setReservation(result.reservation);
+      setSelectedTime(result.reservation.time.slice(0, 5));
+      setSpecialRequests(result.reservation.special_requests || '');
+      setSaveNotice({
+        kind: result.confirmationEmailSent ? 'success' : 'warning',
+        text: result.confirmationEmailSent ? editCopy.saved : editCopy.savedEmailMissing,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (message === 'too_late') {
+        setReservation({ ...reservation, can_modify_time: false, earlier_time: null, later_time: null });
+        setSelectedTime(reservation.time.slice(0, 5));
+        setSaveNotice({ kind: 'error', text: editCopy.editClosed });
+      } else if (message === 'not_found') {
+        setState('not_found');
+      } else if (message === 'already_cancelled') {
+        setState('already_cancelled');
+      } else if (message === 'already_completed') {
+        setState('already_completed');
+      } else if (message === 'unavailable') {
+        setSaveNotice({ kind: 'error', text: editCopy.unavailable });
+      } else if (message === 'invalid_time') {
+        setSaveNotice({ kind: 'error', text: editCopy.invalidTime });
+      } else if (message === 'notes_too_long') {
+        setSaveNotice({ kind: 'error', text: editCopy.notesTooLong });
+      } else {
+        setSaveNotice({ kind: 'error', text: editCopy.saveError });
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const formattedDate = reservation
     ? new Date(`${reservation.date}T12:00:00Z`).toLocaleDateString(dateLocales[language], {
         timeZone: 'Europe/Rome', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
       })
     : '';
+
+  const timeOptions = reservation ? [
+    reservation.earlier_time ? { value: reservation.earlier_time.slice(0, 5), label: editCopy.earlier } : null,
+    { value: reservation.time.slice(0, 5), label: editCopy.current },
+    reservation.later_time ? { value: reservation.later_time.slice(0, 5), label: editCopy.later } : null,
+  ].filter((option): option is { value: string; label: string } => Boolean(option)) : [];
+
+  const hasChanges = Boolean(reservation) && (
+    selectedTime !== reservation?.time.slice(0, 5)
+    || specialRequests.trim() !== (reservation?.special_requests || '')
+  );
 
   const renderResult = (icon: ReactNode, title: string, text: string, action: 'book' | 'home' | 'call') => (
     <div className="flex flex-col items-center py-5 text-center" role="status">
@@ -172,7 +335,7 @@ export function CancelReservationPage() {
 
   return (
     <PageTransition>
-      <SEOHead title={copy.seoTitle} noindex />
+      <SEOHead title={editCopy.pageTitle} noindex />
       <main className="min-h-screen bg-[#f7f3eb] px-4 pb-20 pt-32 dark:bg-venetian-brown sm:px-6">
         <motion.section
           className="mx-auto max-w-lg overflow-hidden border border-venetian-brown/15 bg-white/70 dark:border-white/15 dark:bg-[#211d18]"
@@ -183,7 +346,7 @@ export function CancelReservationPage() {
         >
           <header className="border-b border-white/15 bg-venetian-brown px-5 py-7 text-center sm:px-7">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-venetian-gold">{copy.eyebrow}</p>
-            <h1 className="mt-1 font-serif text-2xl text-white sm:text-3xl">{copy.title}</h1>
+            <h1 className="mt-1 font-serif text-2xl text-white sm:text-3xl">{editCopy.pageTitle}</h1>
           </header>
 
           <div className="p-5 sm:p-7">
@@ -196,9 +359,7 @@ export function CancelReservationPage() {
 
             {(state === 'found' || state === 'cancelling') && reservation ? (
               <div>
-                <p className="text-center text-sm leading-6 text-venetian-brown/75 dark:text-venetian-sandstone/75">{copy.intro}</p>
-
-                <div className="my-5 border border-venetian-brown/15 bg-white/45 p-4 dark:border-white/15 dark:bg-white/5">
+                <div className="mb-5 rounded-xl border border-venetian-gold/35 bg-venetian-gold/10 p-4">
                   <p className="mb-3 text-center font-semibold text-venetian-brown dark:text-venetian-sandstone">{reservation.name}</p>
                   <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
                     <div className="flex items-center gap-2 sm:flex-col sm:text-center">
@@ -219,26 +380,124 @@ export function CancelReservationPage() {
                   </dl>
                 </div>
 
-                {isConfirming ? (
-                  <div className="border border-red-700/25 bg-red-50 p-4 text-center dark:bg-red-950/20" role="group" aria-labelledby="cancel-confirmation-title">
-                    <h2 id="cancel-confirmation-title" className="font-serif text-2xl font-semibold text-venetian-brown dark:text-white">{copy.confirmTitle}</h2>
-                    <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-venetian-brown/75 dark:text-white/75">{copy.confirmBody}</p>
-                    <button ref={keepButtonRef} type="button" onClick={closeConfirmation} className="mt-5 inline-flex min-h-12 w-full items-center justify-center bg-venetian-brown px-5 text-xs font-bold uppercase tracking-[0.12em] text-white hover:bg-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold focus-visible:ring-offset-2">
-                      {copy.keep}
-                    </button>
-                    <Button className="mt-3 min-h-12 w-full border border-red-700 bg-transparent px-5 text-xs font-bold uppercase tracking-[0.12em] text-red-800 hover:bg-red-800 hover:text-white dark:text-red-300" onClick={handleCancel} disabled={state === 'cancelling'}>
-                      {state === 'cancelling' ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{copy.cancelling}</> : copy.confirmCancel}
+                {reservation.can_modify ? (
+                  <section className="rounded-xl border border-venetian-gold/30 bg-venetian-sandstone/15 p-4" aria-labelledby="edit-booking-title">
+                    <div className="flex items-start gap-3">
+                      <Clock className="mt-0.5 h-5 w-5 shrink-0 text-venetian-gold" />
+                      <div>
+                        <h2 id="edit-booking-title" className="font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">{editCopy.editTitle}</h2>
+                        <p className="mt-1 text-sm leading-6 text-venetian-brown/70 dark:text-venetian-sandstone/70">{editCopy.editIntro}</p>
+                      </div>
+                    </div>
+
+                    {reservation.can_modify_time ? (
+                      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3" role="group" aria-label={copy.timeLabel}>
+                        {timeOptions.map((option) => {
+                          const selected = selectedTime === option.value;
+                          return (
+                            <button
+                              key={`${option.label}-${option.value}`}
+                              type="button"
+                              className={`min-h-14 rounded-xl border px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold ${selected ? 'border-venetian-brown bg-venetian-brown font-semibold text-white' : 'border-venetian-gold/40 bg-white text-venetian-brown hover:border-venetian-gold dark:bg-venetian-brown/40 dark:text-venetian-sandstone'}`}
+                              onClick={() => {
+                                setSelectedTime(option.value);
+                                setSaveNotice(null);
+                              }}
+                              disabled={isSaving}
+                              aria-pressed={selected}
+                            >
+                              <span className="block text-xs opacity-75">{option.label}</span>
+                              <span className="mt-0.5 block text-base">{option.value}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="mt-4 rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-900" role="status">
+                        {editCopy.editClosed}
+                      </div>
+                    )}
+
+                    <label htmlFor="reservation-special-requests" className="mt-5 flex items-center gap-2 text-sm font-semibold text-venetian-brown dark:text-venetian-sandstone">
+                      <MessageSquare className="h-4 w-4 text-venetian-gold" />
+                      {editCopy.notesLabel}
+                    </label>
+                    <textarea
+                      id="reservation-special-requests"
+                      value={specialRequests}
+                      onChange={(event) => {
+                        setSpecialRequests(event.target.value);
+                        setSaveNotice(null);
+                      }}
+                      maxLength={1000}
+                      rows={4}
+                      placeholder={editCopy.notesPlaceholder}
+                      disabled={isSaving}
+                      className="mt-2 w-full resize-y rounded-xl border border-venetian-gold/35 bg-white px-3 py-2.5 text-sm text-venetian-brown outline-none transition focus:border-venetian-gold focus:ring-2 focus:ring-venetian-gold/20 disabled:opacity-60 dark:bg-venetian-brown/40 dark:text-venetian-sandstone"
+                    />
+                    <p className="mt-2 text-xs leading-5 text-venetian-brown/60 dark:text-venetian-sandstone/60">{editCopy.notesPrivacy}</p>
+                    <div className="mt-1 flex items-start justify-between gap-3 text-xs text-venetian-brown/55 dark:text-venetian-sandstone/55">
+                      <span>{editCopy.editDeadline}</span>
+                      <span className="shrink-0">{specialRequests.length}/1000</span>
+                    </div>
+
+                    <Button className="mt-4 min-h-12 w-full bg-venetian-gold px-5 font-semibold text-venetian-brown hover:bg-venetian-gold/90" onClick={handleSave} disabled={!hasChanges || isSaving || state === 'cancelling'}>
+                      {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{editCopy.saving}</> : editCopy.save}
                     </Button>
-                    <p className="mt-3 text-xs text-venetian-brown/70 dark:text-white/70">{copy.warning}</p>
+
+                    {saveNotice ? (
+                      <p
+                        className={`mt-3 rounded-lg px-3 py-2 text-sm leading-5 ${saveNotice.kind === 'success' ? 'bg-green-50 text-green-800' : saveNotice.kind === 'warning' ? 'bg-amber-50 text-amber-800' : 'bg-red-50 text-red-700'}`}
+                        role="status"
+                      >
+                        {saveNotice.text}
+                      </p>
+                    ) : null}
+                  </section>
+                ) : (
+                  <div className="rounded-xl border border-amber-300/60 bg-amber-50 p-4 text-sm leading-6 text-amber-900" role="status">
+                    {editCopy.editClosed}
+                  </div>
+                )}
+
+                <div className="my-6 border-t border-venetian-gold/25" />
+                {flagsLoading ? (
+                  <div className="flex items-center justify-center gap-2 py-4 text-sm text-venetian-brown/65 dark:text-venetian-sandstone/65" role="status">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {copy.loading}
+                  </div>
+                ) : flagsError || !cancellationEnabled ? (
+                  <div className="border border-amber-300/60 bg-amber-50 p-4 text-center text-amber-900" role="status">
+                    <h2 className="font-serif text-xl">{copy.disabledTitle}</h2>
+                    <p className="mt-2 text-sm leading-6">{copy.disabledText}</p>
+                    <a href="tel:+390415204603" className="mt-3 inline-block min-h-11 py-3 font-semibold underline underline-offset-4">{copy.callRestaurant}</a>
                   </div>
                 ) : (
                   <>
-                    <button ref={cancelTriggerRef} type="button" className="inline-flex min-h-12 w-full items-center justify-center bg-venetian-terracotta px-5 text-xs font-bold uppercase tracking-[0.14em] text-white hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" onClick={() => setIsConfirming(true)}>
-                      {copy.cancel}
-                    </button>
-                    <Link to="/" className="mt-4 block min-h-11 py-3 text-center text-sm font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4 dark:text-venetian-sandstone">
-                      {copy.keep}
-                    </Link>
+                    <h2 className="text-center font-serif text-xl text-venetian-brown dark:text-venetian-sandstone">{copy.title}</h2>
+                    <p className="mt-2 text-center text-sm leading-6 text-venetian-brown/75 dark:text-venetian-sandstone/75">{copy.intro}</p>
+                    {isConfirming ? (
+                      <div className="mt-4 border border-red-700/25 bg-red-50 p-4 text-center dark:bg-red-950/20" role="group" aria-labelledby="cancel-confirmation-title">
+                        <h3 id="cancel-confirmation-title" className="font-serif text-2xl font-semibold text-venetian-brown dark:text-white">{copy.confirmTitle}</h3>
+                        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-venetian-brown/75 dark:text-white/75">{copy.confirmBody}</p>
+                        <button ref={keepButtonRef} type="button" onClick={closeConfirmation} disabled={state === 'cancelling' || isSaving} className="mt-5 inline-flex min-h-12 w-full items-center justify-center bg-venetian-brown px-5 text-xs font-bold uppercase tracking-[0.12em] text-white hover:bg-venetian-terracotta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold focus-visible:ring-offset-2 disabled:opacity-60">
+                          {copy.keep}
+                        </button>
+                        <Button className="mt-3 min-h-12 w-full border border-red-700 bg-transparent px-5 text-xs font-bold uppercase tracking-[0.12em] text-red-800 hover:bg-red-800 hover:text-white dark:text-red-300" onClick={handleCancel} disabled={state === 'cancelling' || isSaving}>
+                          {state === 'cancelling' ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{copy.cancelling}</> : copy.confirmCancel}
+                        </Button>
+                        <p className="mt-3 text-xs text-venetian-brown/70 dark:text-white/70">{copy.warning}</p>
+                      </div>
+                    ) : (
+                      <>
+                        <button ref={cancelTriggerRef} type="button" className="mt-4 inline-flex min-h-12 w-full items-center justify-center bg-venetian-terracotta px-5 text-xs font-bold uppercase tracking-[0.14em] text-white hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2 disabled:opacity-60" onClick={() => setIsConfirming(true)} disabled={isSaving}>
+                          {copy.cancel}
+                        </button>
+                        <Link to="/" className="mt-4 block min-h-11 py-3 text-center text-sm font-semibold text-venetian-brown underline decoration-venetian-gold decoration-2 underline-offset-4 dark:text-venetian-sandstone">
+                          {copy.keep}
+                        </Link>
+                      </>
+                    )}
                   </>
                 )}
 

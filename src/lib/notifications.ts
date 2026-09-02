@@ -23,3 +23,20 @@ export async function sendReservationConfirmation(
     throw new Error(data.error);
   }
 }
+
+/**
+ * Ask the trusted backend to acknowledge a saved contact message. The
+ * recipient and content are always loaded from Supabase by message ID.
+ */
+export async function sendContactConfirmation(messageId: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('send-contact-confirmation', {
+    body: { message_id: messageId },
+  });
+
+  if (error) {
+    throw new Error('Impossibile inviare la ricevuta email');
+  }
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+}
