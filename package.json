@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "node --test && npm run test:analytics",
-    "test:analytics": "tsx --test test/analytics.test.ts",
+    "test:analytics": "tsx --test test/analytics.test.ts test/language-detection.test.ts",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:intro": "node scripts/generate-intro-images.mjs",
     "images:import-al-gobbo": "node scripts/import-al-gobbo-photos.mjs",
