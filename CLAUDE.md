@@ -165,11 +165,14 @@ VITE_SUPABASE_ANON_KEY= # Supabase anonymous/public key
 VITE_API_BASE_URL=      # Trusted Express API used for confirmation emails
 RESEND_API_KEY=         # Server/Edge Function only; never prefix with VITE_
 REMINDER_CRON_SECRET=   # Secret header for scheduled reminder invocations
+ADMIN_ALERT_CRON_SECRET= # Separate secret for restaurant operational alerts
 ```
 
 - Only values intended for the browser may use the `VITE_` prefix.
 - The Express backend reads server-only values from the local `.env` file.
 - Supabase reminder functions receive server-only values through Function Secrets.
+- Restaurant alerts run every five minutes and send at approximately 24 hours,
+  09:00 Europe/Rome on the reservation date, and approximately 45 minutes before.
 - **Never commit `.env` to source control**
 
 ---
@@ -277,6 +280,8 @@ This runs `src/scripts/createAdmin.ts` which creates a Supabase auth user with a
 - Email sending goes through `src/lib/notifications.ts` → Express server → Resend API
 - Scheduled reminders run in protected Supabase Edge Functions and use a
   server-only `RESEND_API_KEY` plus `REMINDER_CRON_SECRET`.
+- Restaurant operational alerts use a separate `ADMIN_ALERT_CRON_SECRET`,
+  Supabase Cron, and Vault-backed scheduler credentials.
 - Email failures should never block the primary action (e.g., reservation creation)
 - Log email results with emoji prefixes: `📧`, `✅`, `❌`
 

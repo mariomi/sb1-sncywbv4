@@ -142,6 +142,61 @@ export function buildReservationAdminEmail(reservation) {
   }
 }
 
+const adminAlertCopy = {
+  '24h': {
+    eyebrow: 'Promemoria operativo · 24 ore',
+    heading: 'Prenotazione di domani',
+    subjectPrefix: 'Promemoria 24h',
+  },
+  morning: {
+    eyebrow: 'Promemoria operativo · oggi',
+    heading: 'Prenotazione di oggi',
+    subjectPrefix: 'Oggi',
+  },
+  '45m': {
+    eyebrow: 'Promemoria operativo · 45 minuti',
+    heading: 'Prenotazione tra circa 45 minuti',
+    subjectPrefix: 'Tra 45 min',
+  },
+}
+
+export function buildReservationAdminAlertEmail(reservation, alertKind, siteUrl) {
+  const alert = adminAlertCopy[alertKind]
+  if (!alert) throw new TypeError('A valid admin alert kind is required')
+
+  const dateLabel = formatReservationDate(reservation.date)
+  const timeLabel = formatReservationTime(reservation.time)
+  const dashboardUrl = `${siteUrl.replace(/\/$/, '')}/admin`
+  const content = `
+    <p style="margin:0;color:#a07814;font-weight:700">${escapeHtml(alert.heading.toUpperCase())}</p>
+    <h2 style="font-family:Georgia,serif;font-size:25px;margin:10px 0 18px">${escapeHtml(reservation.name)}</h2>
+    ${detailsBox({
+      date: reservation.date,
+      time: reservation.time,
+      guests: reservation.guests,
+      occasion: reservation.occasion,
+      specialRequests: reservation.special_requests,
+    })}
+    <p style="line-height:1.8"><strong>Telefono:</strong> <a href="tel:${escapeHtml(reservation.phone)}" style="color:#7a342b">${escapeHtml(reservation.phone)}</a><br><strong>Email:</strong> <a href="mailto:${escapeHtml(reservation.email)}" style="color:#7a342b">${escapeHtml(reservation.email)}</a></p>
+    <p style="text-align:center;margin:26px 0 0"><a href="${escapeHtml(dashboardUrl)}" style="display:inline-block;background:#9e4638;color:#fff;text-decoration:none;padding:13px 22px;border-radius:10px;font-weight:700">Apri le prenotazioni</a></p>`
+
+  return {
+    subject: `[${alert.subjectPrefix}] ${safeHeader(reservation.name)} · ${dateLabel.it} ${timeLabel}`,
+    html: emailShell(alert.heading, alert.eyebrow, content),
+    text: [
+      alert.heading.toUpperCase(),
+      reservation.name,
+      `${dateLabel.it} alle ${timeLabel}`,
+      `${reservation.guests} ospiti`,
+      `Telefono: ${reservation.phone}`,
+      `Email: ${reservation.email}`,
+      reservation.occasion ? `Occasione: ${reservation.occasion}` : '',
+      reservation.special_requests ? `Note: ${reservation.special_requests}` : '',
+      `Gestisci: ${dashboardUrl}`,
+    ].filter(Boolean).join('\n'),
+  }
+}
+
 export function buildContactCustomerEmail(message) {
   const safeName = escapeHtml(`${message.first_name} ${message.last_name}`.trim())
   const subjectLabels = {

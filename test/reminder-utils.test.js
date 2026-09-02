@@ -3,9 +3,11 @@ import test from 'node:test';
 
 import {
   escapeHtml,
+  getAdminReservationAlertSchedule,
   getRomeDateTimeParts,
   getRomeTimeWindow,
   getTomorrowDateInRome,
+  isReservationInRomeWindow,
   secretsMatch,
 } from '../supabase/functions/_shared/reminder-utils.js';
 
@@ -37,6 +39,37 @@ test('two-hour window can cross midnight in Venice', () => {
   assert.equal(window.start.time, '23:50');
   assert.equal(window.end.date, '2026-09-01');
   assert.equal(window.end.time, '00:10');
+});
+
+test('restaurant alert schedule covers 24 hours, the same morning and 45 minutes', () => {
+  const schedule = getAdminReservationAlertSchedule(new Date('2026-09-03T07:00:00Z'));
+
+  assert.equal(schedule.romeNow.date, '2026-09-03');
+  assert.equal(schedule.romeNow.time, '09:00');
+  assert.equal(schedule.morning.enabled, true);
+  assert.equal(schedule.dayBefore.start.date, '2026-09-04');
+  assert.equal(schedule.dayBefore.start.time, '08:55');
+  assert.equal(schedule.dayBefore.end.time, '09:05');
+  assert.equal(schedule.shortlyBefore.start.date, '2026-09-03');
+  assert.equal(schedule.shortlyBefore.start.time, '09:40');
+  assert.equal(schedule.shortlyBefore.end.time, '09:50');
+});
+
+test('reservation alert windows include only bookings inside their boundaries', () => {
+  const schedule = getAdminReservationAlertSchedule(new Date('2026-09-03T07:00:00Z'));
+
+  assert.equal(isReservationInRomeWindow(
+    { date: '2026-09-04', time: '09:00:00' },
+    schedule.dayBefore,
+  ), true);
+  assert.equal(isReservationInRomeWindow(
+    { date: '2026-09-04', time: '09:30:00' },
+    schedule.dayBefore,
+  ), false);
+  assert.equal(isReservationInRomeWindow(
+    { date: '2026-09-03', time: '09:45:00' },
+    schedule.shortlyBefore,
+  ), true);
 });
 
 test('email content is escaped and scheduler secrets require exact equality', () => {

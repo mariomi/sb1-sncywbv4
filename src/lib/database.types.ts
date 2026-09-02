@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       closed_dates: {
@@ -309,6 +334,9 @@ export type Database = {
       }
       reservations: {
         Row: {
+          admin_alert_24h_sent_at: string | null
+          admin_alert_45m_sent_at: string | null
+          admin_alert_morning_sent_at: string | null
           admin_notes: string | null
           arrival_time: string | null
           attribution: Json
@@ -346,6 +374,9 @@ export type Database = {
           whatsapp_opt_out_at: string | null
         }
         Insert: {
+          admin_alert_24h_sent_at?: string | null
+          admin_alert_45m_sent_at?: string | null
+          admin_alert_morning_sent_at?: string | null
           admin_notes?: string | null
           arrival_time?: string | null
           attribution?: Json
@@ -383,6 +414,9 @@ export type Database = {
           whatsapp_opt_out_at?: string | null
         }
         Update: {
+          admin_alert_24h_sent_at?: string | null
+          admin_alert_45m_sent_at?: string | null
+          admin_alert_morning_sent_at?: string | null
           admin_notes?: string | null
           arrival_time?: string | null
           attribution?: Json
@@ -985,6 +1019,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
