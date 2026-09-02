@@ -8,6 +8,9 @@ import heroImage from '../Img/al-gobbo-2026/interior-hero-1600.webp';
 import hero480 from '../Img/al-gobbo-2026/interior-hero-480.webp';
 import hero900 from '../Img/al-gobbo-2026/interior-hero-900.webp';
 import hero1200 from '../Img/al-gobbo-2026/interior-hero-1200.webp';
+import exteriorImage from '../Img/al-gobbo-2026/exterior-wide-1600.webp';
+import exterior480 from '../Img/al-gobbo-2026/exterior-wide-480.webp';
+import exterior900 from '../Img/al-gobbo-2026/exterior-wide-900.webp';
 import gardenImage from '../Img/al-gobbo-2026/bar-portrait-1200.webp';
 import garden480 from '../Img/al-gobbo-2026/bar-portrait-480.webp';
 import garden900 from '../Img/al-gobbo-2026/bar-portrait-900.webp';
@@ -23,6 +26,12 @@ import room900 from '../Img/al-gobbo-2026/entrance-portrait-900.webp';
 import tableImage from '../Img/al-gobbo-2026/table-portrait-1200.webp';
 import table480 from '../Img/al-gobbo-2026/table-portrait-480.webp';
 import table900 from '../Img/al-gobbo-2026/table-portrait-900.webp';
+import wineImage from '../Img/al-gobbo-2026/wine-wall-portrait-1200.webp';
+import wine480 from '../Img/al-gobbo-2026/wine-wall-portrait-480.webp';
+import wine900 from '../Img/al-gobbo-2026/wine-wall-portrait-900.webp';
+import reservedTableImage from '../Img/al-gobbo-2026/reserved-table-wide-1600.webp';
+import reservedTable480 from '../Img/al-gobbo-2026/reserved-table-wide-480.webp';
+import reservedTable900 from '../Img/al-gobbo-2026/reserved-table-wide-900.webp';
 
 const heroCopy: Record<Language, {
   scroll: string;
@@ -105,9 +114,9 @@ function responsiveSources(small: string, medium: string, large: string, largeWi
 }
 
 function ComposingWord({ word, index, progress }: { word: string; index: number; progress: MotionValue<number> }) {
-  const enterStart = 0.775 + index * 0.008;
-  const enterEnd = enterStart + 0.028;
-  const exitStart = 0.875 + index * 0.004;
+  const enterStart = 0.835 + index * 0.007;
+  const enterEnd = enterStart + 0.024;
+  const exitStart = 0.9 + index * 0.003;
   const exitEnd = exitStart + 0.04;
   const direction = index % 2 === 0 ? -1 : 1;
   const opacity = useTransform(progress, [enterStart, enterEnd, exitStart, exitEnd], [0, 1, 1, 0]);
@@ -126,26 +135,26 @@ function ComposingWord({ word, index, progress }: { word: string; index: number;
 type HeroPhase = 'prompt' | 'reveal' | 'narrative' | 'portal';
 
 function phaseAt(progress: number): HeroPhase {
-  return progress < 0.13 ? 'prompt' : progress < 0.765 ? 'reveal' : progress < 0.965 ? 'narrative' : 'portal';
+  return progress < 0.105 ? 'prompt' : progress < 0.805 ? 'reveal' : progress < 0.965 ? 'narrative' : 'portal';
 }
 
 function assetStageAt(progress: number) {
-  return progress >= 0.48 ? 5 : progress >= 0.32 ? 4 : progress >= 0.18 ? 3 : 2;
+  return progress >= 0.55 ? 7 : progress >= 0.47 ? 6 : progress >= 0.36 ? 5 : progress >= 0.26 ? 4 : progress >= 0.15 ? 3 : progress >= 0.055 ? 2 : 1;
 }
 
 function sceneAt(progress: number) {
-  return progress < 0.13 ? 0 : progress < 0.28 ? 1 : progress < 0.4 ? 2 : progress < 0.53 ? 3 : progress < 0.65 ? 4 : 5;
+  return progress < 0.105 ? 0 : progress < 0.22 ? 1 : progress < 0.33 ? 2 : progress < 0.44 ? 3 : progress < 0.55 ? 4 : progress < 0.69 ? 5 : progress < 0.805 ? 6 : 7;
 }
 
-const mobileScrollSnapPoints = [0, 0.15, 0.255, 0.38, 0.53, 0.6, 0.71, 0.855, 1] as const;
+const mobileScrollSnapPoints = [0, 0.105, 0.21, 0.32, 0.43, 0.54, 0.64, 0.73, 0.855, 1] as const;
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState<HeroPhase>('prompt');
-  const [assetStage, setAssetStage] = useState(2);
+  const [assetStage, setAssetStage] = useState(1);
   const [activeScene, setActiveScene] = useState(0);
   const phaseRef = useRef<HeroPhase>('prompt');
-  const assetStageRef = useRef(2);
+  const assetStageRef = useRef(1);
   const activeSceneRef = useRef(0);
   const pendingPortalFocusRef = useRef(false);
   const portalFocusFrameRef = useRef<number | null>(null);
@@ -165,40 +174,50 @@ export function Hero() {
   });
   const visualScrollYProgress = followsTouchGesture ? scrollYProgress : smoothScrollYProgress;
 
-  const promptOpacity = useTransform(visualScrollYProgress, [0, 0.055, 0.13], [1, 1, 0]);
+  const promptOpacity = useTransform(visualScrollYProgress, [0, 0.035, 0.105], [1, 1, 0]);
 
-  const firstOpacity = useTransform(visualScrollYProgress, [0.05, 0.105, 0.21, 0.27], [0, 1, 1, 0]);
-  const firstX = useTransform(visualScrollYProgress, [0.07, 0.26], ['0vw', '-12vw']);
-  const firstScale = useTransform(visualScrollYProgress, [0.07, 0.26], [0.94, 1.03]);
+  const exteriorOpacity = useTransform(visualScrollYProgress, [0.025, 0.06, 0.135, 0.19], [0, 1, 1, 0]);
+  const exteriorY = useTransform(visualScrollYProgress, [0.025, 0.19], ['3vh', '-2vh']);
+  const exteriorScale = useTransform(visualScrollYProgress, [0.025, 0.19], [0.94, 1.04]);
 
-  const secondOpacity = useTransform(visualScrollYProgress, [0.18, 0.235, 0.31, 0.37], [0, 1, 1, 0]);
-  const secondX = useTransform(visualScrollYProgress, [0.18, 0.25, 0.36], ['38vw', '5vw', '-8vw']);
-  const secondY = useTransform(visualScrollYProgress, [0.18, 0.36], ['5vh', '-2vh']);
+  const firstOpacity = useTransform(visualScrollYProgress, [0.13, 0.175, 0.24, 0.29], [0, 1, 1, 0]);
+  const firstX = useTransform(visualScrollYProgress, [0.13, 0.19, 0.29], ['30vw', '2vw', '-12vw']);
+  const firstScale = useTransform(visualScrollYProgress, [0.13, 0.29], [0.96, 1.035]);
 
-  const thirdOpacity = useTransform(visualScrollYProgress, [0.29, 0.35, 0.43, 0.49], [0, 1, 1, 0]);
-  const thirdX = useTransform(visualScrollYProgress, [0.29, 0.37, 0.48], ['-40vw', '-5vw', '8vw']);
-  const thirdY = useTransform(visualScrollYProgress, [0.29, 0.48], ['-4vh', '3vh']);
+  const secondOpacity = useTransform(visualScrollYProgress, [0.235, 0.28, 0.35, 0.4], [0, 1, 1, 0]);
+  const secondX = useTransform(visualScrollYProgress, [0.235, 0.295, 0.4], ['-34vw', '-3vw', '10vw']);
+  const secondY = useTransform(visualScrollYProgress, [0.235, 0.4], ['4vh', '-2vh']);
 
-  const clusterOpacity = useTransform(visualScrollYProgress, [0.42, 0.48, 0.57, 0.63], [0, 1, 1, 0]);
-  const clusterOneOpacity = useTransform(visualScrollYProgress, [0.42, 0.465, 0.575, 0.625], [0, 1, 1, 0]);
-  const clusterTwoOpacity = useTransform(visualScrollYProgress, [0.45, 0.495, 0.58, 0.63], [0, 1, 1, 0]);
-  const clusterThreeOpacity = useTransform(visualScrollYProgress, [0.48, 0.525, 0.585, 0.635], [0, 1, 1, 0]);
-  const clusterLeftX = useTransform(visualScrollYProgress, [0.42, 0.56], ['-12vw', '-24vw']);
-  const clusterRightX = useTransform(visualScrollYProgress, [0.45, 0.57], ['13vw', '25vw']);
-  const clusterBottomY = useTransform(visualScrollYProgress, [0.48, 0.59], ['18vh', '25vh']);
+  const thirdOpacity = useTransform(visualScrollYProgress, [0.34, 0.39, 0.46, 0.51], [0, 1, 1, 0]);
+  const thirdX = useTransform(visualScrollYProgress, [0.34, 0.4, 0.51], ['38vw', '4vw', '-8vw']);
+  const thirdY = useTransform(visualScrollYProgress, [0.34, 0.51], ['-3vh', '2vh']);
 
-  const mainOpacity = useTransform(visualScrollYProgress, [0.54, 0.59, 0.93, 0.99], [0, 1, 1, 0.2]);
-  const mainScale = useTransform(visualScrollYProgress, [0.54, 0.6, 0.67, 0.82], [0.28, 0.58, 1.04, 1]);
-  const shadeOpacity = useTransform(visualScrollYProgress, [0.535, 0.58], [0, 1]);
-  const interludeOneOpacity = useTransform(visualScrollYProgress, [0.545, 0.58, 0.625, 0.655], [0, 1, 1, 0]);
-  const interludeOneY = useTransform(visualScrollYProgress, [0.545, 0.58, 0.625, 0.655], [18, 0, 0, -18]);
-  const interludeTwoOpacity = useTransform(visualScrollYProgress, [0.655, 0.69, 0.735, 0.765], [0, 1, 1, 0]);
-  const interludeTwoY = useTransform(visualScrollYProgress, [0.655, 0.69, 0.735, 0.765], [18, 0, 0, -18]);
-  const narrativeOpacity = useTransform(visualScrollYProgress, [0.765, 0.785, 0.895, 0.945], [0, 1, 1, 0]);
+  const wineOpacity = useTransform(visualScrollYProgress, [0.445, 0.495, 0.565, 0.615], [0, 1, 1, 0]);
+  const wineX = useTransform(visualScrollYProgress, [0.445, 0.51, 0.615], ['-38vw', '-4vw', '9vw']);
+  const wineY = useTransform(visualScrollYProgress, [0.445, 0.615], ['4vh', '-2vh']);
+  const wineScale = useTransform(visualScrollYProgress, [0.445, 0.615], [0.96, 1.025]);
+
+  const clusterOpacity = useTransform(visualScrollYProgress, [0.55, 0.595, 0.675, 0.72], [0, 1, 1, 0]);
+  const reservedOpacity = useTransform(visualScrollYProgress, [0.55, 0.59, 0.68, 0.72], [0, 1, 1, 0]);
+  const reservedScale = useTransform(visualScrollYProgress, [0.55, 0.72], [0.88, 1.04]);
+  const burrataClusterOpacity = useTransform(visualScrollYProgress, [0.57, 0.61, 0.68, 0.72], [0, 1, 1, 0]);
+  const burrataClusterX = useTransform(visualScrollYProgress, [0.57, 0.68], ['38vw', '28vw']);
+  const staffClusterOpacity = useTransform(visualScrollYProgress, [0.585, 0.625, 0.68, 0.72], [0, 1, 1, 0]);
+  const staffClusterX = useTransform(visualScrollYProgress, [0.585, 0.68], ['-38vw', '-24vw']);
+  const staffClusterY = useTransform(visualScrollYProgress, [0.585, 0.68], ['20vh', '24vh']);
+
+  const mainOpacity = useTransform(visualScrollYProgress, [0.675, 0.715, 0.93, 0.99], [0, 1, 1, 0.2]);
+  const mainScale = useTransform(visualScrollYProgress, [0.675, 0.72, 0.79, 0.88], [0.46, 0.82, 1.04, 1]);
+  const shadeOpacity = useTransform(visualScrollYProgress, [0.67, 0.715], [0, 1]);
+  const interludeOneOpacity = useTransform(visualScrollYProgress, [0.69, 0.72, 0.75, 0.775], [0, 1, 1, 0]);
+  const interludeOneY = useTransform(visualScrollYProgress, [0.69, 0.72, 0.75, 0.775], [18, 0, 0, -18]);
+  const interludeTwoOpacity = useTransform(visualScrollYProgress, [0.765, 0.795, 0.825, 0.85], [0, 1, 1, 0]);
+  const interludeTwoY = useTransform(visualScrollYProgress, [0.765, 0.795, 0.825, 0.85], [18, 0, 0, -18]);
+  const narrativeOpacity = useTransform(visualScrollYProgress, [0.835, 0.855, 0.9, 0.948], [0, 1, 1, 0]);
   const portalBackdropOpacity = useTransform(visualScrollYProgress, [0.92, 0.97], [0, 1]);
   const portalOpacity = useTransform(visualScrollYProgress, [0.95, 0.985], [0, 1]);
   const portalY = useTransform(visualScrollYProgress, [0.95, 0.985], [32, 0]);
-  const skipOpacity = useTransform(visualScrollYProgress, [0, 0.04, 0.11, 0.89, 0.97], [0, 0, 1, 1, 0]);
+  const skipOpacity = useTransform(visualScrollYProgress, [0, 0.025, 0.075, 0.9, 0.97], [0, 0, 1, 1, 0]);
 
   useEffect(() => {
     const visualProgress = visualScrollYProgress.get();
@@ -266,8 +285,10 @@ export function Hero() {
   });
 
   const moveToReveal = () => {
-    const top = sectionRef.current?.offsetTop ?? 0;
-    window.scrollTo({ top: top + window.innerHeight * 0.38, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    const section = sectionRef.current;
+    if (!section) return;
+    const trackHeight = Math.max(section.offsetHeight - window.innerHeight, 0);
+    window.scrollTo({ top: section.offsetTop + trackHeight * 0.125, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
   };
 
   const skipIntro = () => {
@@ -279,11 +300,14 @@ export function Hero() {
   };
 
   const heroSrcSet = `${hero480} 480w, ${hero900} 900w, ${hero1200} 1200w, ${heroImage} 1600w`;
+  const exteriorSrcSet = responsiveSources(exterior480, exterior900, exteriorImage, 1600);
   const roomSrcSet = responsiveSources(room480, room900, roomImage, 1200);
   const tableSrcSet = responsiveSources(table480, table900, tableImage, 1200);
   const gardenSrcSet = responsiveSources(garden480, garden900, gardenImage, 1200);
   const closingSrcSet = responsiveSources(closing480, closing900, closingImage, 1200);
   const welcomeSrcSet = responsiveSources(welcome480, welcome900, welcomeImage, 1600);
+  const wineSrcSet = responsiveSources(wine480, wine900, wineImage, 1200);
+  const reservedTableSrcSet = responsiveSources(reservedTable480, reservedTable900, reservedTableImage, 1600);
 
   if (prefersReducedMotion) {
     return (
@@ -312,7 +336,7 @@ export function Hero() {
   }
 
   return (
-    <section ref={sectionRef} id="home-scroll-intro" className="relative h-[510svh] touch-pan-y bg-[#050505] sm:h-[535svh] lg:h-[565svh]" aria-labelledby="home-title">
+    <section ref={sectionRef} id="home-scroll-intro" className="relative h-[600svh] touch-pan-y bg-[#050505] sm:h-[625svh] lg:h-[655svh]" aria-labelledby="home-title">
       {mobileScrollSnapPoints.map((progress) => {
         const offset = progress * 100;
         return (
@@ -339,42 +363,54 @@ export function Hero() {
           </button>
         </motion.div> : null}
 
-        {activeScene <= 1 ? <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-10 h-[58svh] w-[70vw] max-w-[430px] -translate-x-1/2 -translate-y-1/2 sm:h-[62svh] sm:w-[38vw] sm:max-w-none">
-          <motion.img src={roomImage} srcSet={roomSrcSet} sizes="(min-width: 640px) 38vw, 70vw" alt="" style={{ opacity: firstOpacity, x: firstX, scale: firstScale }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" loading="eager" decoding="async" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[9] bg-[radial-gradient(circle_at_50%_45%,rgba(207,164,89,0.13),transparent_48%)]" />
+
+        {activeScene <= 1 ? <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-10 h-[56svh] w-[92vw] -translate-x-1/2 -translate-y-1/2 sm:h-[66svh] sm:w-[78vw] lg:h-[70svh] lg:w-[68vw] lg:max-w-[1120px]">
+          <motion.img src={exteriorImage} srcSet={exteriorSrcSet} sizes="(min-width: 1024px) 68vw, (min-width: 640px) 78vw, 92vw" alt="" style={{ opacity: exteriorOpacity, y: exteriorY, scale: exteriorScale }} className="h-full w-full border border-[#e0bf78]/30 bg-[#17130f] object-cover object-[50%_48%] shadow-[0_34px_120px_rgba(0,0,0,0.62)] saturate-[0.9] contrast-[1.04] will-change-[transform,opacity]" loading="eager" decoding="async" />
         </div> : null}
 
-        {assetStage >= 2 && activeScene <= 2 ? (
-          <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[11] h-[52svh] w-[64vw] max-w-[400px] -translate-x-1/2 -translate-y-1/2 sm:h-[59svh] sm:w-[34vw] sm:max-w-none">
-            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 34vw, 64vw" alt="" style={{ opacity: secondOpacity, x: secondX, y: secondY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
-          </div>
-        ) : null}
+        {assetStage >= 2 && activeScene <= 2 ? <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[11] h-[66svh] w-[80vw] max-w-[560px] -translate-x-1/2 -translate-y-1/2 sm:h-[70svh] sm:w-[52vw] lg:w-[42vw] lg:max-w-[670px]">
+          <motion.img src={roomImage} srcSet={roomSrcSet} sizes="(min-width: 1024px) 42vw, (min-width: 640px) 52vw, 80vw" alt="" style={{ opacity: firstOpacity, x: firstX, scale: firstScale }} className="h-full w-full border border-[#e0bf78]/25 bg-[#17130f] object-cover shadow-[0_32px_110px_rgba(0,0,0,0.6)] saturate-[0.9] contrast-[1.04] will-change-[transform,opacity]" loading="lazy" decoding="async" />
+        </div> : null}
 
         {assetStage >= 3 && activeScene >= 1 && activeScene <= 3 ? (
-          <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[12] h-[56svh] w-[66vw] max-w-[410px] -translate-x-1/2 -translate-y-1/2 sm:h-[61svh] sm:w-[36vw] sm:max-w-none">
-            <motion.img src={gardenImage} srcSet={gardenSrcSet} sizes="(min-width: 640px) 36vw, 66vw" alt="" style={{ opacity: thirdOpacity, x: thirdX, y: thirdY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
+          <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[12] h-[68svh] w-[82vw] max-w-[570px] -translate-x-1/2 -translate-y-1/2 sm:h-[70svh] sm:w-[50vw] lg:w-[40vw] lg:max-w-[650px]">
+            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 1024px) 40vw, (min-width: 640px) 50vw, 82vw" alt="" style={{ opacity: secondOpacity, x: secondX, y: secondY }} className="h-full w-full border border-[#e0bf78]/25 bg-[#17130f] object-cover shadow-[0_32px_110px_rgba(0,0,0,0.6)] saturate-[0.9] contrast-[1.04] will-change-[transform,opacity]" loading="lazy" decoding="async" />
           </div>
         ) : null}
 
-        {assetStage >= 4 && activeScene >= 2 && activeScene <= 4 ? <motion.div aria-hidden="true" style={{ opacity: clusterOpacity }} className="absolute inset-0 z-[13] will-change-[opacity]">
-          <div className="absolute left-1/2 top-[43%] h-[39svh] w-[42vw] -translate-x-1/2 -translate-y-1/2 sm:h-[47svh] sm:w-[25vw]">
-            <motion.img src={closingImage} srcSet={closingSrcSet} sizes="(min-width: 640px) 25vw, 42vw" alt="" style={{ opacity: clusterOneOpacity, x: clusterLeftX, rotate: -3 }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
+        {assetStage >= 4 && activeScene >= 2 && activeScene <= 4 ? (
+          <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[13] h-[66svh] w-[82vw] max-w-[570px] -translate-x-1/2 -translate-y-1/2 sm:h-[70svh] sm:w-[52vw] lg:w-[42vw] lg:max-w-[680px]">
+            <motion.img src={gardenImage} srcSet={gardenSrcSet} sizes="(min-width: 1024px) 42vw, (min-width: 640px) 52vw, 82vw" alt="" style={{ opacity: thirdOpacity, x: thirdX, y: thirdY }} className="h-full w-full border border-[#e0bf78]/25 bg-[#17130f] object-cover shadow-[0_32px_110px_rgba(0,0,0,0.6)] saturate-[0.9] contrast-[1.04] will-change-[transform,opacity]" loading="lazy" decoding="async" />
           </div>
-          <div className="absolute left-1/2 top-[43%] h-[42svh] w-[44vw] -translate-x-1/2 -translate-y-1/2 sm:h-[50svh] sm:w-[26vw]">
-            <motion.img src={welcomeImage} srcSet={welcomeSrcSet} sizes="(min-width: 640px) 26vw, 44vw" alt="" style={{ opacity: clusterTwoOpacity, x: clusterRightX, rotate: 3 }} className="h-full w-full border border-white/10 object-cover object-[28%_center] will-change-[transform,opacity]" decoding="async" />
+        ) : null}
+
+        {assetStage >= 5 && activeScene >= 3 && activeScene <= 5 ? (
+          <div aria-hidden="true" className="absolute left-1/2 top-1/2 z-[14] h-[70svh] w-[82vw] max-w-[590px] -translate-x-1/2 -translate-y-1/2 sm:h-[74svh] sm:w-[48vw] lg:w-[38vw] lg:max-w-[610px]">
+            <motion.img src={wineImage} srcSet={wineSrcSet} sizes="(min-width: 1024px) 38vw, (min-width: 640px) 48vw, 82vw" alt="" style={{ opacity: wineOpacity, x: wineX, y: wineY, scale: wineScale }} className="h-full w-full border border-[#e0bf78]/30 bg-[#17130f] object-cover shadow-[0_34px_120px_rgba(0,0,0,0.64)] saturate-[0.88] contrast-[1.05] will-change-[transform,opacity]" loading="lazy" decoding="async" />
           </div>
-          <div className="absolute left-1/2 top-1/2 h-[32svh] w-[50vw] -translate-x-1/2 -translate-y-1/2 sm:h-[38svh] sm:w-[28vw]">
-            <motion.img src={tableImage} srcSet={tableSrcSet} sizes="(min-width: 640px) 28vw, 50vw" alt="" style={{ opacity: clusterThreeOpacity, y: clusterBottomY }} className="h-full w-full border border-white/10 object-cover will-change-[transform,opacity]" decoding="async" />
+        ) : null}
+
+        {assetStage >= 6 && activeScene >= 4 && activeScene <= 6 ? <motion.div aria-hidden="true" style={{ opacity: clusterOpacity }} className="absolute inset-0 z-[15] will-change-[opacity]">
+          <div className="absolute left-1/2 top-[45%] h-[52svh] w-[92vw] -translate-x-1/2 -translate-y-1/2 sm:h-[60svh] sm:w-[72vw] lg:h-[64svh] lg:w-[58vw] lg:max-w-[960px]">
+            <motion.img src={reservedTableImage} srcSet={reservedTableSrcSet} sizes="(min-width: 1024px) 58vw, (min-width: 640px) 72vw, 92vw" alt="" style={{ opacity: reservedOpacity, scale: reservedScale }} className="h-full w-full border border-[#e0bf78]/30 bg-[#17130f] object-cover shadow-[0_38px_130px_rgba(0,0,0,0.68)] saturate-[0.9] contrast-[1.05] will-change-[transform,opacity]" loading="lazy" decoding="async" />
+          </div>
+          <div className="absolute left-1/2 top-[47%] h-[50svh] w-[42vw] max-w-[330px] -translate-x-1/2 -translate-y-1/2 rotate-[1.5deg] sm:h-[56svh] sm:w-[29vw] lg:w-[21vw] lg:max-w-[350px]">
+            <motion.img src={closingImage} srcSet={closingSrcSet} sizes="(min-width: 1024px) 21vw, (min-width: 640px) 29vw, 42vw" alt="" style={{ opacity: burrataClusterOpacity, x: burrataClusterX }} className="h-full w-full border border-[#e0bf78]/25 bg-[#17130f] object-cover shadow-[0_30px_100px_rgba(0,0,0,0.62)] saturate-[0.92] contrast-[1.04] will-change-[transform,opacity]" loading="lazy" decoding="async" />
+          </div>
+          <div className="absolute left-1/2 top-1/2 h-[25svh] w-[60vw] -translate-x-1/2 -translate-y-1/2 -rotate-[1.25deg] sm:h-[30svh] sm:w-[44vw] lg:h-[33svh] lg:w-[36vw] lg:max-w-[590px]">
+            <motion.img src={welcomeImage} srcSet={welcomeSrcSet} sizes="(min-width: 1024px) 36vw, (min-width: 640px) 44vw, 60vw" alt="" style={{ opacity: staffClusterOpacity, x: staffClusterX, y: staffClusterY }} className="h-full w-full border border-[#e0bf78]/25 bg-[#17130f] object-cover object-[28%_center] shadow-[0_30px_100px_rgba(0,0,0,0.62)] saturate-[0.9] contrast-[1.04] will-change-[transform,opacity]" loading="lazy" decoding="async" />
           </div>
         </motion.div> : null}
 
-        {assetStage >= 5 && activeScene >= 3 ? <motion.img
+        {assetStage >= 7 && activeScene >= 5 ? <motion.img
           src={heroImage}
           srcSet={heroSrcSet}
           sizes="100vw"
           alt={copy.imageAlt}
           style={{ opacity: mainOpacity, scale: mainScale }}
           className="absolute inset-0 z-20 h-full w-full object-cover will-change-[transform,opacity]"
-          loading="eager"
+          loading="lazy"
           decoding="async"
         /> : null}
         <motion.div style={{ opacity: shadeOpacity }} className="absolute inset-0 z-20 bg-[linear-gradient(0deg,rgba(16,14,12,0.88)_0%,rgba(16,14,12,0.52)_62%,rgba(16,14,12,0.22)_100%)] lg:bg-[linear-gradient(90deg,rgba(16,14,12,0.9)_0%,rgba(16,14,12,0.48)_50%,rgba(16,14,12,0.12)_100%),linear-gradient(0deg,rgba(16,14,12,0.64)_0%,transparent_50%)]" />
