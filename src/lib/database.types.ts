@@ -340,6 +340,10 @@ export type Database = {
           time: string
           updated_at: string | null
           user_id: string | null
+          whatsapp_consent_version: string | null
+          whatsapp_opt_in: boolean
+          whatsapp_opt_in_at: string | null
+          whatsapp_opt_out_at: string | null
         }
         Insert: {
           admin_notes?: string | null
@@ -373,6 +377,10 @@ export type Database = {
           time: string
           updated_at?: string | null
           user_id?: string | null
+          whatsapp_consent_version?: string | null
+          whatsapp_opt_in?: boolean
+          whatsapp_opt_in_at?: string | null
+          whatsapp_opt_out_at?: string | null
         }
         Update: {
           admin_notes?: string | null
@@ -406,6 +414,10 @@ export type Database = {
           time?: string
           updated_at?: string | null
           user_id?: string | null
+          whatsapp_consent_version?: string | null
+          whatsapp_opt_in?: boolean
+          whatsapp_opt_in_at?: string | null
+          whatsapp_opt_out_at?: string | null
         }
         Relationships: [
           {
@@ -596,6 +608,138 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_contacts: {
+        Row: {
+          created_at: string
+          last_inbound_at: string | null
+          opted_out_at: string | null
+          phone_e164: string
+          profile_name: string | null
+          service_window_expires_at: string | null
+          updated_at: string
+          wa_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          last_inbound_at?: string | null
+          opted_out_at?: string | null
+          phone_e164: string
+          profile_name?: string | null
+          service_window_expires_at?: string | null
+          updated_at?: string
+          wa_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          last_inbound_at?: string | null
+          opted_out_at?: string | null
+          phone_e164?: string
+          profile_name?: string | null
+          service_window_expires_at?: string | null
+          updated_at?: string
+          wa_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_messages: {
+        Row: {
+          admin_read_at: string | null
+          attempt_count: number
+          body_text: string | null
+          contact_phone: string
+          created_at: string
+          dedupe_key: string | null
+          delivered_at: string | null
+          direction: string
+          error_code: string | null
+          error_message: string | null
+          failed_at: string | null
+          id: string
+          message_type: string
+          metadata: Json
+          provider_message_id: string | null
+          purpose: string
+          read_at: string | null
+          received_at: string | null
+          reply_to_provider_message_id: string | null
+          reservation_id: string | null
+          sent_at: string | null
+          status: string
+          template_language: string | null
+          template_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_read_at?: string | null
+          attempt_count?: number
+          body_text?: string | null
+          contact_phone: string
+          created_at?: string
+          dedupe_key?: string | null
+          delivered_at?: string | null
+          direction: string
+          error_code?: string | null
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          message_type?: string
+          metadata?: Json
+          provider_message_id?: string | null
+          purpose: string
+          read_at?: string | null
+          received_at?: string | null
+          reply_to_provider_message_id?: string | null
+          reservation_id?: string | null
+          sent_at?: string | null
+          status?: string
+          template_language?: string | null
+          template_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_read_at?: string | null
+          attempt_count?: number
+          body_text?: string | null
+          contact_phone?: string
+          created_at?: string
+          dedupe_key?: string | null
+          delivered_at?: string | null
+          direction?: string
+          error_code?: string | null
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          message_type?: string
+          metadata?: Json
+          provider_message_id?: string | null
+          purpose?: string
+          read_at?: string | null
+          received_at?: string | null
+          reply_to_provider_message_id?: string | null
+          reservation_id?: string | null
+          sent_at?: string | null
+          status?: string
+          template_language?: string | null
+          template_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_contact_phone_fkey"
+            columns: ["contact_phone"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_contacts"
+            referencedColumns: ["phone_e164"]
+          },
+          {
+            foreignKeyName: "whatsapp_messages_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -634,6 +778,26 @@ export type Database = {
           reservation_id: string
         }[]
       }
+      create_public_reservation_with_channels: {
+        Args: {
+          p_attribution?: Json
+          p_date: string
+          p_email: string
+          p_guests: number
+          p_locale?: string
+          p_marketing_consent?: boolean
+          p_name: string
+          p_occasion?: string
+          p_phone: string
+          p_special_requests?: string
+          p_time: string
+          p_whatsapp_opt_in?: boolean
+        }
+        Returns: {
+          cancellation_token: string
+          reservation_id: string
+        }[]
+      }
       get_public_availability: {
         Args: { p_date: string }
         Returns: {
@@ -652,12 +816,12 @@ export type Database = {
           can_modify: boolean
           can_modify_time: boolean
           date: string
-          earlier_time: string | null
+          earlier_time: string
           guests: number
           id: string
-          later_time: string | null
+          later_time: string
           name: string
-          special_requests: string | null
+          special_requests: string
           status: string
           time: string
         }[]
@@ -672,14 +836,6 @@ export type Database = {
           status: string
           time: string
         }[]
-      }
-      update_reservation_by_token: {
-        Args: {
-          p_special_requests?: string
-          p_time: string
-          p_token: string
-        }
-        Returns: string
       }
       join_public_waitlist: {
         Args: {
@@ -696,6 +852,10 @@ export type Database = {
           position: number
           waitlist_id: string
         }[]
+      }
+      update_reservation_by_token: {
+        Args: { p_special_requests?: string; p_time: string; p_token: string }
+        Returns: string
       }
     }
     Enums: {
@@ -715,12 +875,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -744,11 +904,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -769,11 +929,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -794,11 +954,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -811,11 +971,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

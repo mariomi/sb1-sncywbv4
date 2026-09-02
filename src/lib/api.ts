@@ -1,7 +1,11 @@
 import { supabase } from './supabase';
 import { getDaysInMonth } from 'date-fns';
 import { ReservationFormData } from './validators';
-import { sendContactConfirmation, sendReservationConfirmation } from './notifications';
+import {
+  sendContactConfirmation,
+  sendReservationConfirmation,
+  sendReservationWhatsApp,
+} from './notifications';
 import type { Database } from './database.types';
 import { getAttribution } from './analytics';
 import { reservationChannel } from './reservationAttribution';
@@ -142,7 +146,7 @@ export async function deleteTimeSlot(id: string) {
 
 export async function createReservation(data: ReservationFormData, locale = 'en') {
   try {
-    const { data: result, error } = await supabase.rpc('create_public_reservation', {
+    const { data: result, error } = await supabase.rpc('create_public_reservation_with_channels', {
       p_date: data.date,
       p_time: data.time,
       p_guests: data.guests,
@@ -152,6 +156,7 @@ export async function createReservation(data: ReservationFormData, locale = 'en'
       p_occasion: data.occasion || null,
       p_special_requests: data.special_requests || null,
       p_marketing_consent: data.marketing_consent,
+      p_whatsapp_opt_in: data.whatsapp_opt_in,
       p_locale: locale,
       p_attribution: getAttribution(),
     });
@@ -171,10 +176,24 @@ export async function createReservation(data: ReservationFormData, locale = 'en'
       console.error('Failed to send confirmation email:', emailError);
     }
 
+    let confirmationWhatsAppSent = false;
+    if (data.whatsapp_opt_in) {
+      try {
+        confirmationWhatsAppSent = await sendReservationWhatsApp(
+          reservation.reservation_id,
+          reservation.cancellation_token,
+          'reservation_confirmation',
+        );
+      } catch (whatsAppError) {
+        console.error('Failed to send WhatsApp confirmation:', whatsAppError);
+      }
+    }
+
     return {
       id: reservation.reservation_id,
       cancellation_token: reservation.cancellation_token,
       confirmation_email_sent: confirmationEmailSent,
+      confirmation_whatsapp_sent: confirmationWhatsAppSent,
     };
   } catch (error) {
     console.error('Error in createReservation:', error);
@@ -662,6 +681,7 @@ export async function updateReservationByToken(
   reservation: ReservationSummary;
   changed: boolean;
   confirmationEmailSent: boolean;
+  confirmationWhatsAppSent: boolean;
 }> {
   try {
     const { data, error } = await supabase.rpc('update_reservation_by_token', {
@@ -675,12 +695,22 @@ export async function updateReservationByToken(
     }
 
     let confirmationEmailSent = true;
+    let confirmationWhatsAppSent = false;
     if (data === 'updated') {
       try {
         await sendReservationConfirmation(reservationId, token);
       } catch (emailError) {
         confirmationEmailSent = false;
         console.error('Failed to send updated reservation confirmation:', emailError);
+      }
+      try {
+        confirmationWhatsAppSent = await sendReservationWhatsApp(
+          reservationId,
+          token,
+          'reservation_updated',
+        );
+      } catch (whatsAppError) {
+        console.error('Failed to send updated reservation WhatsApp message:', whatsAppError);
       }
     }
 
@@ -691,6 +721,7 @@ export async function updateReservationByToken(
       reservation,
       changed: data === 'updated',
       confirmationEmailSent,
+      confirmationWhatsAppSent,
     };
   } catch (error) {
     console.error('Error updating reservation by token:', error);
@@ -698,7 +729,7 @@ export async function updateReservationByToken(
   }
 }
 
-export async function cancelReservationByToken(token: string): Promise<void> {
+export async function cancelReservationByToken(token: string, reservationId?: string): Promise<void> {
   try {
     const { data, error } = await supabase.rpc('cancel_reservation_by_token', {
       p_token: token,
@@ -706,6 +737,13 @@ export async function cancelReservationByToken(token: string): Promise<void> {
     if (error) throw error;
     if (data === 'already_cancelled' || data === 'already_completed') {
       throw new Error(data);
+    }
+    if (data === 'cancelled' && reservationId) {
+      try {
+        await sendReservationWhatsApp(reservationId, token, 'reservation_cancelled');
+      } catch (whatsAppError) {
+        console.error('Failed to send cancellation WhatsApp message:', whatsAppError);
+      }
     }
   } catch (error) {
     console.error('Error cancelling reservation by token:', error);

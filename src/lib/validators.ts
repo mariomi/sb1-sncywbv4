@@ -11,7 +11,8 @@ export const reservationSchema = z.object({
   phone: z.string()
     .min(7, 'Phone number is too short')
     .regex(/^\+[\d\s\-()]{5,}$/, 'Enter a valid phone number with country code (e.g. +39 041 520 4603)'),
-  marketing_consent: z.boolean().default(false)
+  marketing_consent: z.boolean().default(false),
+  whatsapp_opt_in: z.boolean().default(false),
 });
 
 export type ReservationFormData = z.infer<typeof reservationSchema>;
