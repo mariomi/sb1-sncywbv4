@@ -76,6 +76,11 @@
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
+
+  html[data-home-intro-active='true'] #home-standard-landing {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

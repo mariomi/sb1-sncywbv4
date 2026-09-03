@@ -48,7 +48,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-[1480px] px-4 py-14 sm:px-7 sm:py-20 lg:px-10">
         <div className="grid gap-12 border-b border-white/10 pb-12 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
           <div>
-            <Link to="/" className="inline-flex items-center gap-3" aria-label={copy.home}><span className="grid h-11 w-11 place-items-center border border-venetian-gold/60"><Logo className="text-venetian-gold" size={25} /></span><span className="font-serif text-2xl font-semibold">Al Gobbo di Rialto</span></Link>
+            <Link to={pathname === '/' ? '/#home-standard-landing' : '/'} className="inline-flex items-center gap-3" aria-label={copy.home}><span className="grid h-11 w-11 place-items-center border border-venetian-gold/60"><Logo className="text-venetian-gold" size={25} /></span><span className="font-serif text-2xl font-semibold">Al Gobbo di Rialto</span></Link>
             <p className="mt-6 max-w-md text-sm leading-6 text-white/70">{copy.line}</p>
             <Link to="/book" className="mt-7 inline-flex min-h-11 items-center gap-3 text-xs font-bold uppercase tracking-[0.14em] text-venetian-gold hover:gap-5">{copy.reserve}<ArrowUpRight className="h-4 w-4" /></Link>
           </div>

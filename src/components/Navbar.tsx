@@ -132,7 +132,7 @@ export function Navbar() {
     { name: t('nav.location'), path: '/location' },
   ];
   const completeNavItems = [
-    { name: copy.homeLabel, path: '/' },
+    { name: copy.homeLabel, path: location.pathname === '/' ? '/#home-standard-landing' : '/' },
     ...primaryNavItems,
     { name: t('nav.gallery'), path: '/gallery' },
     { name: t('nav.contact'), path: '/contact' },
@@ -145,7 +145,7 @@ export function Navbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-venetian-brown/95 text-white shadow-[0_12px_35px_rgba(18,15,12,0.18)] backdrop-blur-lg transition-all duration-500">
       <div className={`mx-auto flex max-w-[1480px] items-center justify-between px-4 transition-[height] duration-300 sm:px-7 lg:px-10 ${isScrolled ? 'h-[72px]' : 'h-[84px]'}`}>
-        <Link to="/" className="group flex min-w-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:gap-3" aria-label={copy.home}>
+        <Link to={location.pathname === '/' ? '/#home-standard-landing' : '/'} className="group flex min-w-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:gap-3" aria-label={copy.home}>
           <span className="grid h-10 w-10 shrink-0 place-items-center border border-venetian-gold/60 transition-colors group-hover:bg-venetian-gold group-hover:text-venetian-brown">
             <Logo className="text-venetian-gold group-hover:text-venetian-brown" size={24} />
           </span>

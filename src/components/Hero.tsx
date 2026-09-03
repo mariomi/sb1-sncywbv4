@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowRight } from 'lucide-react';
 import { motion, type MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage, type Language } from '../lib/i18n';
 import { developerLegalIdentity, restaurantLegalIdentity } from '../lib/legal';
@@ -150,7 +150,7 @@ function sceneAt(progress: number) {
 
 const mobileScrollSnapPoints = [0, 0.105, 0.21, 0.32, 0.43, 0.54, 0.64, 0.73, 0.855, 1] as const;
 
-function CinematicHero() {
+function CinematicHero({ onSkip }: { onSkip: () => void }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState<HeroPhase>('prompt');
   const [assetStage, setAssetStage] = useState(1);
@@ -287,12 +287,7 @@ function CinematicHero() {
   };
 
   const skipIntro = () => {
-    const landing = document.getElementById('home-standard-landing');
-    if (!landing) return;
-    landing.scrollIntoView({ block: 'start', behavior: 'auto' });
-    window.requestAnimationFrame(() => {
-      document.getElementById('home-standard-reservation-link')?.focus({ preventScroll: true });
-    });
+    onSkip();
   };
 
   const heroSrcSet = `${hero480} 480w, ${hero900} 900w, ${hero1200} 1200w, ${heroImage} 1600w`;
@@ -487,16 +482,53 @@ function CinematicHero() {
 }
 
 export function Hero() {
-  const [showCinematicIntro] = useState(shouldPlayHomeIntro);
+  const [showCinematicIntro, setShowCinematicIntro] = useState(shouldPlayHomeIntro);
+  const completionRef = useRef<{ focusReservation: boolean } | null>(null);
+  const completionFocusFrameRef = useRef<number | null>(null);
+
+  const completeIntro = useCallback((focusReservation: boolean) => {
+    const root = document.documentElement;
+    completionRef.current = { focusReservation };
+    root.dataset.homeIntroActive = 'false';
+    window.dispatchEvent(new CustomEvent('al-gobbo:intro-visibility', {
+      detail: { active: false },
+    }));
+    setShowCinematicIntro(false);
+  }, []);
 
   useLayoutEffect(() => {
     markHomeIntroSeen();
+
+    const completion = completionRef.current;
+    if (showCinematicIntro || !completion) return;
+
+    const root = document.documentElement;
+    const previousScrollBehavior = root.style.getPropertyValue('scroll-behavior');
+    const previousScrollPriority = root.style.getPropertyPriority('scroll-behavior');
+    root.style.setProperty('scroll-behavior', 'auto', 'important');
+    window.scrollTo({ top: 0, left: 0 });
+    completionFocusFrameRef.current = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0 });
+      if (previousScrollBehavior) root.style.setProperty('scroll-behavior', previousScrollBehavior, previousScrollPriority);
+      else root.style.removeProperty('scroll-behavior');
+      if (completion.focusReservation) {
+        document.getElementById('home-standard-reservation-link')?.focus({ preventScroll: true });
+      }
+      completionFocusFrameRef.current = null;
+    });
+    completionRef.current = null;
+  }, [showCinematicIntro]);
+
+  useEffect(() => () => {
+    if (completionFocusFrameRef.current !== null) {
+      window.cancelAnimationFrame(completionFocusFrameRef.current);
+    }
   }, []);
 
   return showCinematicIntro ? (
     <>
-      <CinematicHero />
+      <CinematicHero onSkip={() => completeIntro(true)} />
       <HomeLanding headingId="home-standard-title" reservationLinkId="home-standard-reservation-link" />
     </>
-  ) : <HomeLanding />;
+  ) : <HomeLanding reservationLinkId="home-standard-reservation-link" />;
 }
