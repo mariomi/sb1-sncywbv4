@@ -4,6 +4,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage, type Language } from '../lib/i18n';
 import { developerLegalIdentity, restaurantLegalIdentity } from '../lib/legal';
+import { markHomeIntroSeen, shouldPlayHomeIntro } from '../lib/homeIntro';
+import { HomeLanding } from './HomeLanding';
 import heroImage from '../Img/al-gobbo-2026/interior-hero-1600.webp';
 import hero480 from '../Img/al-gobbo-2026/interior-hero-480.webp';
 import hero900 from '../Img/al-gobbo-2026/interior-hero-900.webp';
@@ -148,7 +150,7 @@ function sceneAt(progress: number) {
 
 const mobileScrollSnapPoints = [0, 0.105, 0.21, 0.32, 0.43, 0.54, 0.64, 0.73, 0.855, 1] as const;
 
-export function Hero() {
+function CinematicHero() {
   const sectionRef = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState<HeroPhase>('prompt');
   const [assetStage, setAssetStage] = useState(1);
@@ -156,8 +158,6 @@ export function Hero() {
   const phaseRef = useRef<HeroPhase>('prompt');
   const assetStageRef = useRef(1);
   const activeSceneRef = useRef(0);
-  const pendingPortalFocusRef = useRef(false);
-  const portalFocusFrameRef = useRef<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
   const { language } = useLanguage();
   const copy = heroCopy[language];
@@ -244,10 +244,6 @@ export function Hero() {
     return () => {
       delete root.dataset.homeIntroActive;
       if (themeColor && previousThemeColor) themeColor.content = previousThemeColor;
-      pendingPortalFocusRef.current = false;
-      if (portalFocusFrameRef.current !== null) {
-        window.cancelAnimationFrame(portalFocusFrameRef.current);
-      }
       window.dispatchEvent(new CustomEvent('al-gobbo:intro-visibility', {
         detail: { active: false },
       }));
@@ -267,6 +263,12 @@ export function Hero() {
     if (phaseRef.current !== nextPhase) {
       phaseRef.current = nextPhase;
       setPhase(nextPhase);
+      const introIsActive = nextPhase !== 'portal';
+      document.documentElement.dataset.homeIntroActive = String(introIsActive);
+      document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', introIsActive ? '#050505' : '#191612');
+      window.dispatchEvent(new CustomEvent('al-gobbo:intro-visibility', {
+        detail: { active: introIsActive },
+      }));
     }
 
     const nextScene = sceneAt(progress);
@@ -275,13 +277,6 @@ export function Hero() {
       setActiveScene(nextScene);
     }
 
-    if (nextPhase === 'portal' && pendingPortalFocusRef.current) {
-      pendingPortalFocusRef.current = false;
-      portalFocusFrameRef.current = window.requestAnimationFrame(() => {
-        document.getElementById('home-reservation-link')?.focus({ preventScroll: true });
-        portalFocusFrameRef.current = null;
-      });
-    }
   });
 
   const moveToReveal = () => {
@@ -292,11 +287,12 @@ export function Hero() {
   };
 
   const skipIntro = () => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const targetTop = section.offsetTop + section.offsetHeight - window.innerHeight;
-    pendingPortalFocusRef.current = true;
-    window.scrollTo({ top: targetTop, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    const landing = document.getElementById('home-standard-landing');
+    if (!landing) return;
+    landing.scrollIntoView({ block: 'start', behavior: 'auto' });
+    window.requestAnimationFrame(() => {
+      document.getElementById('home-standard-reservation-link')?.focus({ preventScroll: true });
+    });
   };
 
   const heroSrcSet = `${hero480} 480w, ${hero900} 900w, ${hero1200} 1200w, ${heroImage} 1600w`;
@@ -488,4 +484,19 @@ export function Hero() {
       </div>
     </section>
   );
+}
+
+export function Hero() {
+  const [showCinematicIntro] = useState(shouldPlayHomeIntro);
+
+  useLayoutEffect(() => {
+    markHomeIntroSeen();
+  }, []);
+
+  return showCinematicIntro ? (
+    <>
+      <CinematicHero />
+      <HomeLanding headingId="home-standard-title" reservationLinkId="home-standard-reservation-link" />
+    </>
+  ) : <HomeLanding />;
 }

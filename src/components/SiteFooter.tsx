@@ -1,8 +1,10 @@
 import { ArrowUpRight, Instagram, MapPin, Phone } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Logo } from './Logo';
 import { useLanguage, type Language } from '../lib/i18n';
 import { developerLegalIdentity, restaurantLegalIdentity } from '../lib/legal';
+import { shouldPlayHomeIntro } from '../lib/homeIntro';
 
 const footerCopy: Record<Language, { line: string; visit: string; explore: string; reserve: string; rights: string; faq: string; manage: string; navigation: string; home: string; privacy: string; legal: string; cookies: string; developedBy: string }> = {
   en: { line: 'Venetian cooking, warm hospitality and a hidden garden near Rialto.', visit: 'Visit', explore: 'Explore', reserve: 'Reserve your table', rights: 'All rights reserved', faq: 'FAQ', manage: 'My bookings', navigation: 'Footer navigation', home: 'Al Gobbo di Rialto, back to the home page', privacy: 'Privacy', legal: 'Legal notice', cookies: 'Cookie choices', developedBy: 'Website by' },
@@ -16,8 +18,30 @@ export function SiteFooter() {
   const { pathname } = useLocation();
   const { language, t } = useLanguage();
   const copy = footerCopy[language];
+  const [isHomeIntroActive, setIsHomeIntroActive] = useState(() => (
+    typeof window !== 'undefined' && window.location.pathname === '/' && shouldPlayHomeIntro()
+  ));
 
-  if (pathname === '/' || pathname.startsWith('/cancella/') || pathname.startsWith('/admin') || pathname === '/messages') return null;
+  useEffect(() => {
+    const syncIntroVisibility = () => {
+      const publishedState = document.documentElement.dataset.homeIntroActive;
+      const isActive = pathname === '/'
+        && (publishedState !== undefined ? publishedState === 'true' : shouldPlayHomeIntro());
+      setIsHomeIntroActive(isActive);
+    };
+    const syncFrame = window.requestAnimationFrame(syncIntroVisibility);
+    const handleIntroVisibility = (event: Event) => {
+      const customEvent = event as CustomEvent<{ active: boolean }>;
+      setIsHomeIntroActive(pathname === '/' && customEvent.detail.active);
+    };
+    window.addEventListener('al-gobbo:intro-visibility', handleIntroVisibility);
+    return () => {
+      window.cancelAnimationFrame(syncFrame);
+      window.removeEventListener('al-gobbo:intro-visibility', handleIntroVisibility);
+    };
+  }, [pathname]);
+
+  if ((pathname === '/' && isHomeIntroActive) || pathname.startsWith('/cancella/') || pathname.startsWith('/admin') || pathname === '/messages') return null;
 
   return (
     <footer className="border-t border-white/10 bg-[#11100e] text-white">

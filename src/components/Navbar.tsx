@@ -6,22 +6,25 @@ import { Logo } from './Logo';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { useLanguage, type Language } from '../lib/i18n';
+import { shouldPlayHomeIntro } from '../lib/homeIntro';
 
 const navbarCopy: Record<Language, {
   home: string;
   primaryNavigation: string;
-  mobileNavigation: string;
+  completeNavigation: string;
   openMenu: string;
   closeMenu: string;
+  menu: string;
+  homeLabel: string;
   call: string;
   faq: string;
   manage: string;
 }> = {
-  it: { home: 'Al Gobbo di Rialto, torna alla pagina iniziale', primaryNavigation: 'Navigazione principale', mobileNavigation: 'Navigazione mobile', openMenu: 'Apri il menu', closeMenu: 'Chiudi il menu', call: 'Chiamaci', faq: 'Domande frequenti', manage: 'Le mie prenotazioni' },
-  en: { home: 'Al Gobbo di Rialto, back to the home page', primaryNavigation: 'Main navigation', mobileNavigation: 'Mobile navigation', openMenu: 'Open menu', closeMenu: 'Close menu', call: 'Call us', faq: 'Frequently asked questions', manage: 'My bookings' },
-  fr: { home: 'Al Gobbo di Rialto, retour à l’accueil', primaryNavigation: 'Navigation principale', mobileNavigation: 'Navigation mobile', openMenu: 'Ouvrir le menu', closeMenu: 'Fermer le menu', call: 'Appelez-nous', faq: 'Questions fréquentes', manage: 'Mes réservations' },
-  de: { home: 'Al Gobbo di Rialto, zurück zur Startseite', primaryNavigation: 'Hauptnavigation', mobileNavigation: 'Mobile Navigation', openMenu: 'Menü öffnen', closeMenu: 'Menü schließen', call: 'Anrufen', faq: 'Häufige Fragen', manage: 'Meine Reservierungen' },
-  es: { home: 'Al Gobbo di Rialto, volver al inicio', primaryNavigation: 'Navegación principal', mobileNavigation: 'Navegación móvil', openMenu: 'Abrir el menú', closeMenu: 'Cerrar el menú', call: 'Llámanos', faq: 'Preguntas frecuentes', manage: 'Mis reservas' },
+  it: { home: 'Al Gobbo di Rialto, torna alla pagina iniziale', primaryNavigation: 'Navigazione principale', completeNavigation: 'Navigazione completa', openMenu: 'Apri il menu', closeMenu: 'Chiudi il menu', menu: 'Menu', homeLabel: 'Home', call: 'Chiamaci', faq: 'Domande frequenti', manage: 'Le mie prenotazioni' },
+  en: { home: 'Al Gobbo di Rialto, back to the home page', primaryNavigation: 'Main navigation', completeNavigation: 'Complete navigation', openMenu: 'Open menu', closeMenu: 'Close menu', menu: 'Menu', homeLabel: 'Home', call: 'Call us', faq: 'Frequently asked questions', manage: 'My bookings' },
+  fr: { home: 'Al Gobbo di Rialto, retour à l’accueil', primaryNavigation: 'Navigation principale', completeNavigation: 'Navigation complète', openMenu: 'Ouvrir le menu', closeMenu: 'Fermer le menu', menu: 'Menu', homeLabel: 'Accueil', call: 'Appelez-nous', faq: 'Questions fréquentes', manage: 'Mes réservations' },
+  de: { home: 'Al Gobbo di Rialto, zurück zur Startseite', primaryNavigation: 'Hauptnavigation', completeNavigation: 'Vollständige Navigation', openMenu: 'Menü öffnen', closeMenu: 'Menü schließen', menu: 'Menü', homeLabel: 'Startseite', call: 'Anrufen', faq: 'Häufige Fragen', manage: 'Meine Reservierungen' },
+  es: { home: 'Al Gobbo di Rialto, volver al inicio', primaryNavigation: 'Navegación principal', completeNavigation: 'Navegación completa', openMenu: 'Abrir el menú', closeMenu: 'Cerrar el menú', menu: 'Menú', homeLabel: 'Inicio', call: 'Llámanos', faq: 'Preguntas frecuentes', manage: 'Mis reservas' },
 };
 
 export function Navbar() {
@@ -30,7 +33,7 @@ export function Navbar() {
   const isScrolledRef = useRef(false);
   const [isHomeIntroActive, setIsHomeIntroActive] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return window.location.pathname === '/';
+    return window.location.pathname === '/' && shouldPlayHomeIntro();
   });
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const firstMobileLinkRef = useRef<HTMLAnchorElement>(null);
@@ -56,13 +59,11 @@ export function Navbar() {
   }, [location.pathname]);
 
   useEffect(() => {
-    setIsHomeIntroActive(location.pathname === '/');
-
     const syncIntroVisibility = () => {
       const publishedState = document.documentElement.dataset.homeIntroActive;
-      if (publishedState !== undefined) {
-        setIsHomeIntroActive(location.pathname === '/' && publishedState === 'true');
-      }
+      const isActive = location.pathname === '/'
+        && (publishedState !== undefined ? publishedState === 'true' : shouldPlayHomeIntro());
+      setIsHomeIntroActive(isActive);
     };
     const syncFrame = window.requestAnimationFrame(syncIntroVisibility);
 
@@ -86,8 +87,12 @@ export function Navbar() {
 
     const previousOverflow = document.body.style.overflow;
     const mainContent = document.getElementById('main-content');
+    const footer = document.querySelector<HTMLElement>('footer');
+    const mainWasInert = mainContent?.inert ?? false;
+    const footerWasInert = footer?.inert ?? false;
     document.body.style.overflow = 'hidden';
     if (mainContent) mainContent.inert = true;
+    if (footer) footer.inert = true;
     const focusTimer = window.setTimeout(() => firstMobileLinkRef.current?.focus(), 80);
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -116,25 +121,18 @@ export function Navbar() {
       window.clearTimeout(focusTimer);
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = previousOverflow;
-      if (mainContent) mainContent.inert = false;
+      if (mainContent) mainContent.inert = mainWasInert;
+      if (footer) footer.inert = footerWasInert;
     };
   }, [isMenuOpen]);
-
-  useEffect(() => {
-    const desktopQuery = window.matchMedia('(min-width: 1024px)');
-    const closeAtDesktop = (event: MediaQueryListEvent) => {
-      if (event.matches) setIsMenuOpen(false);
-    };
-    desktopQuery.addEventListener('change', closeAtDesktop);
-    return () => desktopQuery.removeEventListener('change', closeAtDesktop);
-  }, []);
 
   const primaryNavItems = [
     { name: t('nav.menu'), path: '/menu' },
     { name: t('nav.about'), path: '/our-story' },
     { name: t('nav.location'), path: '/location' },
   ];
-  const mobileNavItems = [
+  const completeNavItems = [
+    { name: copy.homeLabel, path: '/' },
     ...primaryNavItems,
     { name: t('nav.gallery'), path: '/gallery' },
     { name: t('nav.contact'), path: '/contact' },
@@ -142,12 +140,10 @@ export function Navbar() {
     { name: copy.manage, path: '/my-reservations' },
   ];
 
-  const isHomeOverlay = location.pathname === '/' && !isScrolled && !isMenuOpen;
-
   if (isHomeIntroActive) return null;
 
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 border-b text-white transition-all duration-500 ${isHomeOverlay ? 'border-white/10 bg-transparent' : 'border-white/10 bg-venetian-brown/95 shadow-[0_12px_35px_rgba(18,15,12,0.18)] backdrop-blur-lg'}`}>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-venetian-brown/95 text-white shadow-[0_12px_35px_rgba(18,15,12,0.18)] backdrop-blur-lg transition-all duration-500">
       <div className={`mx-auto flex max-w-[1480px] items-center justify-between px-4 transition-[height] duration-300 sm:px-7 lg:px-10 ${isScrolled ? 'h-[72px]' : 'h-[84px]'}`}>
         <Link to="/" className="group flex min-w-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:gap-3" aria-label={copy.home}>
           <span className="grid h-10 w-10 shrink-0 place-items-center border border-venetian-gold/60 transition-colors group-hover:bg-venetian-gold group-hover:text-venetian-brown">
@@ -159,7 +155,7 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-9 lg:flex" aria-label={copy.primaryNavigation}>
+        <nav className="hidden items-center gap-8 2xl:flex" aria-label={copy.primaryNavigation}>
           {primaryNavItems.map((item) => {
             const active = location.pathname === item.path;
             return (
@@ -188,11 +184,12 @@ export function Navbar() {
           ref={menuButtonRef}
           type="button"
           onClick={() => setIsMenuOpen((open) => !open)}
-          className="grid h-11 w-11 shrink-0 place-items-center border border-white/25 text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold focus-visible:ring-offset-4 focus-visible:ring-offset-venetian-brown lg:hidden"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2.5 border border-white/25 px-3 text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold focus-visible:ring-offset-4 focus-visible:ring-offset-venetian-brown sm:px-4"
           aria-expanded={isMenuOpen}
-          aria-controls="mobile-navigation"
+          aria-controls="site-navigation"
           aria-label={isMenuOpen ? copy.closeMenu : copy.openMenu}
         >
+          <span className="hidden text-[0.66rem] font-bold uppercase tracking-[0.16em] sm:inline">{copy.menu}</span>
           {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
@@ -201,28 +198,28 @@ export function Navbar() {
         {isMenuOpen ? (
           <motion.div
             ref={mobileNavigationRef}
-            id="mobile-navigation"
+            id="site-navigation"
             role="dialog"
             aria-modal="true"
-            aria-label={copy.mobileNavigation}
+            aria-label={copy.completeNavigation}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="overflow-hidden border-t border-white/10 bg-venetian-brown lg:hidden"
+            className="overflow-hidden border-t border-white/10 bg-venetian-brown"
           >
-            <nav className="scrollbar-hide mx-auto max-h-[calc(100dvh-72px)] max-w-[1480px] overflow-y-auto px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4 sm:px-7" aria-label={copy.mobileNavigation}>
-              <div className="divide-y divide-white/10 border-y border-white/10">
-                {mobileNavItems.map((item, index) => {
+            <nav className={`scrollbar-hide mx-auto max-w-[1480px] overflow-y-auto px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4 sm:px-7 lg:px-10 lg:pt-6 ${isScrolled ? 'max-h-[calc(100dvh-72px)]' : 'max-h-[calc(100dvh-84px)]'}`} aria-label={copy.completeNavigation}>
+              <div className="grid border-l border-t border-white/10 sm:grid-cols-2 lg:grid-cols-4">
+                {completeNavItems.map((item, index) => {
                   const active = location.pathname === item.path;
                   return (
-                    <motion.div key={item.path} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.04 }}>
+                    <motion.div key={item.path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.035 }} className="border-b border-r border-white/10">
                       <Link
                         ref={index === 0 ? firstMobileLinkRef : undefined}
                         to={item.path}
                         aria-current={active ? 'page' : undefined}
                         onClick={() => setIsMenuOpen(false)}
-                        className={`flex min-h-12 items-center justify-between py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-venetian-gold ${active ? 'text-venetian-gold' : 'text-white'}`}
+                        className={`flex min-h-16 items-center justify-between px-4 py-3 text-sm font-semibold transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-venetian-gold lg:min-h-20 lg:px-5 ${active ? 'bg-white/5 text-venetian-gold' : 'text-white'}`}
                       >
                         {item.name}<span aria-hidden="true">↗</span>
                       </Link>
@@ -234,9 +231,22 @@ export function Navbar() {
                 <a href="tel:+390415204603" className="inline-flex min-h-12 items-center justify-center gap-2 border border-white/25 px-2 text-xs font-bold uppercase tracking-[0.1em] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold"><Phone className="h-4 w-4" />{copy.call}</a>
                 <Link to="/book" onClick={() => setIsMenuOpen(false)} className="inline-flex min-h-12 items-center justify-center bg-venetian-gold px-3 text-center text-xs font-bold uppercase tracking-[0.1em] text-venetian-brown focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">{t('nav.reserve')}</Link>
               </div>
-              <div className="mt-5 flex items-center justify-between">
-                <LanguageSwitcher />
-                <ThemeToggle />
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <LanguageSwitcher />
+                  <ThemeToggle />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+                  }}
+                  className="inline-flex min-h-11 items-center gap-2 border border-white/25 px-4 text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:border-venetian-gold hover:text-venetian-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-venetian-gold"
+                >
+                  {copy.closeMenu}
+                  <X className="h-4 w-4" />
+                </button>
               </div>
             </nav>
           </motion.div>
