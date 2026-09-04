@@ -31,6 +31,8 @@ type TrackingWindow = Window & {
 
 const CONSENT_KEY = 'al-gobbo-consent-v1';
 const ATTRIBUTION_KEY = 'al-gobbo-attribution-v1';
+const DEFAULT_GOOGLE_ADS_ID = 'AW-667133835';
+const DEFAULT_GOOGLE_ADS_CONVERSION_LABEL = 'q860CM7NluwcEIvPjr4C';
 const UTM_KEYS = [
   'utm_source',
   'utm_medium',
@@ -52,6 +54,14 @@ let initializedSignature = '';
 
 function trackingWindow() {
   return window as TrackingWindow;
+}
+
+function googleAdsId() {
+  return import.meta.env.VITE_GOOGLE_ADS_ID?.trim() || DEFAULT_GOOGLE_ADS_ID;
+}
+
+function googleAdsConversionLabel() {
+  return import.meta.env.VITE_GOOGLE_ADS_CONVERSION_LABEL?.trim() || DEFAULT_GOOGLE_ADS_CONVERSION_LABEL;
 }
 
 function injectScript(id: string, src: string) {
@@ -202,7 +212,7 @@ export function initializeTracking(consent = readConsent()) {
 
   const gtmId = import.meta.env.VITE_GTM_ID?.trim();
   const ga4Id = import.meta.env.VITE_GA4_ID?.trim();
-  const adsId = import.meta.env.VITE_GOOGLE_ADS_ID?.trim();
+  const adsId = googleAdsId();
   const metaPixelId = import.meta.env.VITE_META_PIXEL_ID?.trim();
   const target = ensureGoogleLayer();
 
@@ -257,14 +267,10 @@ export function trackEvent(event: MarketingEvent, properties: EventProperties = 
   }
 
   if (event === 'booking_completed' && consent.marketing) {
-    const adsId = import.meta.env.VITE_GOOGLE_ADS_ID?.trim();
-    const conversionLabel = import.meta.env.VITE_GOOGLE_ADS_CONVERSION_LABEL?.trim();
-    if (adsId && conversionLabel) {
-      target.gtag?.('event', 'conversion', {
-        send_to: `${adsId}/${conversionLabel}`,
-        transaction_id: properties.reservation_id,
-      });
-    }
+    target.gtag?.('event', 'conversion', {
+      send_to: `${googleAdsId()}/${googleAdsConversionLabel()}`,
+      transaction_id: properties.reservation_id,
+    });
     target.fbq?.('track', 'Schedule', { content_name: 'Restaurant reservation' });
   }
 }
