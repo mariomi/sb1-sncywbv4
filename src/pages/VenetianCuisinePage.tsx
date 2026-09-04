@@ -20,11 +20,11 @@ export function VenetianCuisinePage() {
         description="Discover Venetian cuisine through sarde in saor, baccalà mantecato, bigoli in salsa and lagoon seafood at Al Gobbo di Rialto in Venice."
         availableLanguages={['en']}
       />
-      <main className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
+      <main className="min-h-screen bg-venetian-sandstone pt-[84px] dark:bg-venetian-brown">
         <section className="mx-auto grid max-w-[1480px] bg-venetian-brown text-white lg:grid-cols-2">
             <div className="flex min-h-[560px] flex-col justify-end px-5 py-14 sm:px-10 lg:px-16 lg:py-20">
               <p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-venetian-gold">The lagoon at the table</p>
-              <h1 className="mt-6 max-w-[10ch] font-serif text-6xl font-semibold leading-[0.8] tracking-[-0.04em] sm:text-8xl">A Short Guide to Venetian Cuisine</h1>
+              <h1 className="mt-6 max-w-[10ch] font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] sm:text-9xl">A Short Guide to Venetian Cuisine</h1>
               <p className="mt-7 max-w-xl border-l-2 border-venetian-terracotta pl-5 text-base leading-7 text-white/65">Venetian food grew from lagoon ingredients, trade, seasonality and practical preservation. Its best-known dishes are direct, distinctive and inseparable from the city that created them.</p>
             </div>
             <img src={dishImage} alt="Venetian seafood dish served at Al Gobbo di Rialto" className="h-full min-h-[460px] w-full object-cover" decoding="async" />

@@ -265,7 +265,7 @@ function CinematicHero({ onSkip }: { onSkip: () => void }) {
       setPhase(nextPhase);
       const introIsActive = nextPhase !== 'portal';
       document.documentElement.dataset.homeIntroActive = String(introIsActive);
-      document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', introIsActive ? '#050505' : '#191612');
+      document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', introIsActive ? '#050505' : '#171415');
       window.dispatchEvent(new CustomEvent('al-gobbo:intro-visibility', {
         detail: { active: introIsActive },
       }));

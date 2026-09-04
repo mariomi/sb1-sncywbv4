@@ -84,3 +84,28 @@ test('fresh cookie choices remain available', () => {
 
   assert.deepEqual(readConsent(), { analytics: false, marketing: false, updatedAt });
 });
+
+test('completed bookings send the configured Google Ads conversion once', () => {
+  const local = memoryStorage();
+  const gtagCalls: unknown[][] = [];
+  local.setItem('al-gobbo-consent-v1', JSON.stringify({ analytics: false, marketing: true, updatedAt: new Date().toISOString() }));
+
+  Object.assign(globalThis, {
+    localStorage: local,
+    window: {
+      location: { pathname: '/book' },
+      gtag: (...args: unknown[]) => gtagCalls.push(args),
+    },
+  });
+
+  trackEvent('booking_completed', { reservation_id: 'reservation-123', guests: 2 });
+
+  assert.deepEqual(gtagCalls, [[
+    'event',
+    'conversion',
+    {
+      send_to: 'AW-667133835/q860CM7NluwcEIvPjr4C',
+      transaction_id: 'reservation-123',
+    },
+  ]]);
+});

@@ -351,9 +351,9 @@ export function CancelReservationPage() {
   return (
     <PageTransition>
       <SEOHead title={editCopy.pageTitle} noindex />
-      <main className="min-h-screen bg-[#f7f3eb] px-4 pb-20 pt-32 dark:bg-venetian-brown sm:px-6">
+      <main className="min-h-screen bg-venetian-sandstone px-4 pb-20 pt-32 dark:bg-venetian-brown sm:px-6">
         <motion.section
-          className="mx-auto max-w-lg overflow-hidden border border-venetian-brown/15 bg-white/70 dark:border-white/15 dark:bg-[#211d18]"
+          className="mx-auto max-w-lg overflow-hidden rounded-[0.35rem] border border-venetian-brown/15 bg-white/70 dark:border-white/15 dark:bg-[#231f20]"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}

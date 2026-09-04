@@ -31,7 +31,7 @@ export function LanguageSwitcher() {
         id={id}
         value={language}
         onChange={(event) => setLanguage(event.target.value as Language)}
-        className="min-h-11 w-[7.5rem] cursor-pointer appearance-none border border-white/25 bg-white/[0.06] py-2 pl-9 pr-8 text-sm font-semibold text-white transition-colors hover:border-venetian-gold/80 hover:bg-white/[0.1] focus:border-venetian-gold focus:outline-none focus:ring-2 focus:ring-venetian-gold/35"
+        className="min-h-11 w-[7.5rem] cursor-pointer appearance-none rounded-full border border-white/25 bg-white/[0.06] py-2 pl-9 pr-8 font-mono text-[0.64rem] font-medium uppercase tracking-[0.08em] text-white transition-colors hover:border-venetian-gold/80 hover:bg-white/[0.1] focus:border-venetian-gold focus:outline-none focus:ring-2 focus:ring-venetian-gold/35"
         aria-label={label}
         title={label}
       >

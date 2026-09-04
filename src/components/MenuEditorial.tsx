@@ -38,11 +38,11 @@ export default function MenuEditorial() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
+    <main className="min-h-screen bg-venetian-sandstone pt-[84px] dark:bg-venetian-brown">
       <section className="mx-auto grid max-w-[1480px] border-x border-venetian-brown/15 lg:grid-cols-[1.05fr_0.95fr] dark:border-white/10">
         <div className="flex min-h-[280px] flex-col justify-end px-5 py-9 sm:min-h-[360px] sm:px-10 sm:py-12 lg:min-h-[520px] lg:px-16 lg:py-16">
           <p className="editorial-kicker">{copy.kicker}</p>
-          <h1 className="mt-4 max-w-[9ch] font-serif text-5xl font-semibold leading-[0.86] tracking-[-0.035em] text-venetian-brown dark:text-white sm:mt-5 sm:text-8xl">{t('menu.title')}</h1>
+          <h1 className="mt-5 max-w-[9ch] font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] text-venetian-brown dark:text-white sm:text-9xl">{t('menu.title')}</h1>
           <p className="mt-5 max-w-xl text-sm leading-6 text-venetian-brown/70 dark:text-white/70 sm:mt-7 sm:text-base sm:leading-7">{menuIntro[language]}</p>
         </div>
         <div className="relative min-h-[240px] overflow-hidden sm:min-h-[320px] lg:min-h-[520px]">
@@ -52,7 +52,7 @@ export default function MenuEditorial() {
         </div>
       </section>
 
-      <section className="sticky top-[72px] z-30 border-y border-venetian-brown/15 bg-[#f7f3eb]/95 backdrop-blur-lg dark:border-white/10 dark:bg-venetian-brown/95" aria-label={copy.filters}>
+      <section className="sticky top-[72px] z-30 border-y border-venetian-brown/15 bg-venetian-sandstone/95 backdrop-blur-lg dark:border-white/10 dark:bg-venetian-brown/95" aria-label={copy.filters}>
         <div className="mx-auto grid max-w-[1480px] gap-2 px-4 py-3 sm:px-7 lg:grid-cols-[auto_1fr] lg:items-center lg:px-10">
           <div className="grid grid-cols-3 gap-1" role="group" aria-label={copy.categories}>
             {categories.map((category) => {
@@ -79,7 +79,7 @@ export default function MenuEditorial() {
           {sections.map((section) => (
             <motion.div key={section.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.3 }}>
               <div className="grid gap-5 border-b border-venetian-brown pb-8 sm:grid-cols-[0.75fr_1.25fr] sm:items-end dark:border-white">
-                <h2 className="font-serif text-5xl font-semibold leading-none text-venetian-brown sm:text-7xl dark:text-white">{section.title}</h2>
+                <h2 className="font-serif text-5xl font-black uppercase leading-[0.82] tracking-[-0.04em] text-venetian-brown sm:text-7xl dark:text-white">{section.title}</h2>
                 {section.description ? <p className="text-sm leading-6 text-venetian-brown/55 sm:text-right dark:text-white/55">{section.description}</p> : null}
               </div>
 

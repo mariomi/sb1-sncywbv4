@@ -52,14 +52,14 @@ export function MyReservationsPage() {
   return (
     <PageTransition>
       <SEOHead title={text.seo} canonical="/my-reservations" noindex />
-      <main className="min-h-screen bg-[#f7f3eb] pb-16 pt-[84px] dark:bg-venetian-brown sm:pb-24">
+      <main className="min-h-screen bg-venetian-sandstone pb-16 pt-[84px] dark:bg-venetian-brown sm:pb-24">
         <section className="relative mx-auto h-[32svh] min-h-[260px] max-w-[1480px] overflow-hidden sm:h-[42vh] sm:min-h-[390px]">
           <img src={reservationImage} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/20" />
           <div className="relative flex h-full items-end px-5 py-8 sm:px-10 sm:py-12 lg:px-16">
             <div>
               <p className="mb-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-venetian-gold sm:mb-5">{text.kicker}</p>
-              <h1 className="max-w-[11ch] font-serif text-5xl font-semibold leading-[0.86] text-white sm:text-8xl">{text.title}</h1>
+              <h1 className="max-w-[11ch] font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] text-white sm:text-9xl">{text.title}</h1>
               <p className="mt-4 max-w-xl border-l-2 border-venetian-terracotta pl-4 text-sm leading-6 text-white/90 sm:mt-5 sm:text-lg">{text.subtitle}</p>
             </div>
           </div>

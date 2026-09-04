@@ -678,7 +678,7 @@ export function ReservePage() {
         availableLanguages={['en', 'it', 'fr', 'de', 'es']}
         description={copy.seoDescription}
       />
-      <div className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
+      <div className="min-h-screen bg-venetian-sandstone pt-[84px] dark:bg-venetian-brown">
         {/* Hero Section */}
         <motion.section
           className="relative mx-auto h-[36svh] min-h-[280px] max-w-[1480px] overflow-hidden border-x border-venetian-brown/15 dark:border-white/10 sm:h-[42svh] sm:min-h-[360px] lg:min-h-[430px]"
@@ -697,7 +697,7 @@ export function ReservePage() {
             <div className="max-w-3xl text-left">
               <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-venetian-gold sm:mb-5">San Polo · Rialto · Venezia</p>
               <motion.h1
-                className="max-w-[9ch] font-serif text-[clamp(3.25rem,15vw,6rem)] font-semibold leading-[0.84] text-white"
+                className="max-w-[9ch] font-serif text-[clamp(3.5rem,15vw,7rem)] font-black uppercase leading-[0.74] tracking-[-0.05em] text-white"
                 {...fadeIn}
               >
                 {copy.heroTitle}
@@ -719,12 +719,12 @@ export function ReservePage() {
           <div className="grid gap-10 lg:grid-cols-3 lg:gap-12">
             {/* Reservation Form */}
             <motion.div
-              className="border-t border-venetian-brown pt-7 lg:col-span-2 sm:pt-9 [&_button]:rounded-none [&_input]:rounded-none [&_select]:rounded-none [&_textarea]:rounded-none dark:border-white"
+              className="border-t border-venetian-brown pt-7 lg:col-span-2 sm:pt-9 dark:border-white"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="mb-7 font-serif text-4xl font-semibold text-venetian-brown sm:text-6xl dark:text-white">{copy.detailsTitle}</h2>
+              <h2 className="mb-7 font-serif text-4xl font-black uppercase leading-[0.84] tracking-[-0.035em] text-venetian-brown sm:text-6xl dark:text-white">{copy.detailsTitle}</h2>
               {flagsLoading ? (
                 <div className="flex min-h-32 items-center justify-center border border-venetian-brown/15 bg-white/50 dark:border-white/15 dark:bg-white/5" role="status" aria-label={copy.processing}>
                   <Loader2 className="h-6 w-6 animate-spin text-venetian-gold" />

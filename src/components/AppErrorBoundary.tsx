@@ -18,7 +18,7 @@ export class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, App
     if (!this.state.failed) return this.props.children;
 
     return (
-      <main className="grid min-h-screen place-items-center bg-[#f7f3eb] px-5 py-24 text-center text-venetian-brown">
+      <main className="grid min-h-screen place-items-center bg-venetian-sandstone px-5 py-24 text-center text-venetian-brown">
         <div className="max-w-lg border-t border-venetian-brown pt-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-venetian-terracotta">Al Gobbo di Rialto</p>
           <h1 className="mt-5 font-serif text-5xl font-semibold leading-[0.9]">La pagina non si è caricata.</h1>

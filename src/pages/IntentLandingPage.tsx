@@ -99,11 +99,11 @@ function LandingPage({ config }: { config: LandingConfig }) {
         canonical={config.canonical}
         availableLanguages={['en']}
       />
-      <main className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
+      <main className="min-h-screen bg-venetian-sandstone pt-[84px] dark:bg-venetian-brown">
         <section className="mx-auto grid max-w-[1480px] border-x border-white/10 bg-venetian-brown text-white lg:grid-cols-2">
           <div className="flex min-h-[560px] flex-col justify-end px-5 py-14 sm:px-10 lg:px-16 lg:py-20">
               <p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-venetian-gold">{config.eyebrow}</p>
-              <h1 className="mt-6 max-w-[10ch] font-serif text-6xl font-semibold leading-[0.8] tracking-[-0.04em] sm:text-8xl">{config.heading}</h1>
+              <h1 className="mt-6 max-w-[10ch] font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] sm:text-9xl">{config.heading}</h1>
               <p className="mb-9 mt-7 max-w-2xl border-l-2 border-venetian-terracotta pl-5 text-base leading-7 text-white/65">{config.lead}</p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link to="/book" className="inline-flex min-h-12 items-center justify-center bg-venetian-gold px-7 text-xs font-bold uppercase tracking-[0.14em] text-venetian-brown hover:bg-white">
@@ -143,7 +143,7 @@ function LandingPage({ config }: { config: LandingConfig }) {
           </div>
         </section>
 
-        <section className="bg-[#efe6d6] py-20 dark:bg-[#211d18]">
+        <section className="bg-[#d7d4c7] py-20 dark:bg-[#231f20]">
           <div className="mx-auto max-w-[1480px] px-4 sm:px-7 lg:px-10">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <UtensilsCrossed className="w-8 h-8 text-venetian-gold mx-auto mb-5" />

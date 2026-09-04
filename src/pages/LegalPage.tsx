@@ -115,11 +115,11 @@ export function LegalPage() {
   return (
     <PageTransition>
       <SEOHead title={copy.seoTitle} canonical="/legal" description={copy.description} availableLanguages={['en', 'it', 'fr', 'de', 'es']} />
-      <main className="min-h-screen bg-[#f7f3eb] pb-20 pt-[84px] dark:bg-venetian-brown">
+      <main className="min-h-screen bg-venetian-sandstone pb-20 pt-[84px] dark:bg-venetian-brown">
         <article className="mx-auto max-w-5xl px-4 py-16 sm:px-7 sm:py-24">
           <div className="border-t border-venetian-brown pt-7 dark:border-white">
             <p className="editorial-kicker mb-5">{copy.kicker}</p>
-            <h1 className="max-w-[13ch] font-serif text-5xl font-semibold leading-[0.88] text-venetian-brown sm:text-7xl dark:text-white">{copy.title}</h1>
+            <h1 className="max-w-[13ch] font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] text-venetian-brown sm:text-8xl dark:text-white">{copy.title}</h1>
             <p className="mb-10 mt-5 text-sm text-venetian-brown/60 dark:text-venetian-sandstone/60">{copy.updated}</p>
 
             <div className="mt-14 leading-relaxed text-venetian-brown/70 dark:text-white/70">

@@ -60,12 +60,12 @@ export function LocationPage() {
   return (
     <PageTransition>
       <SEOHead title={text.seoTitle} canonical="/location" description={text.seoDescription} />
-      <main className="min-h-screen bg-[#f7f3eb] pb-16 pt-[84px] dark:bg-venetian-brown sm:pb-24">
+      <main className="min-h-screen bg-venetian-sandstone pb-16 pt-[84px] dark:bg-venetian-brown sm:pb-24">
         <div className="mx-auto max-w-[1480px] border-x border-venetian-brown/15 px-4 py-10 dark:border-white/10 sm:px-10 sm:py-20 lg:px-16">
           <header className="mb-9 grid gap-5 border-t border-venetian-brown pt-6 dark:border-white sm:mb-12 sm:pt-7 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
             <div>
               <p className="editorial-kicker">{text.kicker}</p>
-              <h1 className="mt-4 max-w-[11ch] font-serif text-5xl font-semibold leading-[0.86] tracking-[-0.04em] text-venetian-brown dark:text-white sm:mt-5 sm:text-8xl">{text.title}</h1>
+              <h1 className="mt-5 max-w-[11ch] font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] text-venetian-brown dark:text-white sm:text-9xl">{text.title}</h1>
             </div>
             <p className="max-w-2xl text-sm leading-6 text-venetian-brown/70 dark:text-white/70 sm:text-base sm:leading-7 lg:justify-self-end">{text.intro}</p>
           </header>

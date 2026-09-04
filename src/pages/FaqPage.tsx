@@ -199,7 +199,7 @@ export function FaqPage() {
         structuredData={faqSchema}
       />
 
-      <div className="min-h-screen bg-[#f7f3eb] pb-20 pt-[84px] dark:bg-venetian-brown">
+      <div className="min-h-screen bg-venetian-sandstone pb-20 pt-[84px] dark:bg-venetian-brown">
         <div className="mx-auto max-w-5xl px-4 py-10 sm:px-7 sm:py-24">
 
           {/* Header */}
@@ -210,7 +210,7 @@ export function FaqPage() {
             className="mb-10 border-t border-venetian-brown pt-6 text-left dark:border-white sm:mb-16 sm:pt-7"
           >
             <p className="editorial-kicker">{text.kicker}</p>
-            <h1 className="mt-4 max-w-[11ch] font-serif text-5xl font-semibold leading-[0.86] text-venetian-brown dark:text-white sm:mt-5 sm:text-8xl">{text.title}</h1>
+            <h1 className="mt-5 max-w-[11ch] font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] text-venetian-brown dark:text-white sm:text-9xl">{text.title}</h1>
             <p className="mt-5 max-w-xl text-sm leading-6 text-venetian-brown/70 dark:text-white/70 sm:mt-7 sm:text-base sm:leading-7">{text.intro}</p>
           </motion.div>
 

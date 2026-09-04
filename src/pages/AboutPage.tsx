@@ -54,11 +54,11 @@ export function AboutPage() {
   return (
     <PageTransition>
       <SEOHead title={copy.seoTitle} canonical="/our-story" description={copy.seoDescription} />
-      <main className="min-h-screen bg-[#f7f3eb] pt-[84px] dark:bg-venetian-brown">
+      <main className="min-h-screen bg-venetian-sandstone pt-[84px] dark:bg-venetian-brown">
         <section className="mx-auto grid max-w-[1480px] border-x border-venetian-brown/15 lg:grid-cols-[0.92fr_1.08fr] dark:border-white/10">
           <div className="flex min-h-[520px] flex-col justify-end px-5 py-14 sm:px-10 lg:px-16 lg:py-20">
             <p className="editorial-kicker">{copy.eyebrow}</p>
-            <h1 className="mt-6 max-w-[10ch] font-serif text-6xl font-semibold leading-[0.8] tracking-[-0.04em] text-venetian-brown sm:text-8xl dark:text-white">{copy.title}</h1>
+            <h1 className="mt-6 max-w-[10ch] font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] text-venetian-brown sm:text-9xl dark:text-white">{copy.title}</h1>
             <p className="mt-7 max-w-xl border-l-2 border-venetian-terracotta pl-5 text-base leading-7 text-venetian-brown/65 sm:text-lg dark:text-white/60">{copy.lead}</p>
           </div>
           <div className="relative min-h-[440px] overflow-hidden lg:min-h-[680px]">
@@ -70,11 +70,11 @@ export function AboutPage() {
 
         <SocialProof />
 
-        <section className="bg-[#f7f3eb] py-20 sm:py-28 dark:bg-venetian-brown">
+        <section className="bg-venetian-sandstone py-20 sm:py-28 dark:bg-venetian-brown">
           <div className="mx-auto grid max-w-[1480px] gap-12 px-4 sm:px-7 lg:grid-cols-2 lg:items-center lg:gap-20 lg:px-10">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <p className="editorial-kicker">{copy.heritageLabel}</p>
-              <h2 className="mt-5 font-serif text-5xl font-semibold leading-[0.88] text-venetian-brown sm:text-7xl dark:text-white">{copy.heritageTitle}</h2>
+              <h2 className="mt-5 font-serif text-5xl font-black uppercase leading-[0.8] tracking-[-0.04em] text-venetian-brown sm:text-7xl dark:text-white">{copy.heritageTitle}</h2>
               <div className="mt-8 space-y-5 text-base leading-7 text-venetian-brown/65 dark:text-white/60">{copy.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
             </motion.div>
             <img src={tableImage} alt="Interior of Al Gobbo di Rialto at San Polo 649" loading="lazy" decoding="async" className="aspect-[4/5] w-full object-cover" />
@@ -90,12 +90,12 @@ export function AboutPage() {
           </div>
         </section>
 
-        <section className="bg-[#efe6d6] py-20 sm:py-28 dark:bg-[#211d18]">
+        <section className="bg-[#d7d4c7] py-20 sm:py-28 dark:bg-[#231f20]">
           <div className="mx-auto grid max-w-[1480px] gap-12 px-4 sm:px-7 lg:grid-cols-2 lg:items-center lg:gap-20 lg:px-10">
             <img src={dishImage} alt="Dish served at Al Gobbo di Rialto" loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover lg:order-1" />
             <div className="lg:order-2">
               <p className="editorial-kicker">{copy.todayLabel}</p>
-              <h2 className="mt-5 font-serif text-5xl font-semibold leading-[0.88] text-venetian-brown sm:text-7xl dark:text-white">{copy.todayTitle}</h2>
+              <h2 className="mt-5 font-serif text-5xl font-black uppercase leading-[0.8] tracking-[-0.04em] text-venetian-brown sm:text-7xl dark:text-white">{copy.todayTitle}</h2>
               <p className="mt-7 text-base leading-7 text-venetian-brown/65 dark:text-white/60">{copy.todayBody}</p>
             </div>
           </div>
@@ -103,7 +103,7 @@ export function AboutPage() {
 
         <section className="bg-venetian-terracotta py-20 text-center text-white sm:py-24">
           <div className="max-w-3xl mx-auto px-4">
-            <h2 className="mb-8 font-serif text-5xl font-semibold leading-[0.88] sm:text-7xl">{copy.ctaTitle}</h2>
+            <h2 className="mb-8 font-serif text-5xl font-black uppercase leading-[0.8] tracking-[-0.04em] sm:text-7xl">{copy.ctaTitle}</h2>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <Link to="/menu" className="inline-flex min-h-12 items-center justify-center border border-white/35 px-7 text-xs font-bold uppercase tracking-[0.16em] text-white hover:border-white">{copy.menu}</Link>
               <Link to="/book" className="inline-flex min-h-12 items-center justify-center bg-white px-7 text-xs font-bold uppercase tracking-[0.16em] text-venetian-terracotta hover:bg-venetian-gold hover:text-venetian-brown">{copy.book}</Link>

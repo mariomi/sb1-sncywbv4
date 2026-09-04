@@ -19,7 +19,7 @@ export function ThemeToggle() {
     <motion.button
       type="button"
       onClick={toggleTheme}
-      className="grid h-10 w-10 place-items-center border border-white/15 text-venetian-sandstone transition-colors hover:border-venetian-gold hover:text-white"
+      className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-venetian-sandstone transition-colors hover:border-venetian-gold hover:text-white"
       whileTap={{ scale: 0.94 }}
       aria-label={theme === 'light' ? themeCopy[language].dark : themeCopy[language].light}
     >

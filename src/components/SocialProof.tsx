@@ -13,7 +13,7 @@ export function SocialProof() {
   const title = language === 'it' ? 'Scelto dagli ospiti, ogni giorno' : 'Chosen by guests, every day';
 
   return (
-    <section aria-labelledby="social-proof-title" className="border-y border-venetian-brown/15 bg-[#efe6d6] dark:border-white/10 dark:bg-[#211d18]">
+    <section aria-labelledby="social-proof-title" className="border-y border-venetian-brown/15 bg-[#d7d4c7] dark:border-white/10 dark:bg-[#231f20]">
       <div className="mx-auto grid max-w-[1480px] border-x border-venetian-brown/15 md:grid-cols-[0.72fr_1fr_1fr_1fr] dark:border-white/10">
         <div className="flex min-h-32 items-center border-b border-venetian-brown/15 p-6 md:border-b-0 md:border-r dark:border-white/10">
           <h2 id="social-proof-title" className="max-w-[12rem] font-serif text-2xl font-semibold leading-none text-venetian-brown dark:text-white">{title}</h2>

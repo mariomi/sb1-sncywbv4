@@ -5,17 +5,18 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Manrope', 'sans-serif'],
-        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans: ['Host Grotesk', 'Manrope', 'sans-serif'],
+        serif: ['Roslindale Variable', 'Cormorant Garamond', 'Georgia', 'serif'],
+        mono: ['DM Mono', 'monospace'],
       },
       colors: {
         venetian: {
-          brown: '#191612',
-          gold: '#C59A52',
-          sandstone: '#F1E8D8',
-          green: '#68705A',
-          terracotta: '#B44732',
-          text: '#211D18',
+          brown: '#171415',
+          gold: '#D1AC65',
+          sandstone: '#E0DED1',
+          green: '#66695A',
+          terracotta: '#A44732',
+          text: '#231F20',
         },
       },
     },

@@ -1,65 +1,35 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Images, X, ZoomIn } from 'lucide-react';
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type MouseEvent,
   type TouchEvent,
 } from 'react';
-import barDetailFull from '../Img/al-gobbo-2026/bar-detail-wide-lightbox-2400.webp';
-import barDetail from '../Img/al-gobbo-2026/bar-detail-wide-1600.webp';
-import barFull from '../Img/al-gobbo-2026/bar-wide-lightbox-2400.webp';
-import barWide from '../Img/al-gobbo-2026/bar-wide-1600.webp';
-import brandDetailFull from '../Img/al-gobbo-2026/brand-detail-wide-lightbox-2400.webp';
-import brandDetail from '../Img/al-gobbo-2026/brand-detail-wide-1600.webp';
-import brandTableFull from '../Img/al-gobbo-2026/brand-table-wide-lightbox-2400.webp';
-import brandTable from '../Img/al-gobbo-2026/brand-table-wide-1600.webp';
-import burrataFull from '../Img/al-gobbo-2026/burrata-wide-lightbox-2400.webp';
-import burrata from '../Img/al-gobbo-2026/burrata-wide-1600.webp';
-import exteriorFull from '../Img/al-gobbo-2026/exterior-wide-lightbox-2400.webp';
-import exterior from '../Img/al-gobbo-2026/exterior-wide-1600.webp';
-import fishFull from '../Img/al-gobbo-2026/fish-wide-lightbox-2400.webp';
-import fish from '../Img/al-gobbo-2026/fish-wide-1600.webp';
-import interiorBarFull from '../Img/al-gobbo-2026/interior-bar-wide-lightbox-2400.webp';
-import interiorBar from '../Img/al-gobbo-2026/interior-bar-wide-1600.webp';
-import interiorHeroFull from '../Img/al-gobbo-2026/interior-hero-lightbox-2400.webp';
-import interiorHero from '../Img/al-gobbo-2026/interior-hero-1600.webp';
-import interiorWideFull from '../Img/al-gobbo-2026/interior-wide-lightbox-2400.webp';
-import interiorWide from '../Img/al-gobbo-2026/interior-wide-1600.webp';
-import pastaFull from '../Img/al-gobbo-2026/pasta-wide-lightbox-2400.webp';
-import pasta from '../Img/al-gobbo-2026/pasta-wide-1600.webp';
-import reservedTableFull from '../Img/al-gobbo-2026/reserved-table-wide-lightbox-2400.webp';
-import reservedTable from '../Img/al-gobbo-2026/reserved-table-wide-1600.webp';
-import risottoFull from '../Img/al-gobbo-2026/risotto-wide-lightbox-2400.webp';
-import risotto from '../Img/al-gobbo-2026/risotto-wide-1600.webp';
-import staffFull from '../Img/al-gobbo-2026/staff-wide-lightbox-2400.webp';
-import staff from '../Img/al-gobbo-2026/staff-wide-1600.webp';
-import tableFull from '../Img/al-gobbo-2026/table-wide-lightbox-2400.webp';
-import tableWide from '../Img/al-gobbo-2026/table-wide-1600.webp';
-import wineWallFull from '../Img/al-gobbo-2026/wine-wall-portrait-lightbox-2400.webp';
-import wineWall from '../Img/al-gobbo-2026/wine-wall-portrait-1200.webp';
+import {
+  galleryCategories,
+  galleryImages,
+  type GalleryCategoryId,
+  type GalleryImage,
+} from '../data/galleryImages';
 import { useLanguage, type Language } from '../lib/i18n';
 
-type GalleryGroupId = 'cuisine' | 'tables' | 'spaces' | 'hospitality';
+type GalleryFilterId = 'all' | GalleryCategoryId;
 
-type GalleryImage = {
-  previewUrl: string;
-  fullUrl: string;
+type CategoryCopy = {
+  title: string;
+  description: string;
   alt: string;
-  width: number;
-  height: number;
-  groupId: GalleryGroupId;
-};
-
-type GalleryGroup = {
-  id: GalleryGroupId;
-  images: GalleryImage[];
 };
 
 type GalleryUiCopy = {
   kicker: string;
+  archive: string;
+  all: string;
+  filters: string;
   enlarge: string;
   highResolution: string;
   dialog: string;
@@ -67,138 +37,191 @@ type GalleryUiCopy = {
   previous: string;
   next: string;
   instructions: string;
+  photo: string;
+  photos: string;
   position: (current: number, total: number) => string;
+  showing: (visible: number, total: number) => string;
   openImage: (description: string) => string;
 };
 
 const galleryUi: Record<Language, GalleryUiCopy> = {
   en: {
     kicker: 'Inside Al Gobbo',
-    enlarge: 'View larger',
+    archive: 'collections',
+    all: 'All',
+    filters: 'Filter the gallery by subject',
+    enlarge: 'View',
     highResolution: 'High-resolution gallery',
     dialog: 'High-resolution photo gallery',
     close: 'Close gallery',
     previous: 'Previous photo',
     next: 'Next photo',
     instructions: 'Use the arrow keys or swipe to browse. Press Escape to close.',
+    photo: 'Photo',
+    photos: 'photographs',
     position: (current, total) => `${current} of ${total}`,
+    showing: (visible, total) => `Showing ${visible} of ${total} photographs`,
     openImage: (description) => `View larger: ${description}`,
   },
   it: {
     kicker: 'Dentro Al Gobbo',
-    enlarge: 'Ingrandisci',
+    archive: 'racconti',
+    all: 'Tutte',
+    filters: 'Filtra la galleria per soggetto',
+    enlarge: 'Apri',
     highResolution: 'Galleria in alta definizione',
     dialog: 'Galleria fotografica in alta definizione',
     close: 'Chiudi la galleria',
     previous: 'Foto precedente',
     next: 'Foto successiva',
     instructions: 'Usa le frecce o scorri con il dito. Premi Esc per chiudere.',
+    photo: 'Foto',
+    photos: 'fotografie',
     position: (current, total) => `${current} di ${total}`,
+    showing: (visible, total) => `${visible} fotografie su ${total}`,
     openImage: (description) => `Ingrandisci: ${description}`,
   },
   fr: {
     kicker: 'Au cœur d’Al Gobbo',
-    enlarge: 'Agrandir',
+    archive: 'collections',
+    all: 'Toutes',
+    filters: 'Filtrer la galerie par sujet',
+    enlarge: 'Ouvrir',
     highResolution: 'Galerie haute définition',
     dialog: 'Galerie photo haute définition',
     close: 'Fermer la galerie',
     previous: 'Photo précédente',
     next: 'Photo suivante',
     instructions: 'Utilisez les flèches ou balayez l’écran. Appuyez sur Échap pour fermer.',
+    photo: 'Photo',
+    photos: 'photographies',
     position: (current, total) => `${current} sur ${total}`,
+    showing: (visible, total) => `${visible} photographies sur ${total}`,
     openImage: (description) => `Agrandir : ${description}`,
   },
   de: {
     kicker: 'Im Al Gobbo',
-    enlarge: 'Vergrößern',
+    archive: 'Serien',
+    all: 'Alle',
+    filters: 'Galerie nach Motiv filtern',
+    enlarge: 'Öffnen',
     highResolution: 'Galerie in hoher Auflösung',
     dialog: 'Fotogalerie in hoher Auflösung',
     close: 'Galerie schließen',
     previous: 'Vorheriges Foto',
     next: 'Nächstes Foto',
     instructions: 'Mit den Pfeiltasten oder einer Wischgeste blättern. Escape schließt die Galerie.',
+    photo: 'Foto',
+    photos: 'Fotografien',
     position: (current, total) => `${current} von ${total}`,
+    showing: (visible, total) => `${visible} von ${total} Fotografien`,
     openImage: (description) => `Vergrößern: ${description}`,
   },
   es: {
     kicker: 'Dentro de Al Gobbo',
-    enlarge: 'Ampliar',
+    archive: 'colecciones',
+    all: 'Todas',
+    filters: 'Filtrar la galería por tema',
+    enlarge: 'Abrir',
     highResolution: 'Galería en alta definición',
     dialog: 'Galería de fotos en alta definición',
     close: 'Cerrar la galería',
     previous: 'Foto anterior',
     next: 'Foto siguiente',
     instructions: 'Usa las flechas o desliza para navegar. Pulsa Escape para cerrar.',
+    photo: 'Foto',
+    photos: 'fotografías',
     position: (current, total) => `${current} de ${total}`,
+    showing: (visible, total) => `${visible} fotografías de ${total}`,
     openImage: (description) => `Ampliar: ${description}`,
   },
 };
 
-const galleryGroups: GalleryGroup[] = [
-  {
-    id: 'cuisine',
-    images: [
-      { previewUrl: burrata, fullUrl: burrataFull, alt: 'Burrata con pomodorini servita da Al Gobbo di Rialto', width: 1600, height: 1067, groupId: 'cuisine' },
-      { previewUrl: pasta, fullUrl: pastaFull, alt: 'Pasta della cucina di Al Gobbo di Rialto', width: 1600, height: 1067, groupId: 'cuisine' },
-      { previewUrl: risotto, fullUrl: risottoFull, alt: 'Risotto preparato nella cucina del ristorante', width: 1600, height: 1067, groupId: 'cuisine' },
-      { previewUrl: fish, fullUrl: fishFull, alt: 'Secondo piatto di pesce servito al tavolo', width: 1600, height: 2400, groupId: 'cuisine' },
-    ],
+const categoryCopy: Record<Language, Record<GalleryCategoryId, CategoryCopy>> = {
+  en: {
+    interiors: { title: 'Interiors', description: 'Warm light, brickwork and Venetian character', alt: 'The interiors of Al Gobbo di Rialto' },
+    exterior: { title: 'Entrance', description: 'Arriving in the heart of San Polo', alt: 'The entrance and exterior of Al Gobbo di Rialto' },
+    bar: { title: 'Bar & cellar', description: 'The counter, bottles and details of the wine selection', alt: 'The bar and wine cellar at Al Gobbo di Rialto' },
+    tables: { title: 'The table', description: 'Table settings prepared for our guests', alt: 'Tables and mise en place at Al Gobbo di Rialto' },
+    staff: { title: 'Our team', description: 'The people behind every service', alt: 'The team of Al Gobbo di Rialto' },
+    burrata: { title: 'Burrata', description: 'Burrata, cherry tomatoes and finishing touches', alt: 'Burrata with cherry tomatoes at Al Gobbo di Rialto' },
+    pasta: { title: 'Pasta', description: 'From the kitchen to the table', alt: 'Pasta dishes at Al Gobbo di Rialto' },
+    risotto: { title: 'Risotto', description: 'Preparation, plating and service', alt: 'Risotto at Al Gobbo di Rialto' },
+    fish: { title: 'Fish dishes', description: 'The flavours of the Venetian lagoon', alt: 'Fish dishes at Al Gobbo di Rialto' },
+    brand: { title: 'Details & menu', description: 'The menu, the mark and the finishing details', alt: 'Menu and branded details of Al Gobbo di Rialto' },
   },
-  {
-    id: 'tables',
-    images: [
-      { previewUrl: tableWide, fullUrl: tableFull, alt: 'Tavolo apparecchiato nella sala', width: 1600, height: 1067, groupId: 'tables' },
-      { previewUrl: brandTable, fullUrl: brandTableFull, alt: 'Mise en place con il menu del ristorante', width: 1600, height: 1067, groupId: 'tables' },
-      { previewUrl: brandDetail, fullUrl: brandDetailFull, alt: 'Dettaglio del marchio Al Gobbo di Rialto', width: 1600, height: 1067, groupId: 'tables' },
-      { previewUrl: reservedTable, fullUrl: reservedTableFull, alt: 'Tavoli pronti per accogliere gli ospiti', width: 1600, height: 1067, groupId: 'tables' },
-    ],
+  it: {
+    interiors: { title: 'Gli interni', description: 'Luce calda, mattoni e carattere veneziano', alt: 'Gli interni di Al Gobbo di Rialto' },
+    exterior: { title: 'L’ingresso', description: 'L’arrivo nel cuore di San Polo', alt: 'L’ingresso e l’esterno di Al Gobbo di Rialto' },
+    bar: { title: 'Bar e cantina', description: 'Il bancone, le bottiglie e la selezione dei vini', alt: 'Il bar e la cantina di Al Gobbo di Rialto' },
+    tables: { title: 'La tavola', description: 'Mise en place preparate per accogliere gli ospiti', alt: 'I tavoli e la mise en place di Al Gobbo di Rialto' },
+    staff: { title: 'Lo staff', description: 'Le persone dietro ogni servizio', alt: 'Lo staff di Al Gobbo di Rialto' },
+    burrata: { title: 'La burrata', description: 'Burrata, pomodorini e gli ultimi tocchi', alt: 'La burrata con pomodorini di Al Gobbo di Rialto' },
+    pasta: { title: 'La pasta', description: 'Dalla cucina fino al tavolo', alt: 'I piatti di pasta di Al Gobbo di Rialto' },
+    risotto: { title: 'Il risotto', description: 'Preparazione, impiattamento e servizio', alt: 'Il risotto di Al Gobbo di Rialto' },
+    fish: { title: 'Il pesce', description: 'I sapori della laguna veneziana', alt: 'I secondi piatti di pesce di Al Gobbo di Rialto' },
+    brand: { title: 'Dettagli e menu', description: 'Il menu, il marchio e i dettagli finali', alt: 'Il menu e i dettagli di Al Gobbo di Rialto' },
   },
-  {
-    id: 'spaces',
-    images: [
-      { previewUrl: interiorHero, fullUrl: interiorHeroFull, alt: 'La sala interna di Al Gobbo di Rialto', width: 1600, height: 1067, groupId: 'spaces' },
-      { previewUrl: interiorWide, fullUrl: interiorWideFull, alt: 'Interni veneziani del ristorante', width: 1600, height: 1067, groupId: 'spaces' },
-      { previewUrl: interiorBar, fullUrl: interiorBarFull, alt: 'Vista della sala verso il bar', width: 1600, height: 1067, groupId: 'spaces' },
-      { previewUrl: exterior, fullUrl: exteriorFull, alt: 'L’ingresso di Al Gobbo di Rialto a San Polo', width: 1600, height: 1067, groupId: 'spaces' },
-    ],
+  fr: {
+    interiors: { title: 'Les intérieurs', description: 'Lumière chaude, briques et caractère vénitien', alt: 'Les intérieurs d’Al Gobbo di Rialto' },
+    exterior: { title: 'L’entrée', description: 'L’arrivée au cœur de San Polo', alt: 'L’entrée et l’extérieur d’Al Gobbo di Rialto' },
+    bar: { title: 'Bar et cave', description: 'Le comptoir, les bouteilles et la sélection de vins', alt: 'Le bar et la cave d’Al Gobbo di Rialto' },
+    tables: { title: 'La table', description: 'Des tables dressées pour accueillir nos hôtes', alt: 'Les tables dressées d’Al Gobbo di Rialto' },
+    staff: { title: 'L’équipe', description: 'Les personnes derrière chaque service', alt: 'L’équipe d’Al Gobbo di Rialto' },
+    burrata: { title: 'La burrata', description: 'Burrata, tomates cerises et dernières touches', alt: 'La burrata aux tomates cerises d’Al Gobbo di Rialto' },
+    pasta: { title: 'Les pâtes', description: 'De la cuisine jusqu’à la table', alt: 'Les plats de pâtes d’Al Gobbo di Rialto' },
+    risotto: { title: 'Le risotto', description: 'Préparation, dressage et service', alt: 'Le risotto d’Al Gobbo di Rialto' },
+    fish: { title: 'Le poisson', description: 'Les saveurs de la lagune vénitienne', alt: 'Les plats de poisson d’Al Gobbo di Rialto' },
+    brand: { title: 'Détails et menu', description: 'Le menu, la marque et les touches finales', alt: 'Le menu et les détails d’Al Gobbo di Rialto' },
   },
-  {
-    id: 'hospitality',
-    images: [
-      { previewUrl: staff, fullUrl: staffFull, alt: 'Lo staff di Al Gobbo di Rialto', width: 1600, height: 1067, groupId: 'hospitality' },
-      { previewUrl: barWide, fullUrl: barFull, alt: 'Il bancone del ristorante', width: 1600, height: 1067, groupId: 'hospitality' },
-      { previewUrl: barDetail, fullUrl: barDetailFull, alt: 'Dettaglio del bar', width: 1600, height: 1067, groupId: 'hospitality' },
-      { previewUrl: wineWall, fullUrl: wineWallFull, alt: 'La selezione di vini del ristorante', width: 1200, height: 1800, groupId: 'hospitality' },
-    ],
+  de: {
+    interiors: { title: 'Innenräume', description: 'Warmes Licht, Ziegel und venezianischer Charakter', alt: 'Die Innenräume des Al Gobbo di Rialto' },
+    exterior: { title: 'Der Eingang', description: 'Ankommen im Herzen von San Polo', alt: 'Eingang und Außenansicht des Al Gobbo di Rialto' },
+    bar: { title: 'Bar & Weinkeller', description: 'Theke, Flaschen und unsere Weinauswahl', alt: 'Bar und Weinkeller des Al Gobbo di Rialto' },
+    tables: { title: 'Der Tisch', description: 'Gedeckte Tische für unsere Gäste', alt: 'Tische und Gedecke im Al Gobbo di Rialto' },
+    staff: { title: 'Unser Team', description: 'Die Menschen hinter jedem Service', alt: 'Das Team des Al Gobbo di Rialto' },
+    burrata: { title: 'Burrata', description: 'Burrata, Kirschtomaten und letzte Handgriffe', alt: 'Burrata mit Kirschtomaten im Al Gobbo di Rialto' },
+    pasta: { title: 'Pasta', description: 'Von der Küche bis zum Tisch', alt: 'Pastagerichte im Al Gobbo di Rialto' },
+    risotto: { title: 'Risotto', description: 'Zubereitung, Anrichten und Service', alt: 'Risotto im Al Gobbo di Rialto' },
+    fish: { title: 'Fischgerichte', description: 'Der Geschmack der venezianischen Lagune', alt: 'Fischgerichte im Al Gobbo di Rialto' },
+    brand: { title: 'Details & Menü', description: 'Speisekarte, Marke und feine Details', alt: 'Speisekarte und Details des Al Gobbo di Rialto' },
   },
-];
+  es: {
+    interiors: { title: 'Los interiores', description: 'Luz cálida, ladrillo y carácter veneciano', alt: 'Los interiores de Al Gobbo di Rialto' },
+    exterior: { title: 'La entrada', description: 'La llegada al corazón de San Polo', alt: 'La entrada y el exterior de Al Gobbo di Rialto' },
+    bar: { title: 'Bar y bodega', description: 'La barra, las botellas y la selección de vinos', alt: 'El bar y la bodega de Al Gobbo di Rialto' },
+    tables: { title: 'La mesa', description: 'Mesas preparadas para recibir a nuestros clientes', alt: 'Las mesas de Al Gobbo di Rialto' },
+    staff: { title: 'El equipo', description: 'Las personas detrás de cada servicio', alt: 'El equipo de Al Gobbo di Rialto' },
+    burrata: { title: 'La burrata', description: 'Burrata, tomates cherry y últimos detalles', alt: 'La burrata con tomates cherry de Al Gobbo di Rialto' },
+    pasta: { title: 'La pasta', description: 'De la cocina a la mesa', alt: 'Los platos de pasta de Al Gobbo di Rialto' },
+    risotto: { title: 'El risotto', description: 'Preparación, emplatado y servicio', alt: 'El risotto de Al Gobbo di Rialto' },
+    fish: { title: 'El pescado', description: 'Los sabores de la laguna veneciana', alt: 'Los platos de pescado de Al Gobbo di Rialto' },
+    brand: { title: 'Detalles y menú', description: 'El menú, la marca y los detalles finales', alt: 'El menú y los detalles de Al Gobbo di Rialto' },
+  },
+};
 
-const galleryImages = galleryGroups.flatMap((group) => group.images);
-
-const galleryItemClasses = [
-  'col-span-2 row-span-2 sm:col-span-2 lg:col-span-6',
-  'col-span-1 row-span-1 sm:col-span-2 lg:col-span-3 lg:row-span-2',
-  'col-span-1 row-span-1 sm:col-span-1 lg:col-span-3',
-  'col-span-2 row-span-1 sm:col-span-1 lg:col-span-3',
-];
-
-function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose: () => void }) {
+function GalleryModal({ images, initialIndex, onClose, language }: {
+  images: GalleryImage[];
+  initialIndex: number;
+  onClose: () => void;
+  language: Language;
+}) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const touchStartX = useRef<number | null>(null);
-  const { language, t } = useLanguage();
   const copy = galleryUi[language];
-  const current = galleryImages[currentIndex];
-  const currentGroupTitle = t(`gallery.groups.${current.groupId}.title`);
+  const current = images[currentIndex];
+  const currentCategory = categoryCopy[language][current.categoryId];
+  const currentDescription = `${currentCategory.alt} · ${copy.photo} ${current.sequence}`;
 
   const previous = useCallback(() => {
-    setCurrentIndex((index) => (index - 1 + galleryImages.length) % galleryImages.length);
-  }, []);
+    setCurrentIndex((index) => (index - 1 + images.length) % images.length);
+  }, [images.length]);
 
   const next = useCallback(() => {
-    setCurrentIndex((index) => (index + 1) % galleryImages.length);
-  }, []);
+    setCurrentIndex((index) => (index + 1) % images.length);
+  }, [images.length]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -210,35 +233,26 @@ function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose
         onClose();
         return;
       }
-
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
         previous();
       }
-
       if (event.key === 'ArrowRight') {
         event.preventDefault();
         next();
       }
-
       if (event.key === 'Tab' && dialog) {
         const focusableElements = Array.from(
-          dialog.querySelectorAll<HTMLElement>(
-            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-          ),
+          dialog.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'),
         );
-
-        if (focusableElements.length === 0) {
-          event.preventDefault();
-          dialog.focus();
-          return;
-        }
-
         const first = focusableElements[0];
         const last = focusableElements[focusableElements.length - 1];
         const activeElement = document.activeElement;
 
-        if (event.shiftKey && (activeElement === first || !dialog.contains(activeElement))) {
+        if (!first || !last) {
+          event.preventDefault();
+          dialog.focus();
+        } else if (event.shiftKey && (activeElement === first || !dialog.contains(activeElement))) {
           event.preventDefault();
           last.focus();
         } else if (!event.shiftKey && (activeElement === last || !dialog.contains(activeElement))) {
@@ -267,27 +281,23 @@ function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose
       document.body.style.overscrollBehavior = previousOverscrollBehavior;
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('focusin', handleFocusIn);
-      if (previouslyFocused?.isConnected) {
-        previouslyFocused.focus();
-      }
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
     };
   }, [next, onClose, previous]);
 
   useEffect(() => {
     const adjacentIndexes = [
-      (currentIndex - 1 + galleryImages.length) % galleryImages.length,
-      (currentIndex + 1) % galleryImages.length,
+      (currentIndex - 1 + images.length) % images.length,
+      (currentIndex + 1) % images.length,
     ];
     adjacentIndexes.forEach((index) => {
       const image = new Image();
-      image.src = galleryImages[index].fullUrl;
+      image.src = images[index].fullUrl;
     });
-  }, [currentIndex]);
+  }, [currentIndex, images]);
 
   const closeFromBackdrop = (event: MouseEvent<HTMLElement>) => {
-    if (event.target === event.currentTarget) {
-      onClose();
-    }
+    if (event.target === event.currentTarget) onClose();
   };
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
@@ -299,7 +309,6 @@ function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose
     const endX = event.changedTouches[0]?.clientX ?? touchStartX.current;
     const distance = touchStartX.current - endX;
     touchStartX.current = null;
-
     if (Math.abs(distance) < 48) return;
     if (distance > 0) next();
     else previous();
@@ -312,23 +321,18 @@ function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.22 }}
+      transition={{ duration: 0.2 }}
       className="fixed inset-0 z-[100] h-[100dvh] overflow-hidden bg-[#0b0907]/[0.97] text-white backdrop-blur-md"
       onClick={closeFromBackdrop}
       role="dialog"
       aria-modal="true"
-      aria-label={`${copy.dialog}: ${currentGroupTitle}`}
+      aria-label={`${copy.dialog}: ${currentCategory.title}`}
       aria-describedby="gallery-dialog-description"
-      style={{
-        paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
-        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
-      }}
+      style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))', paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
     >
       <div className="mx-auto flex h-full w-full max-w-[1800px] flex-col" onClick={closeFromBackdrop}>
         <div className="flex h-14 shrink-0 items-center justify-between gap-4 px-4 sm:px-8">
-          <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-white/55">
-            {copy.highResolution}
-          </p>
+          <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-white/55">{copy.highResolution}</p>
           <button
             ref={closeButtonRef}
             type="button"
@@ -340,12 +344,7 @@ function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose
           </button>
         </div>
 
-        <div
-          className="relative min-h-0 flex-1 touch-pan-y"
-          onClick={closeFromBackdrop}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
+        <div className="relative min-h-0 flex-1 touch-pan-y" onClick={closeFromBackdrop} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={current.fullUrl}
@@ -353,20 +352,15 @@ function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose
               initial={{ opacity: 0, scale: 0.985 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.99 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
               onClick={closeFromBackdrop}
-              style={{
-                backgroundImage: `url(${current.previewUrl})`,
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: 'contain',
-              }}
+              style={{ backgroundImage: `url(${current.previewUrl})`, backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundSize: 'contain' }}
             >
               <img
                 src={current.fullUrl}
-                alt={current.alt}
-                width={current.width > current.height ? 2400 : 1600}
-                height={current.width > current.height ? 1600 : 2400}
+                alt={currentDescription}
+                width={current.fullWidth}
+                height={current.fullHeight}
                 className="max-h-full max-w-full select-none object-contain shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
                 draggable={false}
                 decoding="async"
@@ -374,36 +368,20 @@ function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose
             </motion.div>
           </AnimatePresence>
 
-          <button
-            type="button"
-            onClick={previous}
-            className="absolute left-2 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center border border-white/30 bg-black/55 text-white backdrop-blur-sm transition-colors hover:border-venetian-gold hover:bg-venetian-gold hover:text-venetian-brown sm:left-5"
-            aria-label={copy.previous}
-          >
+          <button type="button" onClick={previous} className="absolute left-2 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center border border-white/30 bg-black/55 text-white backdrop-blur-sm transition-colors hover:border-venetian-gold hover:bg-venetian-gold hover:text-venetian-brown sm:left-5" aria-label={copy.previous}>
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <button
-            type="button"
-            onClick={next}
-            className="absolute right-2 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center border border-white/30 bg-black/55 text-white backdrop-blur-sm transition-colors hover:border-venetian-gold hover:bg-venetian-gold hover:text-venetian-brown sm:right-5"
-            aria-label={copy.next}
-          >
+          <button type="button" onClick={next} className="absolute right-2 top-1/2 z-10 grid h-12 w-12 -translate-y-1/2 place-items-center border border-white/30 bg-black/55 text-white backdrop-blur-sm transition-colors hover:border-venetian-gold hover:bg-venetian-gold hover:text-venetian-brown sm:right-5" aria-label={copy.next}>
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
 
         <div className="grid min-h-[5.5rem] shrink-0 grid-cols-[1fr_auto] items-center gap-5 px-4 pt-3 sm:px-20">
           <div aria-live="polite" aria-atomic="true">
-            <p id="gallery-dialog-title" className="font-serif text-xl font-semibold sm:text-2xl">
-              {currentGroupTitle}
-            </p>
-            <p id="gallery-dialog-description" className="mt-1 max-w-3xl text-xs leading-5 text-white/58 sm:text-sm">
-              {current.alt}
-            </p>
+            <p className="font-serif text-xl font-semibold sm:text-2xl">{currentCategory.title}</p>
+            <p id="gallery-dialog-description" className="mt-1 max-w-3xl text-xs leading-5 text-white/58 sm:text-sm">{currentDescription}</p>
           </div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/55">
-            {copy.position(currentIndex + 1, galleryImages.length)}
-          </p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/55">{copy.position(currentIndex + 1, images.length)}</p>
           <p className="sr-only">{copy.instructions}</p>
         </div>
       </div>
@@ -412,86 +390,123 @@ function GalleryModal({ initialIndex, onClose }: { initialIndex: number; onClose
 }
 
 export default function Gallery() {
+  const [selectedFilter, setSelectedFilter] = useState<GalleryFilterId>('all');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const { language, t } = useLanguage();
   const copy = galleryUi[language];
+  const categories = categoryCopy[language];
+
+  const categoryCounts = useMemo(() => {
+    const counts = Object.fromEntries(galleryCategories.map((category) => [category, 0])) as Record<GalleryCategoryId, number>;
+    galleryImages.forEach((image) => {
+      counts[image.categoryId] += 1;
+    });
+    return counts;
+  }, []);
+
+  const visibleImages = useMemo(
+    () => selectedFilter === 'all' ? galleryImages : galleryImages.filter((image) => image.categoryId === selectedFilter),
+    [selectedFilter],
+  );
+
   const closeGallery = useCallback(() => setSelectedIndex(null), []);
+  const selectFilter = (filter: GalleryFilterId) => {
+    setSelectedIndex(null);
+    setSelectedFilter(filter);
+  };
 
   return (
     <>
       <section className="bg-venetian-brown py-20 text-white sm:py-28" aria-labelledby="gallery-title">
         <div className="mx-auto max-w-[1480px] px-4 sm:px-7 lg:px-10">
-          <div className="mb-14 grid gap-6 border-t border-white/15 pt-7 sm:mb-20 lg:grid-cols-[0.7fr_1.3fr] lg:items-end">
+          <div className="mb-10 grid gap-7 border-t border-white/15 pt-7 sm:mb-14 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
             <div>
               <p className="editorial-kicker !text-venetian-gold">{copy.kicker}</p>
-              <h1 id="gallery-title" className="mt-4 font-serif text-5xl font-semibold leading-[0.88] sm:text-7xl">
-                {t('gallery.title')}
-              </h1>
+              <h1 id="gallery-title" className="mt-5 font-serif text-6xl font-black uppercase leading-[0.76] tracking-[-0.05em] sm:text-9xl">{t('gallery.title')}</h1>
             </div>
-            <p className="max-w-2xl text-base leading-7 text-white/62 lg:justify-self-end">
-              {t('gallery.subtitle')}
-            </p>
+            <div className="max-w-2xl lg:justify-self-end">
+              <p className="text-base leading-7 text-white/62">{t('gallery.subtitle')}</p>
+              <div className="mt-6 flex items-center gap-3 text-[0.67rem] font-bold uppercase tracking-[0.16em] text-venetian-gold">
+                <Images className="h-4 w-4" aria-hidden="true" />
+                <span>{galleryImages.length} {copy.photos}</span>
+                <span aria-hidden="true">·</span>
+                <span>{galleryCategories.length} {copy.archive}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-16 sm:space-y-20">
-            {galleryGroups.map((group, groupIndex) => (
-              <section key={group.id} aria-labelledby={`gallery-group-${group.id}`}>
-                <div className="mb-5 grid gap-3 border-t border-white/15 pt-4 sm:grid-cols-[0.8fr_1.2fr] sm:items-end">
-                  <div className="flex items-baseline gap-4">
-                    <span className="text-[0.65rem] font-bold tracking-[0.18em] text-venetian-gold/75" aria-hidden="true">
-                      {String(groupIndex + 1).padStart(2, '0')}
-                    </span>
-                    <h2 id={`gallery-group-${group.id}`} className="font-serif text-3xl font-semibold sm:text-4xl">
-                      {t(`gallery.groups.${group.id}.title`)}
-                    </h2>
-                  </div>
-                  <p className="text-sm leading-6 text-white/55 sm:justify-self-end sm:text-right">
-                    {t(`gallery.groups.${group.id}.description`)}
-                  </p>
-                </div>
+          <div className="sticky top-[4.25rem] z-20 -mx-4 border-y border-white/15 bg-venetian-brown/95 px-4 py-3 shadow-[0_18px_40px_rgba(28,10,5,0.18)] backdrop-blur-md sm:top-[4.75rem] sm:-mx-7 sm:px-7 lg:-mx-10 lg:px-10">
+            <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label={copy.filters}>
+              <button
+                type="button"
+                onClick={() => selectFilter('all')}
+                aria-pressed={selectedFilter === 'all'}
+                className={`min-h-11 shrink-0 border px-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] transition-colors ${selectedFilter === 'all' ? 'border-venetian-gold bg-venetian-gold text-venetian-brown' : 'border-white/20 text-white/72 hover:border-white/45 hover:text-white'}`}
+              >
+                {copy.all} <span className="ml-1 opacity-65">{galleryImages.length}</span>
+              </button>
+              {galleryCategories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => selectFilter(category)}
+                  aria-pressed={selectedFilter === category}
+                  className={`min-h-11 shrink-0 border px-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] transition-colors ${selectedFilter === category ? 'border-venetian-gold bg-venetian-gold text-venetian-brown' : 'border-white/20 text-white/72 hover:border-white/45 hover:text-white'}`}
+                >
+                  {categories[category].title} <span className="ml-1 opacity-65">{categoryCounts[category]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-                <div className="grid auto-rows-[145px] grid-cols-2 gap-2 min-[420px]:auto-rows-[175px] sm:auto-rows-[205px] sm:grid-cols-4 lg:auto-rows-[210px] lg:grid-cols-12 xl:auto-rows-[240px]">
-                  {group.images.map((image, imageIndex) => {
-                    const globalIndex = galleryImages.indexOf(image);
-                    return (
-                      <motion.button
-                        key={image.fullUrl}
-                        type="button"
-                        onClick={() => setSelectedIndex(globalIndex)}
-                        className={`group relative overflow-hidden bg-black/20 text-left ${galleryItemClasses[imageIndex]}`}
-                        initial={{ opacity: 0, y: 14 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.2 }}
-                        transition={{ duration: 0.45, delay: imageIndex * 0.04 }}
-                        aria-label={copy.openImage(image.alt)}
-                      >
-                        <img
-                          src={image.previewUrl}
-                          alt=""
-                          width={image.width}
-                          height={image.height}
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"
-                          loading={groupIndex === 0 && imageIndex < 2 ? 'eager' : 'lazy'}
-                          decoding="async"
-                        />
-                        <span className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/5 opacity-70 transition-opacity group-hover:opacity-100" />
-                        <span className="absolute bottom-3 right-3 inline-flex min-h-11 items-center gap-2 border border-white/35 bg-black/45 px-3 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-white opacity-100 backdrop-blur-sm transition-all group-hover:border-venetian-gold group-hover:bg-venetian-gold group-hover:text-venetian-brown sm:bottom-4 sm:right-4 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
-                          {copy.enlarge}
-                          <ZoomIn className="h-4 w-4" />
-                        </span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
+          <div className="mb-6 mt-9 flex items-end justify-between gap-5 border-b border-white/15 pb-4 sm:mt-12">
+            <div>
+              <p className="font-serif text-3xl font-black uppercase leading-none sm:text-4xl">{selectedFilter === 'all' ? copy.all : categories[selectedFilter].title}</p>
+              {selectedFilter !== 'all' ? <p className="mt-2 text-sm leading-6 text-white/55">{categories[selectedFilter].description}</p> : null}
+            </div>
+            <p className="shrink-0 text-right text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/45" aria-live="polite">{copy.showing(visibleImages.length, galleryImages.length)}</p>
+          </div>
+
+          <div key={selectedFilter} className="columns-2 gap-2 sm:columns-3 lg:columns-4 xl:columns-5">
+            {visibleImages.map((image, imageIndex) => {
+              const imageCategory = categories[image.categoryId];
+              const description = `${imageCategory.alt} · ${copy.photo} ${image.sequence}`;
+
+              return (
+                <button
+                  key={image.id}
+                  type="button"
+                  onClick={() => setSelectedIndex(imageIndex)}
+                  className="group relative mb-2 block w-full break-inside-avoid overflow-hidden bg-black/20 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-venetian-gold"
+                  aria-label={copy.openImage(description)}
+                >
+                  <img
+                    src={image.previewUrl}
+                    alt=""
+                    width={image.width}
+                    height={image.height}
+                    className="block h-auto w-full transition duration-700 ease-out group-hover:scale-[1.025] group-hover:brightness-[0.82]"
+                    loading={imageIndex < 6 ? 'eager' : 'lazy'}
+                    fetchPriority={imageIndex < 3 ? 'high' : 'auto'}
+                    decoding="async"
+                  />
+                  <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 pb-3 pt-10 text-white opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
+                    <span>
+                      <span className="block text-[0.6rem] font-bold uppercase tracking-[0.15em] text-venetian-gold">{imageCategory.title}</span>
+                      <span className="mt-1 block text-[0.62rem] uppercase tracking-[0.12em] text-white/70">{copy.photo} {image.sequence}</span>
+                    </span>
+                    <span className="grid h-10 w-10 shrink-0 place-items-center border border-white/40 bg-black/25" aria-hidden="true"><ZoomIn className="h-4 w-4" /></span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
 
       <AnimatePresence>
         {selectedIndex !== null ? (
-          <GalleryModal key={selectedIndex} initialIndex={selectedIndex} onClose={closeGallery} />
+          <GalleryModal key={`${selectedFilter}-${selectedIndex}`} images={visibleImages} initialIndex={selectedIndex} onClose={closeGallery} language={language} />
         ) : null}
       </AnimatePresence>
     </>
